@@ -1,0 +1,147 @@
+.landingPage {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+  margin-top: 3.5em;
+}
+.landingPageContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: top;
+  gap: 20px;
+  padding-top: 40px;
+  padding-left: 60px;
+  padding-right: 20px;
+  width: 50vw;
+  height: 90vh;
+  text-align: start;
+}
+.landingPageContent > h1 {
+  font-size: 3em;
+  font-weight: 600;
+  color: #000;
+  padding-top: 40px;
+  margin-bottom: 24px;
+  line-height: 50px;
+}
+.landingPageContent > p {
+  color: #000;
+  font-size: 20px;
+  margin-bottom: 35px;
+}
+.landingPageImage {
+  width: 100%;
+  height: 100%;
+}
+.landingPageImage > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carouselOne {
+  background-image: url(/assets/banner-new.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+}
+.carouselTwo {
+  background-image: url(/assets/secondBannerCarousel.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+}
+.compareSliderContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 82px;
+  justify-content: center;
+}
+.reactCompareSlider {
+  width: 33em;
+  height: 60%;
+  border-radius: 10px;
+}
+.landingPageContent > button {
+  background-color: #000;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  border: none;
+  color: rgb(100, 214, 207);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.landingPageContent > button:hover {
+  background-color: rgb(100, 214, 207);
+  color: #000;
+}
+.heroSection {
+  width: 100%;
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 1) 0%,
+    rgba(242, 212, 159, 1) 100%
+  );
+  display: none;
+}
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.mobileViewButton > button {
+  background-color: #000;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  border: none;
+  color: rgb(100, 214, 207);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  width: 100%;
+}
+.mobileViewButton > button:hover {
+  background-color: rgb(100, 214, 207);
+  color: #000;
+}
+@media (max-width: 769px) {
+  .landingPage {
+    display: none;
+  }
+  .landingPageContent {
+    padding: 20px;
+    width: 100%;
+    height: 100%;
+  }
+  .heroSection {
+    margin-top: 4em;
+    padding: 0px 50px;
+    display: block;
+    height:100vh;
+    padding-bottom: 3em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+
+  .reactCompareSliderInMobile {
+    
+    width: 100%;
+    height: 30vh;
+    border-radius: 10px;
+  }
+
+}
