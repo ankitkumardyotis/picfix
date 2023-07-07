@@ -10,13 +10,18 @@ import Tooltip from '@mui/material/Tooltip';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import BrokenImageIcon from '@mui/icons-material/BrokenImage';
-import DeblurIcon from '@mui/icons-material/Deblur';
+import ColorizeIcon from '@mui/icons-material/Colorize';
 import TransformIcon from '@mui/icons-material/Transform';
-import MenuIcon from '@mui/icons-material/Menu';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
+import BrushIcon from '@mui/icons-material/Brush';
 import WidgetsIcon from '@mui/icons-material/Widgets';
 import { Icon } from '@mui/material';
+import { useContext } from 'react';
+import AppContext from './AppContext';
+
 export default function AccountMenu() {
     // logout
+    const context = useContext(AppContext);
     const session = true
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState("");
@@ -37,9 +42,9 @@ export default function AccountMenu() {
                 aria-controls={open ? 'account-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
-                sx={{cursor:'pointer'}}
-                fontSize='large' 
-                // cursor="pointer"
+                sx={{ cursor: 'pointer' }}
+                fontSize='large'
+            // cursor="pointer"
             >
                 <WidgetsIcon fontSize='large' />
                 {/* < Avatar alt={user ? user.name : "jhbhb"} src={user && user.picture} /> */}
@@ -98,20 +103,37 @@ export default function AccountMenu() {
                     Restore Photos
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/motionBlur')
+                    router.push('/AIModels/imageColorization')
                 }}>
                     <ListItemIcon>
-                        <DeblurIcon fontSize="small" />
+                        <ColorizeIcon fontSize="small" />
                     </ListItemIcon>
-                    Motion Blur
+                    Image Colorization
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/removeBG')
+                    router.push('/AIModels/removeBackground')
                 }}>
                     <ListItemIcon>
                         <TransformIcon fontSize="small" />
                     </ListItemIcon>
                     Remove Background
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    router.push('/AIModels/clothingFashion')
+                }}>
+                    <ListItemIcon>
+                        <WhatshotIcon fontSize="small" />
+                    </ListItemIcon>
+                    Trendy Look
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    router.push('/AIModels/designRoom')
+                    context.setFileUrl('')
+                }}>
+                    <ListItemIcon>
+                        <BrushIcon fontSize="small" />
+                    </ListItemIcon>
+                    Design Room
                 </MenuItem>
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')

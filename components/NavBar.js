@@ -27,7 +27,7 @@ function NavBar({ open, setOpen }) {
             <Container maxWidth="xl" sx={{display:'flex',justifyContent:'space-between'}}>
                 <Box >
                     <Link href="/">
-                        <Image style={imageStyle} src="/assets/PicFixAILogo.png" alt="Logo" width={210} height={40} />
+                        <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
                     </Link>
                 </Box>
                 <Box >

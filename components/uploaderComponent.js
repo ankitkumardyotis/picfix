@@ -71,9 +71,7 @@ function UploaderComponent({ setRestoredPhoto, setMotionBlurImage }) {
                 onComplete={files => alert(files.map(x => x.fileUrl).join("\n"))
 
                 }
-                // width="100px"
                 height="45vh"
-                // minHeight="10vh"
                 border="5px"
             />
             </div>

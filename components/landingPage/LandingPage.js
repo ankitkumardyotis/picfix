@@ -3,14 +3,17 @@ import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
-import { Icon } from '@mui/material';
+import { Container, Icon } from '@mui/material';
 import AllModelsContainer from '../AllModelsContainer';
 import { useRouter } from 'next/router';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
+import ReactCompareImage from 'react-compare-image';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 
-function LandingPage({ setOpen, open }) {
+function LandingPage() {
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
@@ -18,58 +21,44 @@ function LandingPage({ setOpen, open }) {
   const router = useRouter();
 
   const handleClickOpen = () => {
-    // setOpen(true);
-    router.push('#allModelContainer');
+    router.push('#All-AI-Models');
 
   };
+  const images = ['/assets/Image Colorization.jpg', '/assets/remove-background-banner.jpg', '/assets/A image of girl compare by blur and deblur.png'];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Logic to update the current image index
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 3000);
+    return () => {
+      clearInterval(interval); // Clean up the interval on component unmount
+    };
+  }, []);
+
+
   return (
     <>
+
       <div className={styles.landingPage}>
         {
           matches &&
           <div className={styles.landingPageImage}>
-            <Carousel
-              showArrows={true}
-              autoPlay={true}
-              infiniteLoop={true}
-              // interval={10000}
-              showThumbs={false}
-              // preventMovementUntilSwipeScrollTolerance={true}
-              transitionTime={1000}
-              showStatus={false}
-              stopOnHover={true}
-            >
-              <div className={styles.carouselOne}>
-                <div className={styles.landingPageContent}>
-                  <h1>Introducing One-Click <br />   Image Restoration <br /> with AI</h1>
-                  <p>Transform your blurry, low-resolution images into stunning works of art with AI. Our advanced AI-powered algorithm takes care of everything - from removing noise to enhancing sharpness and restoring lost details - all with just one click</p>
-                  <button onClick={handleClickOpen}>Try Now <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
-                </div>
-                <div className={styles.compareSliderContainer}>
-                  <ReactCompareSlider
-                    changePositionOnHover={false}
-                    className={styles.reactCompareSlider}
-                    itemOne={<>
-                      <ReactCompareSliderImage src={'/assets/girlBluredImage.jpeg'} alt="Image one" />
-                    </>} itemTwo={<ReactCompareSliderImage src={'/assets/girlImg.jpg'} alt="Image two" />} />
-                </div>
-              </div>
-              <div className={styles.carouselTwo}>
-                <div className={styles.landingPageContent}>
-                  <h1>Eliminate Motion Blur <br /> with AI in just one Click </h1>
-                  <p>Our state-of-the-art image restoration algorithm is specifically designed to eliminate motion blur and give you crisp, clear images every time.
-                    Restore your images to their full potential and eliminate any motion blur.<br /><br /><br /></p>
-                  <button onClick={handleClickOpen}>Try Now<Icon fontSize='small'><ArrowOutwardIcon /></Icon>  </button>
-                </div>
-                <div className={styles.compareSliderContainer}>
-                  <ReactCompareSlider
-                    className={styles.reactCompareSlider}
-                    changePositionOnHover={false}
-                    itemOne={<ReactCompareSliderImage src={'/assets/blurry-roads.jpg'} alt="Image Before" />} itemTwo={<ReactCompareSliderImage src={'/assets/RestoredMotionBlurImage.jpg'} alt="Image after" />} />
-                </div>
-              </div>
 
-            </Carousel >
+            <div className={styles.carouselOne}>
+              <div className={styles.landingPageContent}>
+                <h1>Introducing One-Click <br />  Photo Editing  & Beyond  <br />  </h1><span className={styles.gradientColor}>   <h1>using AI  </h1>  </span>
+                <p>Transform your blurry, low-resolution images into stunning works of art with AI. Our advanced AI-powered algorithm takes care of everything - from removing noise to enhancing sharpness and restoring lost details - all with just one click</p>
+                <button onClick={handleClickOpen}>Try Now <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
+              </div>
+              <div className={styles.compareSliderContainer}>
+                <div className={styles.animatedImageContainer}>
+                  <img src={images[currentImageIndex]} alt="Girl blur image " />
+                </div>
+              </div>
+            </div>
+
           </div>
         }
 
@@ -77,7 +66,7 @@ function LandingPage({ setOpen, open }) {
       </div>
       <div className={styles.heroSection}>
         <div className={styles.info}>
-          <h1>Introducing One-Click Image Restoration <br /> with AI</h1>
+          <h1 >Introducing One Click <br />  Photo Editing   <br /> <span className={styles.gradientColor}>  using AI  </span> </h1>
           <p>Transform your blurry, low-resolution images into stunning works of art with AI. Our advanced AI-powered algorithm takes care of everything - from removing noise to enhancing sharpness and restoring lost details - all with just one click</p>
         </div>
         <div className={styles.compareSliderContainerInMobile}>
@@ -91,9 +80,14 @@ function LandingPage({ setOpen, open }) {
 
         </div>
       </div>
-      <div id='allModelContainer' className='allModelCards'>
-        <AllModelsContainer />
+      <div id='All-AI-Models'  className={styles.blankSpace}>
+        
       </div>
+
+        <div className='allModelCards'>
+          <AllModelsContainer />
+        </div>
+
     </>
   )
 }

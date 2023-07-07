@@ -1,10 +1,12 @@
 /* Navbar CSS StyleSheet Here */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+  font-family: "roboto", sans-serif;
 }
+
 .navbar {
   background: rgb(100, 214, 207);
   background: linear-gradient(
@@ -20,7 +22,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 12px 30px;
+  padding: 5px 30px;
   overflow-x: hidden;
 }
 .gradient {
@@ -42,13 +44,23 @@
 .flex-column {
   flex-direction: column;
 }
-
 /* Buttons */
 .submit-btn > button {
   background-color: #000;
   border: none;
   color: #fff;
   padding: 0px 0px;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  margin-bottom: "30px";
+  width: 150px;
+}
+.buttons > button {
+  background-color: #000;
+  border: none;
+  color: #fff;
+  padding: 10px;
   border-radius: 5px;
   text-decoration: none;
   cursor: pointer;
@@ -74,7 +86,7 @@ button:hover {
 
 .aiModels {
   width: 100%;
-  margin-top: 3.5em;
+  margin-top: 3.2em;
   min-height: 100vh;
   padding-bottom: 50px;
   /* height: 110%; */
@@ -92,7 +104,7 @@ button:hover {
 }
 
 .imageContainer {
-  width: 90vw;
+  width: 95%;
   height: 100%;
   display: flex;
   padding: 10px;
@@ -127,13 +139,14 @@ button:hover {
   width: 100%;
   justify-content: center;
   padding: 0px 50px 0px 50px;
-  /* height: 100%; */
   gap: 20px;
 }
 .allCardContainer {
   flex-wrap: wrap;
+  margin-top: 50px;
+  margin-bottom: 50px;
   gap: 20px;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -234,7 +247,7 @@ button:hover {
   background: linear-gradient(
     -59deg,
     rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, .3) 100%
+    rgba(242, 212, 159, 0.3) 100%
   );
   /* Adjust the background color */
   color: #000; /* Adjust the text color */
@@ -243,6 +256,52 @@ button:hover {
   border-radius: 0px 5px 5px 0px; /* Adjust the border radius */
   /* transform: rotate(-45deg); Adjust the rotation angle */
 }
- 
 
+.modelInformation > h1 {
+  font-weight: 700;
+  font-size: 3rem;
+  line-height: 1;
+  max-width: 56rem;
+  /* margin-left: auto;
+  margin-right: auto; */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+.modelInformation > p {
+  font-weight: 400;
+  margin-top: 30px;
+  font-size: 1rem;
+  line-height: 1;
+  max-width: 56rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+.modelCarouselOne {
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 1) 0%,
+    rgba(242, 212, 159, 1) 100%
+  );
+}
+.modelCarouselTwo {
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 1) 0%,
+    rgba(242, 212, 159, 1) 100%
+  );
+}
 
+/* Model CWJBW */
+.imageAfterAllProcess {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  height: 10rem;
+  justify-content: center;
+
+}
+.coloredImage>img{
+  border-radius: 5px;
+}

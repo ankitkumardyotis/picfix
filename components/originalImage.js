@@ -27,6 +27,7 @@ function OriginalImage({ setIsImageLoaded, setOriginalImageHieght,setOriginalIma
         onLoad={handleFirstDivImageLoad}
         onLoadStart={() => setImage(false + "image is loading is started")}
         onLoadingComplete={() => setIsImageLoaded(true + "image is loading")}
+        unoptimized
       />
     </div>
   )
