@@ -9,20 +9,26 @@ export default function AllModelsContainer() {
   const router = useRouter();
 
   const handleRestoreImage = () => {
-    router.push('/explorePages/restore')
+    router.push('/restorePhoto')
+    context.setFileUrl('')
   }
   const handleBlurImage = () => {
-    router.push('/explorePages/colorization')
+    context.setFileUrl('')
+    router.push('/imageColorization')
+
   }
   const handleRemoveBG = () => {
-    router.push('/explorePages/bgRemove')
+    context.setFileUrl('')
+    router.push('/backgroundRemoval')
+
   }
   const handleTrendyLook = () => {
-    router.push('/explorePages/fashion')
+    context.setFileUrl('')
+    router.push('/trendyLook')
   }
   const handleRoomDesign = () => {
-    router.push('/explorePages/room')
     context.setFileUrl('')
+    router.push('/aiHomeMakeover')
   }
   const imageStyle = {
     borderRadius: '5px 5px 0px 0px',
@@ -36,71 +42,71 @@ export default function AllModelsContainer() {
       <div className='allCardContainer flex-container'>
         <div className="card" onClick={handleRestoreImage}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/girlImg.jpg" alt="Picture of the author" width={300} height={250} />
+            <Image style={imageStyle} src="/assets/girlImg1.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
-            <h3>
+            <h2>
               Restore Photo
-            </h3>
+            </h2>
             <br />
             <p>
-              Restore the old quality of your images. Whether you have faded family photographs, vintage snapshots, etc.
+              Restore the former quality of your images by reviving faded family photographs, vintage snapshots, and more through our image restoration service.
             </p>
           </div>
         </div>
         <div className="card" onClick={handleBlurImage}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/childColorization.jpg" alt="Picture of the author" width={300} height={250} />
+            <Image style={imageStyle} src="/assets/Hedy lammar image-colorization 1200X300.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
-            <h3>
+            <h2>
               Image Colorization
-            </h3>
+            </h2>
             <br />
             <p>
-              The magic of AI image colorization work tirelessly to transform old pictures into New one.
+              Revive old memories with vibrant colors using AI colorization. Transform photographs into vivid representations, preserving beauty and nostalgia.
             </p>
           </div>
         </div>
         <div className="card" onClick={handleRemoveBG}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/remove-background.jpg" alt="Picture of the author" width={300} height={250} />
+            <Image style={imageStyle} src="/assets/remove-background.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
-            <h3>
-              Remove Background
-            </h3>
+            <h2>
+              Background Removal
+            </h2>
             <br />
             <p>
-              Effortlessly remove the background from any image and replace it with a new one of your choice.
+              Effortlessly remove the background from any image using our advanced background removal tool. <br /><br />
             </p>
           </div>
         </div>
         <div className="card" onClick={handleTrendyLook}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/models/trendyLookImage.jpg" alt="Picture of the author" width={300} height={250} />
+            <Image style={imageStyle} src="/assets/models/trendyLookImage.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
-            <h3>
+            <h2>
               Try Trendy look
-            </h3>
+            </h2>
             <br />
             <p>
-              Effortlessly Change the color of cloth from any image and replace it with a new one of your choice.
+              Elevate your social media with AI-generated fashion enhancements. Embrace trends, captivate followers with personalized style modifications.
             </p>
           </div>
         </div>
         <div className="card" onClick={handleRoomDesign}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/Dream-Room.png" alt="Picture of the author" width={300} height={250} />
+            <Image style={imageStyle} src="/assets/Dream-Room.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
-            <h3>
-              Design Your Room
-            </h3>
+            <h2>
+              AI Home Makeover
+            </h2>
             <br />
             <p>
-              Create your ideal room using and  Experience the future of home design with our advanced technology.
+              Experience the future of home design with our AI-powered solution. Transform your spaces effortlessly, adding beauty and style to every corner of your home.
             </p>
           </div>
         </div>

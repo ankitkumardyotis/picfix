@@ -4,7 +4,6 @@
 export default async function handler(req, res) {
   const fileUrl = req.body.imageUrl;
   console.log("file url=>" + fileUrl);
-  console.log(process.env.REPLICATE_API_KEY);
   // POST request to Replicate to start the image restoration generation process
   let startResponse = await fetch("https://api.replicate.com/v1/predictions", {
     method: "POST",
@@ -20,7 +19,7 @@ export default async function handler(req, res) {
   });
 
   let jsonStartResponse = await startResponse.json();
-  console.log("Json response" + jsonStartResponse);
+  console.log("Json response" + JSON.stringify(jsonStartResponse));
   let endpointUrl = jsonStartResponse.urls.get;
 
   // // GET request to get the status of the image restoration process & return the result when it's ready
@@ -45,5 +44,5 @@ export default async function handler(req, res) {
     } else {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-  } res.status(200).json(restoredImage ? restoredImage : "Failed to restore image");
+  } res.status(200).json(restoredImage ? restoredImage : "Server is busy please try again later");
 }

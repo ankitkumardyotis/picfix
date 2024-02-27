@@ -19,13 +19,13 @@ export default function SelectDropdown({ clothingPosition, setClothingPosition }
 
     return (
 
-        <FormControl sx={{ ml: matches ? 3 : 0, minWidth: matches ? 140 : '70%', color: 'inherit' }}>
-            <InputLabel id="demo-simple-select-helper-label"   >Styles</InputLabel>
+        <FormControl sx={{ ml: matches ? 0 : 0, minWidth: matches ? 140 : '100%', color: 'inherit' }}>
+            <InputLabel id="demo-simple-select-helper-label"   >Choose Style</InputLabel>
             <Select
                 labelId="demo-simple-select-helper-label"
                 id="demo-simple-select-helper"
                 value={clothingPosition}
-                label="Styles"
+                label="Choose Style"
                 onChange={handleChange}
             >
                 <MenuItem value={'topwear'}>Top Wear</MenuItem>

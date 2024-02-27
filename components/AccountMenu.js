@@ -42,7 +42,7 @@ export default function AccountMenu() {
                 aria-controls={open ? 'account-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
-                sx={{ cursor: 'pointer' }}
+                sx={{ cursor: 'pointer'}}
                 fontSize='large'
             // cursor="pointer"
             >
@@ -95,7 +95,7 @@ export default function AccountMenu() {
                     <Divider />
              */}
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/restorePhoto');
+                    router.push('/restorePhoto')
                 }}>
                     <ListItemIcon>
                         <BrokenImageIcon fontSize="small" />
@@ -103,7 +103,7 @@ export default function AccountMenu() {
                     Restore Photos
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/imageColorization')
+                    router.push('/imageColorization')
                 }}>
                     <ListItemIcon>
                         <ColorizeIcon fontSize="small" />
@@ -111,15 +111,15 @@ export default function AccountMenu() {
                     Image Colorization
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/removeBackground')
+                    router.push('/backgroundRemoval')
                 }}>
                     <ListItemIcon>
                         <TransformIcon fontSize="small" />
                     </ListItemIcon>
-                    Remove Background
+                    Background Removal
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/clothingFashion')
+                    router.push('/trendyLook')
                 }}>
                     <ListItemIcon>
                         <WhatshotIcon fontSize="small" />
@@ -127,13 +127,13 @@ export default function AccountMenu() {
                     Trendy Look
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/AIModels/designRoom')
-                    context.setFileUrl('')
+                    router.push('/aiHomeMakeover')
+                    // context.setFileUrl('')
                 }}>
                     <ListItemIcon>
                         <BrushIcon fontSize="small" />
                     </ListItemIcon>
-                    Design Room
+                    AI Home Makeover
                 </MenuItem>
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')

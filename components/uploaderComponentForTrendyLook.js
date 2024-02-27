@@ -11,16 +11,17 @@ const uploader = Uploader({
 });
 
 
-function UploaderComponent() {
-    
-    const context = useContext(AppContext);
+
+function UploaderComponent({ requireValue, setFileUrl, fileUrl }) {
+    // console.log(requireValue);
+    // const context = useContext(AppContext);
     const uploaderOptions = {
         maxFileCount: 1,
         mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
         editor: {
             images:
             {
-                crop: false,
+                crop: true,
                 cropRatio: 1
             }
         },
@@ -66,10 +67,12 @@ function UploaderComponent() {
                 uploader={uploader}
                 options={uploaderOptions}
                 onUpdate={files => {
-                    context.setFileUrl(files.map(x => x.fileUrl).join("\n"))
+                    if (files.length > 0) {
+                        setFileUrl(files.map(x => x.fileUrl).join("\n"));
+                    }
                 }}
-                onComplete={files => alert(files.map(x => x.fileUrl).join("\n"))
-                }
+                // onComplete={files => alert(files.map(x => x.fileUrl).join("\n"))
+                // }
                 height="45vh"
                 border="5px"
             />

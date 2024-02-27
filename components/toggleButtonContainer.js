@@ -1,19 +1,20 @@
 import { FormControlLabel, Switch } from '@mui/material';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { styled } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
-function ToggleButtonContainer({ toggleClick, setToggleClick }) {
+function ToggleButtonContainer({ toggleClick, setToggleClick, matches }) {
 
 
-// console.log(toggleClick);
     const handleSwitch = (event) => {
         // setShowRestored(!showRestored);
         // console.log(event.target.checked);
         // 'Switch toggled:', event
         setToggleClick(event.target.checked);
-
     };
 
+    
     const IOSSwitch = styled((props) => (
         <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
     ))(({ theme }) => ({

@@ -24,18 +24,18 @@ function NavBar({ open, setOpen }) {
 
     return (
         <div className='navbar'>
-            <Container maxWidth="xl" sx={{display:'flex',justifyContent:'space-between'}}>
-                <Box >
+            <div  style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div >
                     <Link href="/">
                         <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
                     </Link>
-                </Box>
-                <Box >
+                </div>
+                <div  >
 
                     <AccountMenu />
 
-                </Box>
-            </Container>
+                </div>
+            </div>
         </div>
     );
 }
