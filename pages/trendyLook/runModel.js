@@ -17,6 +17,7 @@ import ReactCompareImage from "react-compare-image";
 import JSZip, { file } from "jszip";
 import { useRouter } from "next/router";
 import CircularWithValueLabel from "@/components/CircularProgressWithLabel";
+import { useSession } from "next-auth/react";
 
 
 function ClothingFashion() {
@@ -48,12 +49,49 @@ function ClothingFashion() {
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
     // const fileUrl = context.fileUrl;
+    const [loadindSession, setLoadindSession] = useState(false);
 
     const { width, height } = useWindowSize();
+    const { data: session, status } = useSession();
+    const [userPlan, setUserPlan] = useState('');
 
-
-
-
+    const [userPlanStatus, setUserPlanStatus] = useState(false);
+    const fetchUserPlan = async () => {
+      try {
+        const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch plan data');
+        }
+        const data = await response.json();
+        // console.log("data", data.plan)
+        // return data.plan;
+        setUserPlan(data.plan)
+        setUserPlanStatus(true)
+      } catch (error) {
+        console.error('Error fetching plan data:', error);
+      }
+    };
+  
+    useEffect(() => {
+      if (status === "loading") {
+        setLoadindSession(true);
+      } else if (!session) {
+        router.push("/login");
+      } else {
+        setLoadindSession(false);
+        fetchUserPlan();
+      }
+    }, [session, status, router]);
+  
+  
+  
+  
+    useEffect(() => {
+      if (userPlanStatus && userPlan === null) {
+        console.log("fetchedPlan in", userPlan)
+        router.push("/price");
+      }
+    }, [userPlan, router]);
 
     // GFPGAN model calling 
     async function generateRestorePhoto(urlFromColorization) {

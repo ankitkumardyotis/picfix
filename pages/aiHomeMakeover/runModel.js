@@ -19,6 +19,7 @@ import { Uploader } from "uploader";
 import { useWindowSize } from "react-use";
 import { useRouter } from 'next/router';
 import CircularWithValueLabel from "@/components/CircularProgressWithLabel";
+import { useSession } from "next-auth/react";
 
 
 const uploader = Uploader({
@@ -58,6 +59,47 @@ function DesignRoom() {
     // const [height, setHeight] = useState(null);
     // const [width, setWidth] = useState(null);
     const confetiRef = useRef(null);
+    const [loadindSession, setLoadindSession] = useState(false);
+    const { data: session, status } = useSession();
+    const [userPlan, setUserPlan] = useState('');
+
+    const [userPlanStatus, setUserPlanStatus] = useState(false);
+    const fetchUserPlan = async () => {
+      try {
+        const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch plan data');
+        }
+        const data = await response.json();
+        // console.log("data", data.plan)
+        // return data.plan;
+        setUserPlan(data.plan)
+        setUserPlanStatus(true)
+      } catch (error) {
+        console.error('Error fetching plan data:', error);
+      }
+    };
+  
+    useEffect(() => {
+      if (status === "loading") {
+        setLoadindSession(true);
+      } else if (!session) {
+        router.push("/login");
+      } else {
+        setLoadindSession(false);
+        fetchUserPlan();
+      }
+    }, [session, status, router]);
+  
+  
+  
+  
+    useEffect(() => {
+      if (userPlanStatus && userPlan === null) {
+        console.log("fetchedPlan in", userPlan)
+        router.push("/price");
+      }
+    }, [userPlan, router]);
     const uploaderOptions = {
         maxFileCount: 1,
         mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
@@ -453,7 +495,7 @@ function DesignRoom() {
                                     style={{ cursor: "pointer" }}
                                     onClick={handleToNavigatePrompt}>
                                     Retry{" "}
-                                   
+
                                 </button>
                             </div>
                         )}

@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import BrokenImageIcon from '@mui/icons-material/BrokenImage';
 import ColorizeIcon from '@mui/icons-material/Colorize';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import TransformIcon from '@mui/icons-material/Transform';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import BrushIcon from '@mui/icons-material/Brush';
@@ -18,11 +19,13 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import { Icon } from '@mui/material';
 import { useContext } from 'react';
 import AppContext from './AppContext';
+import { Logout } from '@mui/icons-material';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function AccountMenu() {
     // logout
     const context = useContext(AppContext);
-    const session = true
+    const { data: session } = useSession();
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState("");
     const open = Boolean(anchorEl);
@@ -33,6 +36,7 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
+
     return (
         <React.Fragment>
             <Icon
@@ -42,12 +46,13 @@ export default function AccountMenu() {
                 aria-controls={open ? 'account-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
-                sx={{ cursor: 'pointer'}}
+                sx={{ cursor: 'pointer' }}
                 fontSize='large'
             // cursor="pointer"
             >
                 <WidgetsIcon fontSize='large' />
-                {/* < Avatar alt={user ? user.name : "jhbhb"} src={user && user.picture} /> */}
+                {/* < Avatar alt={session ? session?.user.name : "jhbhb"} src={session && session?.user.image} /> */}
+
             </Icon >
             <Menu
                 autoFocus={false}
@@ -89,11 +94,13 @@ export default function AccountMenu() {
                 {/* <MenuItem onClick={handlePaymentContainer} >
                     <UpgradeIcon fontSize="large" />  Buy Credits
                 </MenuItem> */}
-                {/* <MenuItem onClick={handleClose}>
-                    <Avatar /> My account
+                {/* <Avatar /> */}
+                {session && <> <MenuItem onClick={() => router.push('/dashboard')}>
+                    {!session.user.image ? <img style={{ width: '40px', height: '40px', borderRadius: '50%' }} href={session.user.image} alt={session.user.name} /> : <Avatar />}  My account
                 </MenuItem>
                     <Divider />
-             */}
+                </>}
+
                 <MenuItem onClick={() => {
                     router.push('/restorePhoto')
                 }}>
@@ -143,14 +150,16 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     Remove Object
                 </MenuItem> */}
-                {/* <Divider /> */}
-                {/* <MenuItem onClick={()=>signOut()} >
-                    <ListItemIcon>
-                        <Logout fontSize="small" />
-                    </ListItemIcon>
-                    Logout
-                </MenuItem> */}
+                {session && <> <Divider />
+                    <MenuItem onClick={() => signOut('/')} >
+                        <ListItemIcon>
+                            <Logout fontSize="small" />
+                        </ListItemIcon>
+                        Logout
+                    </MenuItem>
+                </>}
             </Menu>
+
         </React.Fragment>
     );
 }

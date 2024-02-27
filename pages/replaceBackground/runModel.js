@@ -17,6 +17,7 @@ import ReactCompareImage from "react-compare-image";
 import JSZip, { file } from "jszip";
 import { useRouter } from "next/router";
 import CircularWithValueLabel from "@/components/CircularProgressWithLabel";
+import { useSession } from "next-auth/react";
 
 
 function ReplaceBackgroundModel() {
@@ -48,8 +49,38 @@ function ReplaceBackgroundModel() {
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
     const { width, height } = useWindowSize();
+    const [loadindSession, setLoadindSession] = useState(false);
+    const { data: session, status } = useSession();
+    const [userPlan, setUserPlan] = useState(null);
 
+    useEffect(() => {
+        if (status === "loading") {
+            setLoadindSession(true);
+        } else if (!session) {
+            router.push("/login");
+        } else {
+            const fetchUserPlan = async () => {
+                try {
+                    const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch plan data');
+                    }
+                    const data = await response.json();
+                    setUserPlan(data.plan)
+                } catch (error) {
+                    console.error('Error fetching plan data:', error);
+                }
+            };
 
+            fetchUserPlan();
+            console.log("plan", userPlan)
+            if (!userPlan) {
+                router.push("/price");
+            }
+
+            setLoadindSession(false);
+        }
+    }, [session, status, router]);
 
 
 

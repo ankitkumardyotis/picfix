@@ -1,3 +1,24 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "roboto", sans-serif;
+  /* font-display: swap; */
+}
+.outerContent {
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 0.5) 0%,
+    rgba(242, 212, 159, 0.5) 100%
+  );
+}
+.innerContent {
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 1) 0%,
+    rgba(242, 212, 159, 1) 100%
+  );
+}
 /* Navbar CSS StyleSheet Here */
 
 /* Add this at the top of your CSS */
@@ -8,13 +29,6 @@
   /* font-weight: 400; */
   /* font-style: normal; */
   font-display: swap;
-}
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "roboto", sans-serif;
-  /* font-display: swap; */
 }
 
 .navbar {
@@ -90,9 +104,9 @@
   text-decoration: none;
 }
 
-button:hover {
+/* button:hover {
   background-color: rgba(0, 0, 0, 0.8);
-}
+} */
 /* For AI Models */
 
 .aiModels {
@@ -295,6 +309,21 @@ button:hover {
   border-radius: 0px 5px 5px 0px; /* Adjust the border radius */
   /* transform: rotate(-45deg); Adjust the rotation angle */
 }
+.creditUsageContainer {
+  box-shadow: 0 .5px 0 #ccc,
+  0 1px 0 #c9c9c9,
+  0 1.5px 0 #bbb,
+  0 2px 0 #b9b9b9,
+  0 2.5px 0 #aaa,
+  0 3px .5px rgba(0,0,0,.1),
+  0 0 2.5px rgba(0,0,0,.1),
+  0 .5px 1.5px rgba(0,0,0,.3),
+  0 1.5px 2.5px rgba(0,0,0,.2),
+  0 2.5px 5px rgba(0,0,0,.25),
+  0 5px 5px rgba(0,0,0,.2),
+  0 10px 10px rgba(0,0,0,.15);
+
+}
 
 .modelInformation > h1 {
   font-weight: 700;
@@ -360,4 +389,20 @@ button:hover {
 .footerLogo > img {
   border-radius: 4px;
   cursor: pointer;
+}
+
+@keyframes flyRocket {
+  from {
+    transform: translate(-5vw, 4vw);
+  }
+  to {
+    transform: translate(
+      1,
+      -3vh
+    ); /* Adjust the distance based on your preference */
+  }
+}
+
+.rocket {
+  animation: flyRocket 1s linear normal; /* Adjust duration and timing function as needed */
 }

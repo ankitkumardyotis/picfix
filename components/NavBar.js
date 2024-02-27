@@ -11,8 +11,8 @@ import { useRouter } from 'next/router';
 
 
 function NavBar({ open, setOpen }) {
-    //   const { data: session } = useSession();
-    const session = true
+    const { data: session } = useSession();
+    const router = useRouter();
 
     const handleDiologueBox = () => {
         setOpen(true);
@@ -21,18 +21,22 @@ function NavBar({ open, setOpen }) {
     const imageStyle = {
         borderRadius: '5px',
     };
-
+    const handleGetStarted = () => {
+        router.push('/dashboard')
+    }
     return (
         <div className='navbar'>
-            <div  style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div >
                     <Link href="/">
                         <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
                     </Link>
                 </div>
                 <div  >
-
-                    <AccountMenu />
+                <AccountMenu />
+                    {/* {session ? <AccountMenu /> : <div>
+                        <button onClick={handleGetStarted} style={{ padding: '.5em', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', backgroundColor: 'black', color: 'rgb(100, 214, 207)', border: 'none' }}>Get started </button>
+                    </div>} */}
 
                 </div>
             </div>
