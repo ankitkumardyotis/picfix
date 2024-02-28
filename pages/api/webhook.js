@@ -43,17 +43,17 @@ async function processEvent(event) {
 
             let creditPoints = 0;
             // This is standard pricing for the time being
-            if (subDetail['variant_id'] === 236484) {
+            if (subDetail['variant_id'] === 270344) {
                 creditPoints = 300;
             }
 
             // This is Premium pricing for the time being
-            if (subDetail['variant_id'] === 236488) {
+            if (subDetail['variant_id'] === 270347) {
                 creditPoints = 500;
             }
 
             // This is Popular pricing for the time being
-            if (subDetail['variant_id'] === 236489) {
+            if (subDetail['variant_id'] === 270349) {
                 creditPoints = 800;
             }
             // when user create checkout successful 
