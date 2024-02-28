@@ -18,11 +18,16 @@ import Head from 'next/head';
 
 
 function LandingPage() {
+  // const [matchesToSetMediaQuery, setMatchesToSetMediaQuery] = useState(null)
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-
+  console.log("matches", matches)
   const router = useRouter();
+
+  // useEffect(() => {
+  //   setMatchesToSetMediaQuery(matches)
+  // }, [])
 
   const handleClickOpen = () => {
     router.push('#All-AI-Models');
@@ -40,6 +45,11 @@ function LandingPage() {
     };
   }, []);
   const words = ['Introducing One-Click Photo Editing & Beyond using AI']
+
+
+  // if (!matchesToSetMediaQuery) {
+  //   return null
+  // }
 
   return (
     <>

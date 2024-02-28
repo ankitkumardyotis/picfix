@@ -26,7 +26,7 @@ function CreditPlanCard() {
 
         fetchProductInfo();
     }, []);
-    // console.log("product", product?.data?.length)
+    console.log("product", product)
 
     const successPaymentHandler = async (variantId) => {
         const ls = new LemonSqueezy(process.env.NEXT_PUBLIC_LEMONSQUEEZY_API_KEY);
@@ -69,9 +69,9 @@ function CreditPlanCard() {
 
     return (
         <div className={styles.creditCardPlan} >
-            <div className={styles.cardTitle} style={{paddingTop:'6em'}}>
+            <div className={styles.cardTitle} style={{ paddingTop: '6em' }}>
                 <span>Credit Plans</span>
-                <p style={{marginTop:'3em'}}>Welcome to our pricing section, where simplicity meets value. We believe in offering straightforward pricing options that cater to your specific needs. <br /> Whether you're an individual looking to enhance your photos</p>
+                <p style={{ marginTop: '3em' }}>Welcome to our pricing section, where simplicity meets value. We believe in offering straightforward pricing options that cater to your specific needs. <br /> Whether you're an individual looking to enhance your photos</p>
             </div>
             <div className={styles.cardContainer}>
                 {product && product?.data?.length > 0 ?
@@ -107,7 +107,7 @@ function CreditPlanCard() {
 
                             <span className={styles.price}>
 
-                                <h1>₹{item.attributes.price / 100}</h1>
+                                <h1>${item.attributes.price / 100}</h1>
                                 <p>(Incl. 18% GST)</p>
 
                             </span>

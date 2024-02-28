@@ -19,7 +19,7 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import { Icon } from '@mui/material';
 import { useContext } from 'react';
 import AppContext from './AppContext';
-import { Logout } from '@mui/icons-material';
+import { Logout, PriceCheck } from '@mui/icons-material';
 import { signOut, useSession } from 'next-auth/react';
 
 export default function AccountMenu() {
@@ -141,6 +141,15 @@ export default function AccountMenu() {
                         <BrushIcon fontSize="small" />
                     </ListItemIcon>
                     AI Home Makeover
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    router.push('/price')
+                    // context.setFileUrl('')
+                }}>
+                    <ListItemIcon>
+                        <PriceCheck fontSize="small" />
+                    </ListItemIcon>
+                    Pricing
                 </MenuItem>
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')
