@@ -32,8 +32,8 @@ export default async (req, res) => {
       },
       'product_options': {
         'enabled_variants': [variantId], // Only show the selected variant in the checkout
-        'redirect_url': `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/`,
-        'receipt_link_url': `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/`,
+        'redirect_url': `${process.env.NEXTAUTH_URL}/dashboard/`,
+        'receipt_link_url': `${process.env.NEXTAUTH_URL}/dashboard/`,
         'receipt_button_text': 'Go to your account',
         'receipt_thank_you_note': 'Thank you for purchase Picfix.ai!'
       }
