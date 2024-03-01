@@ -10,7 +10,7 @@ import prisma from "@/lib/prisma";
 const secret = process.env.NEXTAUTH_SECRET
 
 export const authOptions = {
-  // Configure one or more authentication providers
+  // Configure one or more authentication providers 
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -21,10 +21,10 @@ export const authOptions = {
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET
     }),
-    // FacebookProvider({
-    //   clientId: process.env.GITHUB_CLIENT_ID,
-    //   clientSecret: process.env.GITHUB_CLIENT_SECRET
-    // }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET
+    }),
     // AppleProvider({
     //   clientId: process.env.APPLE_ID,
     //   clientSecret: process.env.APPLE_SECRET

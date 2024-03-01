@@ -159,6 +159,14 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     Remove Object
                 </MenuItem> */}
+                {!session && <> <Divider />
+                    <MenuItem onClick={() => router.push('/login')} >
+                        <ListItemIcon>
+                            <Logout fontSize="small" />
+                        </ListItemIcon>
+                        Login
+                    </MenuItem>
+                </>}
                 {session && <> <Divider />
                     <MenuItem onClick={() => signOut('/')} >
                         <ListItemIcon>
