@@ -21,6 +21,7 @@ import { useContext } from 'react';
 import AppContext from './AppContext';
 import { Logout, PriceCheck } from '@mui/icons-material';
 import { signOut, useSession } from 'next-auth/react';
+import LoginIcon from '@mui/icons-material/Login';
 
 export default function AccountMenu() {
     // logout
@@ -162,13 +163,13 @@ export default function AccountMenu() {
                 {!session && <> <Divider />
                     <MenuItem onClick={() => router.push('/login')} >
                         <ListItemIcon>
-                            <Logout fontSize="small" />
+                            <LoginIcon fontSize="small" />
                         </ListItemIcon>
                         Login
                     </MenuItem>
                 </>}
                 {session && <> <Divider />
-                    <MenuItem onClick={() => signOut('/')} >
+                    <MenuItem onClick={() => { signOut('/'), localStorage.clear() }} >
                         <ListItemIcon>
                             <Logout fontSize="small" />
                         </ListItemIcon>

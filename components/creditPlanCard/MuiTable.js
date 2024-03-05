@@ -7,21 +7,23 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import formattedDate from '@/utils/formateDate/formatDate';
+import diffrenceTime from '@/utils/formateDate/diffrenceTime';
 
 const columns = [
-  { id: 'id', label: 'Id', minWidth: 170 },
+  { id: 'id', label: 'Id', minWidth: 10 },
   { id: 'model', label: 'Model', minWidth: 100 },
   {
     id: 'status',
     label: 'Status',
-    minWidth: 170,
+    minWidth: 100,
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
   },
   {
     id: 'createdAt',
     label: 'Created AT',
-    minWidth: 170,
+    minWidth: 100,
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
   },
@@ -36,10 +38,29 @@ const columns = [
 
 
 
-export default function MuiTable({userHistory}) {
+export default function MuiTable({ userHistory }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [rows, setRows] = React.useState(userHistory)
+  const newDataAfterDateFormat = userHistory.map((item, idx) => {
+    const diffrenceInTime = diffrenceTime(item.createdAt)
+    let model;
+    if (item.model === "tencentarc/gfpgan") {
+      model = "Restore Photos"
+    } if (item.model === "cjwbw/bigcolor") {
+      model = "Image Colorization"
+    } if (item.model === "naklecha/fashion-ai") {
+      model = "Trendy Look"
+    } if (item.model === "jagilley/controlnet-hough") {
+      model = "AI Home Makeover"
+    } if (item.model === "cjwbw/rembg") {
+      model = "Background Removal"
+    }
+    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1 };
+  });
+
+
+
+  const [rows, setRows] = React.useState(newDataAfterDateFormat)
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -49,6 +70,8 @@ export default function MuiTable({userHistory}) {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>

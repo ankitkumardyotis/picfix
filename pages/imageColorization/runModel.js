@@ -66,7 +66,7 @@ function ImageColorization() {
   }, [userPlan, router]);
 
 
-
+  console.log("context payh", context.path)
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
     await new Promise((resolve) => setTimeout(resolve, 500));

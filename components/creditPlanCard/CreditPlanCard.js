@@ -3,12 +3,17 @@ import styles from './CreditPlanCard.module.css';
 import { LemonSqueezy } from '@lemonsqueezy/lemonsqueezy.js';
 import { useRouter } from 'next/router';
 import { useSession, signOut } from "next-auth/react"
-import CircularProgress from '@mui/material/CircularProgress';
-
+import { CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 function CreditPlanCard() {
     const [product, setProduct] = useState(null);
     const router = useRouter();
     const { data: session } = useSession()
+
+    const theme = useTheme();
+    const matches = useMediaQuery(theme.breakpoints.up('md'));
+
+
+
 
 
     useEffect(() => {
@@ -68,12 +73,12 @@ function CreditPlanCard() {
     };
 
     return (
-        <div className={styles.creditCardPlan} >
-            <div className={styles.cardTitle} style={{ paddingTop: '6em' }}>
+        <div className={styles.creditCardPlan}   >
+            <div className={styles.cardTitle} style={{ paddingTop: '6em', }}>
                 <span>Credit Plans</span>
-                <p style={{ marginTop: '3em' }}>Welcome to our pricing section, where simplicity meets value. We believe in offering straightforward pricing options that cater to your specific needs. <br /> Whether you're an individual looking to enhance your photos</p>
+                <p style={{ marginTop: '3em', padding: "0.3rem 1.5rem" }}>Welcome to our pricing section, where simplicity meets value. We believe in offering straightforward pricing options that cater to your specific needs.{matches && <br />} Whether you're an individual looking to enhance your photos</p>
             </div>
-            <div className={styles.cardContainer}>
+            <div className={styles.cardContainer} style={{ flexDirection: !matches && 'column', padding: !matches && "0.3rem 1rem" }}>
                 {product && product?.data?.length > 0 ?
                     product?.data?.map((item, index) => {
 

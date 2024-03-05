@@ -13,11 +13,12 @@ export default function App({
 
 }) {
   const [fileUrl, setFileUrl] = useState('');
+  const [path, setPath] = useState('')
   const [open, setOpen] = useState(false);
   <script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
   return (
     <SessionProvider session={session}>
-      <AppContext.Provider value={{ fileUrl, setFileUrl }}>
+      <AppContext.Provider value={{ fileUrl, setFileUrl,path, setPath }}>
         <NavBar open={open} setOpen={setOpen} />
         <Component {...pageProps} />
         <Footer />
