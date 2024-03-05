@@ -31,6 +31,7 @@ function LandingPage() {
 
   const handleClickOpen = () => {
     router.push('#All-AI-Models');
+    localStorage.setItem('path','/#All-AI-Models')
   };
   const images = ['/assets/image Colorization landing page  1600X900.jpg', '/assets/remove-background-banner.jpg', '/assets/restore photo landing page  1600X900.jpg'];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

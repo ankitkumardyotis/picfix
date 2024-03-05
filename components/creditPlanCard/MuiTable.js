@@ -22,7 +22,7 @@ const columns = [
   },
   {
     id: 'createdAt',
-    label: 'Created AT',
+    label: 'Run At',
     minWidth: 100,
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
@@ -74,7 +74,7 @@ export default function MuiTable({ userHistory }) {
 
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+    <Paper sx={{ width: '100%', overflow: 'hidden',boxShadow:'none' }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>

@@ -11,24 +11,29 @@ export default function AllModelsContainer() {
   const handleRestoreImage = () => {
     router.push('/restorePhoto')
     context.setFileUrl('')
+    localStorage.setItem('path','/restorePhoto')
   }
   const handleBlurImage = () => {
     context.setFileUrl('')
     router.push('/imageColorization')
+    localStorage.setItem('path','/imageColorization')
 
   }
   const handleRemoveBG = () => {
     context.setFileUrl('')
     router.push('/backgroundRemoval')
-
+    localStorage.setItem('path','/backgroundRemoval')
+    
   }
   const handleTrendyLook = () => {
     context.setFileUrl('')
     router.push('/trendyLook')
+    localStorage.setItem('path','/trendyLook')
   }
   const handleRoomDesign = () => {
     context.setFileUrl('')
     router.push('/aiHomeMakeover')
+    localStorage.setItem('path','/aiHomeMakeover')
   }
   const imageStyle = {
     borderRadius: '5px 5px 0px 0px',

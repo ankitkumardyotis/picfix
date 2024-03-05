@@ -104,6 +104,7 @@ export default function AccountMenu() {
 
                 <MenuItem onClick={() => {
                     router.push('/restorePhoto')
+                    localStorage.setItem('path', '/restorePhoto')
                 }}>
                     <ListItemIcon>
                         <BrokenImageIcon fontSize="small" />
@@ -112,6 +113,7 @@ export default function AccountMenu() {
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/imageColorization')
+                localStorage.setItem('path', '/imageColorization')
                 }}>
                     <ListItemIcon>
                         <ColorizeIcon fontSize="small" />
@@ -120,6 +122,7 @@ export default function AccountMenu() {
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/backgroundRemoval')
+                    localStorage.setItem('path', '/backgroundRemoval')
                 }}>
                     <ListItemIcon>
                         <TransformIcon fontSize="small" />
@@ -128,6 +131,7 @@ export default function AccountMenu() {
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/trendyLook')
+                    localStorage.setItem('path', '/trendyLook')
                 }}>
                     <ListItemIcon>
                         <WhatshotIcon fontSize="small" />
@@ -136,6 +140,7 @@ export default function AccountMenu() {
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/aiHomeMakeover')
+                    localStorage.setItem('path', '/aiHomeMakeover')
                     // context.setFileUrl('')
                 }}>
                     <ListItemIcon>
@@ -144,7 +149,8 @@ export default function AccountMenu() {
                     AI Home Makeover
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/price')
+                    router.push('/price'),
+                        localStorage.setItem('path', '/price')
                     // context.setFileUrl('')
                 }}>
                     <ListItemIcon>
@@ -169,7 +175,7 @@ export default function AccountMenu() {
                     </MenuItem>
                 </>}
                 {session && <> <Divider />
-                    <MenuItem onClick={() => { signOut('/'), localStorage.clear() }} >
+                    <MenuItem onClick={() => { signOut('/'), router.push('/'), localStorage.clear()}} >
                         <ListItemIcon>
                             <Logout fontSize="small" />
                         </ListItemIcon>

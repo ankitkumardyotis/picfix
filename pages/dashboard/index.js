@@ -215,7 +215,7 @@ function Home() {
                         {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em" }}>
                             <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
                         </div>
-                            <div className='creditUsageContainer' style={{ marginTop: ".5em", borderRadius: '5px', height: '90%' }}>
+                            <div className='creditUsageContainer' style={{borderRadius:'5px'}}>
                                 <MuiTable userHistory={userHistory} createdAt={createdAt} />
                             </div>
                         </>

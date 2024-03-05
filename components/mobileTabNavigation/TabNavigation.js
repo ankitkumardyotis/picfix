@@ -19,13 +19,11 @@ export default function TabNavigation() {
             onChange={handleChange}
             aria-label="icon label tabs example"
             indicatorColor='black'
-            // TabIndicatorProps={{ style: { background: 'black' } }}
-            // textColor='#ececec'
-            TabIndicatorProps={{ style: { background: "teal" } }}
+            TabIndicatorProps={{ style: { background: "teal"} }}
             textColor="primary"
             sx={{
-                position: 'fixed', bottom: 0, width: '100%', backgroundColor: 'white', ".Mui-selected": {
-                    color: `teal`,
+                position: 'fixed', bottom: 0, width: '100%', backgroundColor: 'white',border:'1px solid teal' , ".Mui-selected": {
+                    color: 'teal',
                 },
             }}
         >
