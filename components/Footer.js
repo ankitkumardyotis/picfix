@@ -100,6 +100,11 @@ function Footer() {
                         Terms of Service
                     </Typography>
                 </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/refundpolicy'); }} >
+                    <Typography variant="body2" sx={{ ml: matches ? '' : 3, mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Refund Policy
+                    </Typography>
+                </Box>
             </Grid>
             <Grid item xs={12} md={6} lg={3} >
                 <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 'bold' }}>
