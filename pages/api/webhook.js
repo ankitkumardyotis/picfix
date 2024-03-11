@@ -44,17 +44,17 @@ async function processEvent(event) {
             let creditPoints = 0;
             // This is standard pricing for the time being
             if (subDetail['variant_id'] === 270344) {
-                creditPoints = 300;
+                creditPoints = 150;
             }
 
             // This is Premium pricing for the time being
             if (subDetail['variant_id'] === 270347) {
-                creditPoints = 500;
+                creditPoints = 400;
             }
 
             // This is Popular pricing for the time being
             if (subDetail['variant_id'] === 270349) {
-                creditPoints = 800;
+                creditPoints = 850;
             }
             // when user create checkout successful 
             const createSubscription = await prisma.subscription.create({
