@@ -41,7 +41,7 @@ function Footer() {
                     {
                         matches &&
                         <Typography variant='p'>
-                            &#169; Copyright {currentYear} All Rights Reserved by <Link target='_blank' style={{ textDecoration: 'none' }} href={'https://dyotis.com/'}>Dyotis Technologies.</Link>
+                            &#169; Copyright {currentYear} All Rights Reserved by <Link target='_blank' style={{ textDecoration: 'none' }} href={'https://dyotis.com/'}>Dyotis Analytics PVT. LTD.</Link>
                         </Typography>
                     }
                 </Box>
@@ -124,7 +124,7 @@ function Footer() {
                 <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }} >
 
                     <Typography variant='p'>
-                        &#169; Copyright {currentYear} All Rights Reserved by <Link target='_blank' style={{ textDecoration: 'none' }} href={'https://dyotis.com/'}>Dyotis Technologies.</Link>
+                        &#169; Copyright {currentYear} All Rights Reserved by <Link target='_blank' style={{ textDecoration: 'none' }} href={'https://dyotis.com/'}>Dyotis Analytics PVT. LTD</Link>
                     </Typography>
                 </Grid>
             }

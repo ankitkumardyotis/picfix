@@ -60,7 +60,7 @@ function ExplorePageContainer(props) {
 
                     <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
                         {/* <button>How it works</button> */}
-                        <button onClick={() => { router.push(props.routePath), context.setFileUrl(""), localStorage.setItem(props.routePath)  }}>{props.buttonTwoText} <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
+                        <button onClick={() => { router.push(props.routePath), context.setFileUrl(""), localStorage.setItem("path", props.routePath) }}>{props.buttonTwoText} <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
                     </Box>
                 </Box >
                 {/* Right Box */}
