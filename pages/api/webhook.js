@@ -42,17 +42,17 @@ async function processEvent(event) {
             const subDetail = subscriptionDetails['data']['attributes']
 
             let creditPoints = 0;
-            // This is standard pricing for the time being
+            // This is standard pricing for the time being 270344
             if (subDetail['variant_id'] === 270344) {
                 creditPoints = 150;
             }
 
-            // This is Premium pricing for the time being
+            // This is Popular pricing for the time being 270347
             if (subDetail['variant_id'] === 270347) {
                 creditPoints = 400;
             }
 
-            // This is Popular pricing for the time being
+            // This is Premium pricing for the time being  270349
             if (subDetail['variant_id'] === 270349) {
                 creditPoints = 850;
             }

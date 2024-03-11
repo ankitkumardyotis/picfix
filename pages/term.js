@@ -20,7 +20,7 @@ function Term() {
             </Box> */}
             <Typography variant={matches ? "h3" : "h4"} sx={{ textAlign: 'center' }}><b>Terms and Conditions </b> </Typography> <br /><br />
             <Typography variant="h5" ><b>1. Introduction</b> </Typography><br />
-            <Typography variant="p" >Welcome to PicFix.ai. This website is owned and operated by  <Link target='_blank' href={'https://dyotis.com/'}>Dyotis Technologies.</Link> By visiting our website and accessing the information, resources, services, products, and tools we provide, you understand and agree to accept and adhere to the following terms and conditions.</Typography>
+            <Typography variant="p" >Welcome to PicFix.ai. This website is owned and operated by  <Link target='_blank' href={'https://dyotis.com/'}>Dyotis Analytics PVT. LTD</Link> By visiting our website and accessing the information, resources, services, products, and tools we provide, you understand and agree to accept and adhere to the following terms and conditions.</Typography>
 
             <Typography mt={5} variant="h5" ><b> 2. Service Terms</b> </Typography><br />
             <Typography variant='p' mt={2}>PicFix.ai provides a range of AI-powered photo editing services, including but not limited to photo restoration, image colorization, background removal, trendy look application, and AI home makeover. By using these services, you agree to use them responsibly and not use them for any illegal or unethical purposes.</Typography>
