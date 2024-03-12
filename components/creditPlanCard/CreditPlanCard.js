@@ -209,7 +209,7 @@ function CreditPlanCard() {
 
                                 <span className={styles.price}>
                                     {/* {countryLocation === 'IN' ? <h1>₹{(item.attributes.price / 100) * conversionRate}</h1> : <h1>${item.attributes.price / 100}</h1>} */}
-                                    <h1>${item.attributes.price / 100}</h1>
+                                    <h1>₹{item.attributes.price / 100}</h1>
                                     {/* <p>(Incl. 18% GST)</p> */}
                                 </span>
                             </div>
