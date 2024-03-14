@@ -43,7 +43,7 @@ function RemoveBackground() {
         router.push("/login");
       } else {
         setLoadindSession(false);
-        fetchUserPlan();
+        // fetchUserPlan();
       }
     }, [session, status, router]);
   
