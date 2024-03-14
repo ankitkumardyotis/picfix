@@ -9,42 +9,64 @@ datasource db {
 
 // == Lemon Squeezy data
 
-model Subscription {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  lemonSqueezyId Int      @unique
-  orderId        Int
-  name           String
-  email          String
-  variantName    String
-  productName    String
-  cardBrand      String
-  cardLastFour   Int
-  currency       String
-  price          String
-  creditPoints   Int
-  status         String
-  variantId      Int
-  planId         String   @db.ObjectId
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String   @db.ObjectId
-  createdAt      DateTime
+// model Subscription {
+//   id             String   @id @default(auto()) @map("_id") @db.ObjectId
+//   lemonSqueezyId Int      @unique
+//   orderId        Int
+//   name           String
+//   email          String
+//   variantName    String
+//   productName    String
+//   cardBrand      String
+//   cardLastFour   Int
+//   currency       String
+//   price          String
+//   creditPoints   Int
+//   status         String
+//   variantId      Int
+//   planId         String   @db.ObjectId
+//   user           User     @relation(fields: [userId], references: [id])
+//   userId         String   @db.ObjectId
+//   createdAt      DateTime
 
-  @@index([planId, lemonSqueezyId])
-}
+//   @@index([planId, lemonSqueezyId])
+// }
 
 model Plan {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  lemonSqueezyId Int
-  userId         String    @db.ObjectId
-  variantId      Int
-  name           String? // Need to get from Product
-  variantName    String
-  status         String
-  creditPoints   Int
-  createdAt      DateTime
-  expiredAt      DateTime?
-  renewAt        DateTime?
-  userName       String
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  transactionId         String
+  userId                String    @unique @db.ObjectId
+  userName              String?
+  emailId               String?
+  planName              String
+  creditPoints          Int
+  remainingPoints       Int
+  createdAt             DateTime
+  expiredAt             DateTime?
+  status                String
+  amount                Int
+  currency              String
+  paymentStatus         String
+  merchantId            String?
+  merchantTransactionId String?
+  paymentInstrument     Json
+}
+
+model PaymentHistory {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  transactionId         String   
+  userId                String   @db.ObjectId
+  userName              String
+  emailId               String
+  planName              String
+  creditPoints          Int
+  createdAt             DateTime
+  amount                Int
+  currency              String
+  paymentStatus         String
+  merchantId            String
+  merchantTransactionId String
+  paymentInstrument     Json
 }
 
 model History {
@@ -57,27 +79,27 @@ model History {
 }
 
 model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   image         String?
-  email         String         @unique
-  createdAt     DateTime       @default(now())
-  emailVerified DateTime?      @map("verifiedAt")
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  emailVerified DateTime? @map("verifiedAt")
   sessions      Session[]
   Account       Account[]
-  Subscription  Subscription[]
+  // Subscription  Subscription[]
 
   @@map("users")
 }
 
-model WebhookEvent {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt       DateTime @default(now())
-  eventName       String
-  processed       Boolean  @default(false)
-  body            Json
-  processingError String?
-}
+// model WebhookEvent {
+//   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt       DateTime @default(now())
+//   eventName       String
+//   processed       Boolean  @default(false)
+//   body            Json
+//   processingError String?
+// }
 
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId

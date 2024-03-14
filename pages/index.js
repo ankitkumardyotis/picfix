@@ -1,5 +1,5 @@
 
-import CreditPlanCard from "@/components/creditPlanCard/CreditPlanCard";
+import CreditPlanCard from "@/components/creditPlanCard-old/CreditPlanCard";
 import { useSession, signOut } from "next-auth/react"
 import { redirect } from "next/navigation";
 import React, { useState } from "react";

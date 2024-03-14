@@ -1,0 +1,107 @@
+.cardTitle {
+  display: block;
+  text-align: center;
+}
+.creditCardPlan {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  padding-bottom: 3em;
+  min-height:125vh;
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, .5) 0%,
+    rgba(242, 212, 159, .5) 100%
+  );
+  /* background-color: rgba(100, 214, 207, .8); */
+  /* background-color:      rgba(242, 212, 159, .5); */
+}
+.cardTitle > span {
+  /* background-color: rgba(100, 214, 207, 1); */
+  /* background-color:      rgba(242, 212, 159, 1); */
+  background-color: #000;
+  font-weight: 400;
+  font-size: 2em;
+  border: none;
+  color: #fff;
+  margin-left: 20px;
+  padding: 7px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.cardContainer {
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 1rem 3rem;
+}
+.card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    59deg,
+    rgba(100, 214, 207, 1) 0%,
+    rgba(242, 212, 159, 1) 100%
+    );
+    background-color: rgba(100, 214, 207, 1);
+    background-color: rgba(242, 212, 159, 1);
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+  }
+.price > h1 {
+  display: inline;
+  margin-left: 10px;
+}
+.price > p {
+  display: inline;
+  margin-left: 10px;
+  color: grey;
+}
+.card > ul > li {
+  list-style: none;
+  /* background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDE2IDE2Ij48Y2lyY2xlIGN4PSI4IiBjeT0iOCIgcj0iOCIgZmlsbD0iI0ZCQzM5MiIgZmlsbC1vcGFjaXR5PSIuMyIvPjxwYXRoIGZpbGw9IiNGQkMzOTIiIGQ9Ik0xMS41NzUgNi4zMDVhLjQ1OS40NTkgMCAwIDAtLjY1IDBMNy41MSA5LjcyNGwtMS40MzUtMS40NGEuNDY4LjQ2OCAwIDAgMC0uNjUuNjc0bDEuNzYgMS43NmEuNDYuNDYgMCAwIDAgLjY1IDBsMy43NC0zLjc0YS40NTcuNDU3IDAgMCAwIDAtLjY3M1oiLz48L3N2Zz4=)
+  no-repeat 0 0; */
+  background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iOSIgY3k9IjkiIHI9IjkiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuNSIvPgo8cGF0aCBkPSJNMTIuNjQ3MyA2LjcxNzcxQzEyLjU5OTQgNi42NjkzOCAxMi41NDIzIDYuNjMxMDIgMTIuNDc5NSA2LjYwNDg0QzEyLjQxNjcgNi41Nzg2NiAxMi4zNDkzIDYuNTY1MTkgMTIuMjgxMiA2LjU2NTE5QzEyLjIxMzEgNi41NjUxOSAxMi4xNDU3IDYuNTc4NjYgMTIuMDgyOSA2LjYwNDg0QzEyLjAyMDEgNi42MzEwMiAxMS45NjMgNi42NjkzOCAxMS45MTUxIDYuNzE3NzFMOC4wNzM3IDEwLjU2NDNMNi40NTk3OSA4Ljk0NTIxQzYuNDEwMDMgOC44OTcxMyA2LjM1MTI4IDguODU5MzMgNi4yODY5IDguODMzOTZDNi4yMjI1MiA4LjgwODU5IDYuMTUzNzcgOC43OTYxNCA2LjA4NDU5IDguNzk3MzRDNi4wMTU0IDguNzk4NTQgNS45NDcxMyA4LjgxMzM1IDUuODgzNjYgOC44NDA5M0M1LjgyMDIgOC44Njg1MiA1Ljc2Mjc5IDguOTA4MzMgNS43MTQ3MiA4Ljk1ODFDNS42NjY2NCA5LjAwNzg3IDUuNjI4ODQgOS4wNjY2MiA1LjYwMzQ3IDkuMTMxQzUuNTc4MSA5LjE5NTM3IDUuNTY1NjUgOS4yNjQxMiA1LjU2Njg1IDkuMzMzMzFDNS41NjgwNSA5LjQwMjQ5IDUuNTgyODYgOS40NzA3NyA1LjYxMDQ0IDkuNTM0MjNDNS42MzgwMyA5LjU5NzY5IDUuNjc3ODQgOS42NTUxIDUuNzI3NjEgOS43MDMxOEw3LjcwNzYxIDExLjY4MzJDNy43NTU1NCAxMS43MzE1IDcuODEyNTcgMTEuNzY5OSA3Ljg3NTQgMTEuNzk2QzcuOTM4MjQgMTEuODIyMiA4LjAwNTYzIDExLjgzNTcgOC4wNzM3IDExLjgzNTdDOC4xNDE3NyAxMS44MzU3IDguMjA5MTcgMTEuODIyMiA4LjI3MiAxMS43OTZDOC4zMzQ4MyAxMS43Njk5IDguMzkxODYgMTEuNzMxNSA4LjQzOTggMTEuNjgzMkwxMi42NDczIDcuNDc1NjhDMTIuNjk5NiA3LjQyNzM5IDEyLjc0MTQgNy4zNjg3OSAxMi43NyA3LjMwMzU2QzEyLjc5ODUgNy4yMzgzNCAxMi44MTMzIDcuMTY3OSAxMi44MTMzIDcuMDk2NjlDMTIuODEzMyA3LjAyNTQ4IDEyLjc5ODUgNi45NTUwNSAxMi43NyA2Ljg4OTgyQzEyLjc0MTQgNi44MjQ1OSAxMi42OTk2IDYuNzY1OTkgMTIuNjQ3MyA2LjcxNzcxWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==)
+  no-repeat 0 0;
+  /* color: hsla(0, 0%, 100%, 0.94); */
+  color: #000;
+  font-family: sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 17px;
+  list-style: none;
+  margin-bottom: 20px;
+  padding-left: 30px;
+}
+
+.ribbon {
+  position: absolute;
+  top: -135px; /* Adjust top value for spacing */
+  right: -60px; /* Adjust right value for spacing */
+  background-color: black;
+  color: teal;
+  font-weight: bold;
+  /* padding: 8px 16px; */
+
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  padding-bottom: 1.5em;
+  text-align: center;
+  /* border-top-left-radius: 10px;
+  border-bottom-right-radius: 20px; */
+  transform: translateY(50%) rotate(45deg);
+  z-index: 1;
+}
