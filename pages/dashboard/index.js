@@ -84,8 +84,8 @@ function Home() {
 
     return (
         <>
-            {session && matches &&
-                <div style={{ flex: 1, marginTop: '3em', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', fontFamily: 'sans-serif', minHeight: '100vh' }}>
+            {session && matches ?
+                (<div style={{ flex: 1, marginTop: '3em', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', fontFamily: 'sans-serif', minHeight: '100vh' }}>
                     <div style={{ flex: 1, justifyContent: 'space-between', display: 'flex', flexDirection: 'column', background: 'linear-gradient(59deg,#64d6cf,#f2d49f)' }}>
                         <div style={{ flex: 2, padding: '1em', gap: '1em', display: 'flex', flexDirection: 'column' }}>
                             {/* <div className="logo" style={{ borderRadius: '10px', height: '50px', textAlign: 'center' }}>
@@ -144,7 +144,7 @@ function Home() {
                             <MuiTable userHistory={userHistory} createdAt={createdAt} />
                         </div>} */}
 
-                        <div style={{  backgroundColor: 'white'}}>
+                        <div style={{ backgroundColor: 'white' }}>
                             <div className="subscribedUser" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                                 <h1 style={{ fontSize: '2em', padding: '.1em' }}>Welcome to PicFix AI</h1>
                                 <p style={{ fontSize: '1.5em', padding: '1em', color: 'gray' }}> Try our AI models to enhance your images
@@ -161,54 +161,63 @@ function Home() {
                     {/* {session && !userPlan &&  */}
                     {/* when user is not subsribed */}
                     {/* } */}
-                </div>
-            }
+                </div>)
 
-            {
-                !matches && session && userPlan &&
-                <>
-                    <div style={{ padding: " .9rem 1.5rem", minHeight: '100vh', marginTop: '3.3em', fontFamily: 'sans-serif', minHeight: '100vh' }}>
+                :
+                (<div style={{ height: '100vh' }}>
+                    <div style={{ padding: " .9rem 1.5rem", minHeight: '100vh', marginTop: '3.3em', fontFamily: 'sans-serif', }}>
                         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1em' }}>
                             <div style={{ flex: 1, color: 'black', height: '25%', display: 'flex', flexDirection: 'row', gap: '1em' }}>
                                 <div>
                                     <Image width={70} height={70} style={{ borderRadius: "50%", border: "1px solid teal" }} src={session?.user.image ? session?.user.image : userPic} />
                                 </div>
-                                <div>
+                                <div style={{paddingBottom:'.6em'}}>
                                     <h3 style={{ fontSize: '1.7em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
                                     <p>Welcome back!</p>
                                 </div>
                             </div>
-                            <div className='creditUsageContainer' style={{ flex: 1, color: 'black', height: '25%', backgroundColor: 'white', borderRadius: '5px', padding: '1rem 1rem' }}>
+                            <div style={{ backgroundColor: 'white' }}>
+                                <div className="subscribedUser" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                                    <h1 style={{ fontSize: '2em', paddingBottom:'.6em' }}>Welcome to PicFix AI</h1>
+                                    <p style={{ fontSize: '1.5em', color: 'gray',textAlign:'center' }}> Try our AI models to enhance your images
+                                    </p>
+                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '1em', border: 'none' }}>
+                                        <button style={{ padding: '1em', borderRadius: '10px', backgroundColor: 'teal', color: 'white', fontSize: '1.2em', cursor: 'pointer' }} onClick={() => { router.push('/#All-AI-Models') }}>Try Now</button>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            {/* <div className='creditUsageContainer' style={{ flex: 1, color: 'black', height: '25%', backgroundColor: 'white', borderRadius: '5px', padding: '1rem 1rem' }}>
                                 <div>
                                     <span>
-                                        {/* <h3 style={{ fontSize: '1em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
-                                    <p>Welcome back!</p> */}
+                                
                                         <h3>Total Credits</h3>
                                     </span>
                                     <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.creditPoints}</p>
                                     <p>Renews At:- {userPlan && renewAt}</p>
                                 </div>
-                            </div>
+                            </div> */}
                             {/* <div style={{ flex: 1, height: '30%', backgroundColor: '#ececec',borderRadius:'10px'  }}>
 
                             </div> */}
                         </div>
-                        {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em" }}>
+                        {/* {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em" }}>
                             <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
                         </div>
                             <div className='creditUsageContainer' style={{ borderRadius: '5px' }}>
                                 <MuiTable userHistory={userHistory} createdAt={createdAt} />
                             </div>
                         </>
-                        }
+                        } */}
                     </div>
                     <TabNavigation />
-                </>
+                </div>)
             }
 
-            {!session && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {/* {!session && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
-            </div>}
+            </div>} */}
             {/* {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
             </div>} */}

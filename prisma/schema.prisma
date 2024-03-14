@@ -34,7 +34,6 @@ datasource db {
 
 model Plan {
   id                    String    @id @default(auto()) @map("_id") @db.ObjectId
-  transactionId         String
   userId                String    @unique @db.ObjectId
   userName              String?
   emailId               String?
@@ -43,12 +42,6 @@ model Plan {
   remainingPoints       Int
   createdAt             DateTime
   expiredAt             DateTime?
-  status                String
-  currency              String
-  paymentStatus         String
-  merchantId            String?
-  merchantTransactionId String?
-  paymentInstrument     Json
 }
 
 model PaymentHistory {

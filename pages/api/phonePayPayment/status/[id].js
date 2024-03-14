@@ -101,7 +101,6 @@ export default async function POST(req, res) {
           userId: userData.id // Assuming userId is unique and identifies the user uniquely
         },
         update: {
-          transactionId: response.data.data.transactionId,
           userName: userData.name,
           emailId: userData.email,
           planName: "Free",  //to be added with actual plan
@@ -112,16 +111,7 @@ export default async function POST(req, res) {
             increment: 200 // Increment the existing remainingPoints by 200, change this value accordingly
           },
           createdAt: currentDate,
-          expiredAt: expiryISOString,
-          status: response.data.code,
-          amount: {
-            increment: response.data.data.amount / 100 // Increment the existing amount by the new amount
-          },
-          currency: 'INR',//to be added with actual plan         
-          paymentStatus: response.data.code,
-          merchantId: response.data.data.merchantId,
-          merchantTransactionId: response.data.data.merchantTransactionId,
-          paymentInstrument: response.data.data.paymentInstrument,
+          expiredAt: expiryISOString,        
         },
         create: {
           transactionId: response.data.data.transactionId,
