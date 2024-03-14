@@ -59,24 +59,24 @@ function ReplaceBackgroundModel() {
         } else if (!session) {
             router.push("/login");
         } else {
-            const fetchUserPlan = async () => {
-                try {
-                    const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch plan data');
-                    }
-                    const data = await response.json();
-                    setUserPlan(data.plan)
-                } catch (error) {
-                    console.error('Error fetching plan data:', error);
-                }
-            };
+            // const fetchUserPlan = async () => {
+            //     try {
+            //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+            //         if (!response.ok) {
+            //             throw new Error('Failed to fetch plan data');
+            //         }
+            //         const data = await response.json();
+            //         setUserPlan(data.plan)
+            //     } catch (error) {
+            //         console.error('Error fetching plan data:', error);
+            //     }
+            // };
 
-            fetchUserPlan();
-            console.log("plan", userPlan)
-            if (!userPlan) {
-                router.push("/price");
-            }
+            // fetchUserPlan();
+            // console.log("plan", userPlan)
+            // if (!userPlan) {
+            //     router.push("/price");
+            // }
 
             setLoadindSession(false);
         }

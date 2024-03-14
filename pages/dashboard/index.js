@@ -104,7 +104,7 @@ function Home() {
                                 <h4 style={{ flex: 3 }}>Models</h4>
                             </div>
                         </div>
-                        {userPlan?.variantName !== 'Premium' && <div className="premiumCardContainer" style={{ flex: 1.5, padding: '1em' }}>
+                        {/* {userPlan?.variantName !== 'Premium' && <div className="premiumCardContainer" style={{ flex: 1.5, padding: '1em' }}>
                             <div style={{ border: '1px solid green', backgroundColor: 'teal', height: '80%', borderRadius: '20px', padding: '1em', textAlign: 'center', position: 'relative' }}>
                                 <div className="description" style={{ color: 'white' }}>
                                     <h4>Use our Premium feature now!</h4>
@@ -117,7 +117,7 @@ function Home() {
                                 </div>
                             </div>
                         </div>
-                        }
+                        } */}
                     </div>
                     {session && <div style={{ flex: 5, backgroundColor: 'white' }}>
                         <div className="welcomeUser" style={{ paddingTop: '1em', paddingLeft: '1em' }}>

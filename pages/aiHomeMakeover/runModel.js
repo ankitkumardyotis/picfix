@@ -64,21 +64,21 @@ function DesignRoom() {
     const [userPlan, setUserPlan] = useState('');
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
-    const fetchUserPlan = async () => {
-      try {
-        const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch plan data');
-        }
-        const data = await response.json();
-        // console.log("data", data.plan)
-        // return data.plan;
-        setUserPlan(data.plan)
-        setUserPlanStatus(true)
-      } catch (error) {
-        console.error('Error fetching plan data:', error);
-      }
-    };
+    // const fetchUserPlan = async () => {
+    //   try {
+    //     const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch plan data');
+    //     }
+    //     const data = await response.json();
+    //     // console.log("data", data.plan)
+    //     // return data.plan;
+    //     setUserPlan(data.plan)
+    //     setUserPlanStatus(true)
+    //   } catch (error) {
+    //     console.error('Error fetching plan data:', error);
+    //   }
+    // };
   
     useEffect(() => {
       if (status === "loading") {
@@ -87,19 +87,19 @@ function DesignRoom() {
         router.push("/login");
       } else {
         setLoadindSession(false);
-        fetchUserPlan();
+        // fetchUserPlan();
       }
     }, [session, status, router]);
   
   
   
   
-    useEffect(() => {
-      if (userPlanStatus && userPlan === null) {
-        console.log("fetchedPlan in", userPlan)
-        router.push("/price");
-      }
-    }, [userPlan, router]);
+    // useEffect(() => {
+    //   if (userPlanStatus && userPlan === null) {
+    //     console.log("fetchedPlan in", userPlan)
+    //     router.push("/price");
+    //   }
+    // }, [userPlan, router]);
     const uploaderOptions = {
         maxFileCount: 1,
         mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
