@@ -148,7 +148,7 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     AI Home Makeover
                 </MenuItem>
-                <MenuItem onClick={() => {
+                {/* <MenuItem onClick={() => {
                     router.push('/price'),
                         localStorage.setItem('path', '/price')
                     // context.setFileUrl('')
@@ -157,7 +157,7 @@ export default function AccountMenu() {
                         <PriceCheck fontSize="small" />
                     </ListItemIcon>
                     Pricing
-                </MenuItem>
+                </MenuItem> */}
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')
                 }}>
