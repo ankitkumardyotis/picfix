@@ -10,13 +10,13 @@ export default async function POST(req, res) {
   const decryptSession = decryptSessionId(sessionId)
   // check if session is valid
 
-  // console.log("userData", userData)
   const userData = await prisma.User.findUnique({
     where: {
       id: decryptSession
     }
   })
-
+  console.log("userData in status id", userData)
+  
   if (!userData) {
     res.status(401).json({ message: "You are not Authorised" })
     return;

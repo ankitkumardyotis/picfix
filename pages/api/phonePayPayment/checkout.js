@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         amount: amount * 100,
         redirectUrl: `${process.env.NEXTAUTH_URL}/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
         redirectMode: "POST",
-        callbackUrl: `${process.env.NEXTAUTH_URL}/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
+        // callbackUrl: `${process.env.NEXTAUTH_URL}/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
         paymentInstrument: {
             type: "PAY_PAGE",
         },
