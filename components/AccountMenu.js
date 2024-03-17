@@ -113,7 +113,7 @@ export default function AccountMenu() {
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/imageColorization')
-                localStorage.setItem('path', '/imageColorization')
+                    localStorage.setItem('path', '/imageColorization')
                 }}>
                     <ListItemIcon>
                         <ColorizeIcon fontSize="small" />
@@ -148,7 +148,7 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     AI Home Makeover
                 </MenuItem>
-                {/* <MenuItem onClick={() => {
+                <MenuItem onClick={() => {
                     router.push('/price'),
                         localStorage.setItem('path', '/price')
                     // context.setFileUrl('')
@@ -157,7 +157,7 @@ export default function AccountMenu() {
                         <PriceCheck fontSize="small" />
                     </ListItemIcon>
                     Pricing
-                </MenuItem> */}
+                </MenuItem>
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')
                 }}>
@@ -175,7 +175,7 @@ export default function AccountMenu() {
                     </MenuItem>
                 </>}
                 {session && <> <Divider />
-                    <MenuItem onClick={() => { signOut('/'), router.push('/'), localStorage.clear()}} >
+                    <MenuItem onClick={() => { signOut('/'), router.push('/'), localStorage.clear() }} >
                         <ListItemIcon>
                             <Logout fontSize="small" />
                         </ListItemIcon>

@@ -12,17 +12,17 @@ export default async function handler(req, res) {
         res.status(401).json({ message: "You are not Authorised" })
         return;
     }
-
     const encryptSession = encryptSessionId(session.user.id)
-    const transactionId = "MT-" + uuidv4().toString(36).slice(-6);
+    const transactionId = "DT-" + uuidv4().toString(36).slice(-22);
+    console.log("Transaction Id", transactionId)
     const payload = {
         merchantId: process.env.MERCHANT_ID,
         merchantTransactionId: transactionId,
-        merchantUserId: "MUID123",
+        merchantUserId: session.user.id,
         amount: amount * 100,
-        redirectUrl: `http://localhost:3000/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
+        redirectUrl: `${process.env.NEXTAUTH_URL}/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
         redirectMode: "POST",
-        callbackUrl: `http://localhost:3000/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
+        callbackUrl: `${process.env.NEXTAUTH_URL}/api/phonePayPayment/status/${transactionId}/?session=${encryptSession}`,
         paymentInstrument: {
             type: "PAY_PAGE",
         },
@@ -33,7 +33,10 @@ export default async function handler(req, res) {
     const fullUrl = dataBase64 + "/pg/v1/pay" + process.env.SALT_KEY;
     const dataSha256 = sha256(fullUrl)
     const checksum = dataSha256 + "###" + process.env.SALT_INDEX
-    const response = await axios.post('https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay',
+    console.log("checksum", checksum)
+    console.log("dataBase64", dataBase64)
+
+    const response = await axios.post(process.env.PHONEPAY_CHECKOUT_URL,
         {
             request: dataBase64,
         },
@@ -45,9 +48,9 @@ export default async function handler(req, res) {
             }
         }
     ).catch((error) => {
-        console.log("error", error)
+        console.log("Error in Checkout", error.message)
         res.status(500).json({ error: error.message })
     })
-    console.log("response", response.data)
+    console.log("response in checkout", response.data)
     res.status(200).json({ url: response.data.data.instrumentResponse.redirectInfo.url, transactionId })
 }

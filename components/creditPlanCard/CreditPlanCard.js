@@ -27,7 +27,7 @@ function CreditPlanCard() {
                     const inrPrice = priceStructure.filter((item) => item.country === "IN")
                     setPriceDetails(inrPrice);
                 } else {
-                    const usPrice = priceStructure.filter((item) => item.country === "US")
+                    const usPrice = priceStructure.filter((item) => item.country === "Others Country")
                     setPriceDetails(usPrice);
                 }
             })
@@ -53,9 +53,12 @@ function CreditPlanCard() {
                 console.error("There was a problem with the fetch operation:", error);
             });
     };
-
+    console.log("price=====>", priceDetails)
     useEffect(() => {
-        fetchUserLocation();
+        // fetchUserLocation();
+        // Temporarily setting the price details for INR
+        const inrPrice = priceStructure.filter((item) => item.country === "IN")
+        setPriceDetails(inrPrice);
     }, []);
 
     const successPaymentHandler = async (price) => {
@@ -72,7 +75,6 @@ function CreditPlanCard() {
                     },
                     body: JSON.stringify({ amount: price }),
                 });
-                console.log("price", price)
                 const { url } = await response.json();
                 console.log("url", url)
                 router.push(url);
@@ -104,7 +106,7 @@ function CreditPlanCard() {
                     priceDetails.map((item, idx) => {
                         return (
                             <div
-                            key={idx}
+                                key={idx}
                                 className={styles.card}
                                 style={{
                                     border: "1px solid teal",

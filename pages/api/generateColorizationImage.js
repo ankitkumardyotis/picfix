@@ -14,24 +14,23 @@ export default async function handler(req, res) {
     return;
   }
 
-  // let planData = await prisma.plan.findMany({
-  //   where: {
-  //     userId: session.user.id,
-  //     status: "active"
-  //   }
-  // }).catch(err => {
-  //   console.error('Error creating Plan:', err);
-  // });
+  let planData = await prisma.plan.findMany({
+    where: {
+      userId: session.user.id,
+    }
+  }).catch(err => {
+    console.error('Error creating Plan:', err);
+  });
 
-  // if (planData.length === 0) {
-  //   res.status(401).json("Please Subscribe to a plan to use this feature.");
-  //   return;
-  // }
+  if (planData.length === 0) {
+    res.status(401).json("Please Subscribe to a plan to use this feature.");
+    return;
+  }
 
-  // if (planData[0].creditPoints < 5) {
-  //   res.status(401).json("You don't have enough credit points to use this feature.");
-  //   return;
-  // }
+  if (planData[0].remainingPoints < 5) {
+    res.status(401).json("You don't have enough credit points to use this feature.");
+    return;
+  }
 
 
   try {
@@ -70,32 +69,32 @@ export default async function handler(req, res) {
       if (jsonFinalResponse.status === "succeeded") {
         restoredImage = jsonFinalResponse.output;
 
-
+        // removed because already creadit deducted in generate photo api that is (GFPGAN)
         // const saveCreditPoint = await prisma.plan.update({
         //   where: {
         //     id: planData[0].id, // Assuming you only have one plan per user
         //     userId: session.user.id
         //   },
         //   data: {
-        //     creditPoints: {
-        //       decrement: 5
+        //     remainingPoints: {
+        //       decrement: 1
         //     }
         //   },
         // }).catch(err => {
         //   console.error('Error creating Plan:', err);
         // })
 
-        // const createPlan = await prisma.history.create({
-        //   data: {
-        //     userId: session.user.id,
-        //     model: jsonFinalResponse.model,
-        //     status: jsonFinalResponse.status,
-        //     createdAt: jsonFinalResponse.created_at,
-        //     replicateId: jsonFinalResponse.id
-        //   }
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // });
+        const createPlan = await prisma.history.create({
+          data: {
+            userId: session.user.id,
+            model: jsonFinalResponse.model,
+            status: jsonFinalResponse.status,
+            createdAt: jsonFinalResponse.created_at,
+            replicateId: jsonFinalResponse.id
+          }
+        }).catch(err => {
+          console.error('Error creating Plan:', err);
+        });
       } else if (jsonFinalResponse.status === "failed") {
         break;
       } else {

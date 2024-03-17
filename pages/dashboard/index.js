@@ -32,37 +32,38 @@ function Home() {
         } else if (!session) {
             router.push("/login");
         } else {
-            // const fetchUserPlan = async () => {
-            //     try {
-            //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            //         if (!response.ok) {
-            //             throw new Error('Failed to fetch plan data');
-            //         }
-            //         const data = await response.json();
-            //         console.log("data", data.plan)
-            //         if (data.plan === null) {
-            //             router.push('/price');
-            //         } else {
-            //             setUserPlan(data.plan);
-            //         }
-            //     } catch (error) {
-            //         console.error('Error fetching plan data:', error);
-            //     }
-            // };
-            // const fetchUserHistory = async () => {
-            //     try {
-            //         const response = await fetch(`/api/getHistory?userId=${session?.user.id}`);
-            //         if (!response.ok) {
-            //             throw new Error('Failed to fetch plan data');
-            //         }
-            //         const data = await response.json();
-            //         setUserHistory(data.history)
-            //     } catch (error) {
-            //         console.error('Error fetching plan data:', error);
-            //     }
-            // };
-            // fetchUserPlan()
-            // fetchUserHistory()
+            setLoadindSession(true);
+            const fetchUserPlan = async () => {
+                try {
+                    const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch plan data');
+                    }
+                    const data = await response.json();
+                    console.log("data", data.plan)
+                    if (data.plan === null) {
+                        router.push('/price');
+                    } else {
+                        setUserPlan(data.plan);
+                    }
+                } catch (error) {
+                    console.error('Error fetching plan data:', error);
+                }
+            };
+            const fetchUserHistory = async () => {
+                try {
+                    const response = await fetch(`/api/getHistory?userId=${session?.user.id}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch plan data');
+                    }
+                    const data = await response.json();
+                    setUserHistory(data.history)
+                } catch (error) {
+                    console.error('Error fetching plan data:', error);
+                }
+            };
+            fetchUserPlan()
+            fetchUserHistory()
             setLoadindSession(false);
         }
     }, [session, status, router]);
@@ -72,14 +73,14 @@ function Home() {
     }, [userHistory])
 
 
-    // let renewAt;
-    // let createdAt;
-    // if (userPlan) {
-    //     renewAt = formattedDate(userPlan.renewAt)
-    //     createdAt = formattedDate(userPlan.createdAt)
-    // }
+    let renewAt;
+    let createdAt;
+    if (userPlan) {
+        renewAt = formattedDate(userPlan.expiredAt)
+        createdAt = formattedDate(userPlan.createdAt)
+    }
 
-    // console.log("userPlan", userPlan)
+    console.log("userPlan", userPlan)
 
 
     return (
@@ -124,27 +125,27 @@ function Home() {
                             <h3 style={{ fontSize: '2em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
                             <p>Welcome back!</p>
                         </div>
-                        {/* <div className="creditUsage" style={{ display: 'flex', flexDirection: 'row' }} >
+                        <div className="creditUsage" style={{ display: 'flex', flexDirection: 'row' }} >
                             <div className="creditUsageContainer" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                                 <h3 style={{ fontSize: '1.5em', }}>Credits Remaining</h3>
-                                <p style={{ fontSize: '3em' }}>{userPlan?.creditPoints}</p>
+                                <p style={{ fontSize: '3em' }}>{userPlan?.remainingPoints}</p>
 
                                 <p>Renews At:- {userPlan && renewAt}</p>
                             </div>
-                            <div className="creditUsageContainer " style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
+                            {/* <div className="creditUsageContainer " style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                                 <h3 style={{ fontSize: '1.5em', }}>Subscription Details</h3>
                                 <p style={{ fontSize: '1.5em' }}>You are using {userPlan?.variantName}</p>
 
-                            </div>
+                            </div> */}
                             <div className="creditUsageContainers" style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                             </div>
 
                         </div>
                         {userHistory.length > 0 && <div className="usageHistory" style={{ paddingLeft: '1em', paddingRight: '1em' }}>
                             <MuiTable userHistory={userHistory} createdAt={createdAt} />
-                        </div>} */}
+                        </div>}
 
-                        <div style={{ backgroundColor: 'white' }}>
+                        {!userPlan && <div style={{ backgroundColor: 'white' }}>
                             <div className="subscribedUser" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                                 <h1 style={{ fontSize: '2em', padding: '.1em' }}>Welcome to PicFix AI</h1>
                                 <p style={{ fontSize: '1.5em', padding: '1em', color: 'gray' }}> Try our AI models to enhance your images
@@ -156,7 +157,7 @@ function Home() {
 
 
                         </div>
-
+                        }
                     </div>}
                     {/* {session && !userPlan &&  */}
                     {/* when user is not subsribed */}
@@ -171,15 +172,15 @@ function Home() {
                                 <div>
                                     <Image width={70} height={70} style={{ borderRadius: "50%", border: "1px solid teal" }} src={session?.user.image ? session?.user.image : userPic} />
                                 </div>
-                                <div style={{paddingBottom:'.6em'}}>
+                                <div style={{ paddingBottom: '.6em' }}>
                                     <h3 style={{ fontSize: '1.7em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
                                     <p>Welcome back!</p>
                                 </div>
                             </div>
-                            <div style={{ backgroundColor: 'white' }}>
+                            {!userPlan && <div style={{ backgroundColor: 'white' }}>
                                 <div className="subscribedUser" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                                    <h1 style={{ fontSize: '2em', paddingBottom:'.6em' }}>Welcome to PicFix AI</h1>
-                                    <p style={{ fontSize: '1.5em', color: 'gray',textAlign:'center' }}> Try our AI models to enhance your images
+                                    <h1 style={{ fontSize: '2em', paddingBottom: '.6em' }}>Welcome to PicFix AI</h1>
+                                    <p style={{ fontSize: '1.5em', color: 'gray', textAlign: 'center' }}> Try our AI models to enhance your images
                                     </p>
                                     <div style={{ display: 'flex', justifyContent: 'center', padding: '1em', border: 'none' }}>
                                         <button style={{ padding: '1em', borderRadius: '10px', backgroundColor: 'teal', color: 'white', fontSize: '1.2em', cursor: 'pointer' }} onClick={() => { router.push('/#All-AI-Models') }}>Try Now</button>
@@ -187,37 +188,37 @@ function Home() {
                                 </div>
 
 
-                            </div>
-                            {/* <div className='creditUsageContainer' style={{ flex: 1, color: 'black', height: '25%', backgroundColor: 'white', borderRadius: '5px', padding: '1rem 1rem' }}>
+                            </div>}
+                            <div className='creditUsageContainer' style={{ flex: 1, color: 'black', height: '25%', backgroundColor: 'white', borderRadius: '5px', padding: '1rem 1rem' }}>
                                 <div>
                                     <span>
-                                
+
                                         <h3>Total Credits</h3>
                                     </span>
                                     <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.creditPoints}</p>
                                     <p>Renews At:- {userPlan && renewAt}</p>
                                 </div>
-                            </div> */}
+                            </div>
                             {/* <div style={{ flex: 1, height: '30%', backgroundColor: '#ececec',borderRadius:'10px'  }}>
 
                             </div> */}
                         </div>
-                        {/* {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em" }}>
+                        {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em", marginBottom: '1em' }}>
                             <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
                         </div>
                             <div className='creditUsageContainer' style={{ borderRadius: '5px' }}>
                                 <MuiTable userHistory={userHistory} createdAt={createdAt} />
                             </div>
                         </>
-                        } */}
+                        }
                     </div>
                     <TabNavigation />
                 </div>)
             }
 
-            {/* {!session && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            { !userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
-            </div>} */}
+            </div>}
             {/* {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
             </div>} */}

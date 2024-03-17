@@ -9,12 +9,15 @@ import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { useContext } from 'react';
 import AppContext from './AppContext';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 
 function ExplorePageContainer(props) {
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
     const router = useRouter();
     const context = useContext(AppContext);
+    const { data: session } = useSession();
+
 
 
 
@@ -33,6 +36,16 @@ function ExplorePageContainer(props) {
     const path = props.routePath;
 
     console.log("path", path)
+    const handleRunModelButton = () => {
+        console.log("session", session)
+        if (!session) {
+            router.push("/login")
+            context.setFileUrl("")
+            localStorage.setItem("path", path)
+            return
+        }
+        router.push(path)
+    }
 
 
 
@@ -60,7 +73,7 @@ function ExplorePageContainer(props) {
 
                     <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
                         {/* <button>How it works</button> */}
-                        <button onClick={() => { router.push(props.routePath), context.setFileUrl(""), localStorage.setItem("path", props.routePath) }}>{props.buttonTwoText} <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
+                        <button onClick={handleRunModelButton}>{props.buttonTwoText} <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
                     </Box>
                 </Box >
                 {/* Right Box */}

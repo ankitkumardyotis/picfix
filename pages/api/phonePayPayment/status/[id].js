@@ -2,6 +2,7 @@ import sha256 from "crypto-js/sha256";
 import axios from "axios";
 import { decryptSessionId } from "@/utils/encryptSessionAlgorithm";
 import prisma from '@/lib/prisma';
+import { priceStructure } from "@/constant/Constant";
 
 export default async function POST(req, res) {
   const { id } = req.query;
@@ -30,7 +31,7 @@ export default async function POST(req, res) {
 
   const options = {
     method: "GET",
-    url: `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${merchantId}/${id}`,
+    url: `${process.env.PHONEPAY_STATUS_URL}/${merchantId}/${id}`,
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -75,19 +76,24 @@ export default async function POST(req, res) {
       console.log("Current Date:", currentDate.toISOString());
       console.log("Expiry Date:", expiryISOString);
 
-      // Add Payment details to the database
+      // Create a plan details object
+      const currency = "INR";
+      const [planDetails] = priceStructure.filter((item) => item.currency === currency && item.price == (response.data.data.amount / 100))
 
+      // Add Payment details to the database
+      console.log("userData=====>", userData)
+      console.log("planDetails=====>", planDetails)
       const createPayment = await prisma.PaymentHistory.create({
         data: {
           transactionId: response.data.data.transactionId,
           userId: userData.id,
           userName: userData.name,
           emailId: userData.email,
-          planName: "Free",  //to be added with actual plan
-          creditPoints: 200, //to be added with actual plan
+          planName: planDetails.name,  //to be added with actual plan
+          creditPoints: parseInt(planDetails.creditPoints), //to be added with actual plan
           createdAt: currentDate,
           amount: response.data.data.amount / 100,
-          currency: 'INR',//to be added with actual plan         
+          currency: planDetails.currency,//to be added with actual plan         
           paymentStatus: response.data.code,
           merchantId: response.data.data.merchantId,
           merchantTransactionId: response.data.data.merchantTransactionId,
@@ -103,33 +109,25 @@ export default async function POST(req, res) {
         update: {
           userName: userData.name,
           emailId: userData.email,
-          planName: "Free",  //to be added with actual plan
+          planName: planDetails.name,  //to be added with actual plan
           creditPoints: {
-            increment: 200 // Increment the existing creditPoints by 200, change this value accordingly
+            increment: parseInt(planDetails.creditPoints) // Increment the existing creditPoints by 200, change this value accordingly
           },
           remainingPoints: {
-            increment: 200 // Increment the existing remainingPoints by 200, change this value accordingly
+            increment: parseInt(planDetails.creditPoints) // Increment the existing remainingPoints by 200, change this value accordingly
           },
           createdAt: currentDate,
-          expiredAt: expiryISOString,        
+          expiredAt: expiryISOString,
         },
         create: {
-          transactionId: response.data.data.transactionId,
           userId: userData.id,
           userName: userData.name,
           emailId: userData.email,
-          planName: "Free",  //to be added with actual plan
-          creditPoints: 200, //to be added with actual plan        
-          remainingPoints: 100, //to be added with actual plan    
+          planName: planDetails.name,  //to be added with actual plan
+          creditPoints: parseInt(planDetails.creditPoints), //to be added with actual plan        
+          remainingPoints: parseInt(planDetails.creditPoints), //to be added with actual plan    
           createdAt: currentDate,
           expiredAt: expiryISOString,
-          status: response.data.code,
-          amount: response.data.data.amount / 100,
-          currency: 'INR',//to be added with actual plan         
-          paymentStatus: response.data.code,
-          merchantId: response.data.data.merchantId,
-          merchantTransactionId: response.data.data.merchantTransactionId,
-          paymentInstrument: response.data.data.paymentInstrument,
         }
       });
 
