@@ -46,7 +46,7 @@ model Plan {
 
 model PaymentHistory {
   id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  transactionId         String   
+  transactionId         String   @unique
   userId                String   @db.ObjectId
   userName              String
   emailId               String

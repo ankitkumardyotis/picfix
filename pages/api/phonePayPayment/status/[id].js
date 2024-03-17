@@ -138,10 +138,10 @@ export default async function POST(req, res) {
 
 
 
-      res.writeHead(301, { Location: "http://localhost:3000/dashboard" });
+      res.writeHead(301, { Location: `${process.env.NEXTAUTH_URL}/dashboard` });
       res.end();
     } else {
-      res.writeHead(301, { Location: "http://localhost:3000/failure" });
+      res.writeHead(301, { Location:  `${process.env.NEXTAUTH_URL}/failed` });
       res.end();
     }
   } catch (error) {

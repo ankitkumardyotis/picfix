@@ -66,7 +66,8 @@ function ExplorePageContainer(props) {
             localStorage.setItem("path", '/restorePhoto')
             return
         }
-        const {plan} = await fetchUserPlan();
+        const { plan } = await fetchUserPlan();
+        console.log("plan in explore", plan)
         if (!plan && session) {
             router.push("/price")
             context.setFileUrl("")
