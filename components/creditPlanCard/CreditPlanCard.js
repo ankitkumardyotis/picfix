@@ -114,7 +114,7 @@ function CreditPlanCard() {
                                 onClick={() => successPaymentHandler(item.price)}
                             >
                                 <h1>{item.creditPoints} Credits</h1>
-
+                                <br />
                                 {item.name === 'premium' && <div className={styles.ribbon}>
                                     <div style={{ display: "flex", flexDirection: "column" }}>
                                         {" "}
@@ -138,11 +138,12 @@ function CreditPlanCard() {
                                 <ul>
                                     <li>{item.creditPoints - item.extraCreditPoints} Photo Credits</li>
                                     {item.extraCreditPoints != 0 && <li>+{item.extraCreditPoints} Credits Extra</li>}
+                                    {item.extraCreditPoints == 0 && <><li>No Extra Credits</li></>}
                                     <li> Free Remove Background </li>
                                     <li>1 Credit used per model</li>
                                     <li>Access of all Models</li>
                                     <li>Credits will expire in 1 year</li>
-                                    {item.extraCreditPoints == 0 && <><br /> <br /></>}
+                                    {/* {item.extraCreditPoints == 0 && <><br /> <br /></>} */}
                                     {/* <li>
                             Can be used to activate Analytics plan
                             </li>

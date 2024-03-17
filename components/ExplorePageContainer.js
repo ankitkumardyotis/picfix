@@ -33,18 +33,49 @@ function ExplorePageContainer(props) {
         };
     }, []);
 
+
+    const fetchUserPlan = async () => {
+        console.log("kjbhgv")
+        try {
+            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+            console.log("response====", response)
+            if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+            }
+            const data = await response.json();
+            console.log("data", data)
+            // return data.plan;
+            // setUserPlan(data.plan)
+            // setUserPlanStatus(true)
+            return data;
+        } catch (error) {
+            console.error('Error fetching plan data:', error);
+        }
+    };
+
     const path = props.routePath;
 
+
     console.log("path", path)
-    const handleRunModelButton = () => {
+    const handleRunModelButton = async () => {
+        // console.log("planData", userPlan)
         console.log("session", session)
         if (!session) {
             router.push("/login")
             context.setFileUrl("")
-            localStorage.setItem("path", path)
+            localStorage.setItem("path", '/restorePhoto')
             return
         }
-        router.push(path)
+        const {plan} = await fetchUserPlan();
+        if (!plan && session) {
+            router.push("/price")
+            context.setFileUrl("")
+            // localStorage.setItem("path", "/price")
+            return
+        }
+        if (session && plan) {
+            router.push(path)
+        }
     }
 
 

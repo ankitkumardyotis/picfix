@@ -37,6 +37,24 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
+    const fetchUserPlan = async () => {
+        console.log("kjbhgv")
+        try {
+            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+            console.log("response====", response)
+            if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+            }
+            const data = await response.json();
+            console.log("data", data)
+            // return data.plan;
+            // setUserPlan(data.plan)
+            // setUserPlanStatus(true)
+            return data;
+        } catch (error) {
+            console.error('Error fetching plan data:', error);
+        }
+    };
 
     return (
         <React.Fragment>
@@ -96,7 +114,16 @@ export default function AccountMenu() {
                     <UpgradeIcon fontSize="large" />  Buy Credits
                 </MenuItem> */}
                 {/* <Avatar /> */}
-                {session && <> <MenuItem onClick={() => router.push('/dashboard')}>
+                {session && <> <MenuItem onClick={async() => {
+                    const { plan } = await fetchUserPlan();
+                    if (!plan ) {
+                        router.push("/price")
+                        context.setFileUrl("")
+                        // localStorage.setItem("path", "/price")
+                        return
+                    }
+                    router.push('/dashboard')
+                }}>
                     {!session.user.image ? <img style={{ width: '40px', height: '40px', borderRadius: '50%' }} href={session.user.image} alt={session.user.name} /> : <Avatar />}  My account
                 </MenuItem>
                     <Divider />
