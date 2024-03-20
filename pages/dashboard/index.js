@@ -195,7 +195,7 @@ function Home() {
 
                                         <h3>Total Credits</h3>
                                     </span>
-                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.creditPoints}</p>
+                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.remainingPoints}</p>
                                     <p>Renews At:- {userPlan && renewAt}</p>
                                 </div>
                             </div>
@@ -216,7 +216,7 @@ function Home() {
                 </div>)
             }
 
-            { !userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
             </div>}
             {/* {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
