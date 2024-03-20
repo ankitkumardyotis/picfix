@@ -21,6 +21,7 @@ function CreditPlanCard() {
             .then((response) => response.json())
             .then((data) => {
                 const country = data.country;
+                console.log("country", country)
                 // Check if country is US and render price accordingly
                 setCountryLocation(country);
                 if (country === "IN") {
@@ -55,10 +56,10 @@ function CreditPlanCard() {
     };
     console.log("price=====>", priceDetails)
     useEffect(() => {
-        // fetchUserLocation();
+        fetchUserLocation();
         // Temporarily setting the price details for INR
-        const inrPrice = priceStructure.filter((item) => item.country === "IN")
-        setPriceDetails(inrPrice);
+        // const inrPrice = priceStructure.filter((item) => item.country === "IN")
+        // setPriceDetails(inrPrice);
     }, []);
 
     const successPaymentHandler = async (price) => {
@@ -155,7 +156,7 @@ function CreditPlanCard() {
 
                                 <span className={styles.price}>
                                     {/* {countryLocation === 'IN' ? <h1>₹{(item.attributes.price / 100) * conversionRate}</h1> : <h1>${item.attributes.price / 100}</h1>} */}
-                                    <h1>{item.country === 'IN' ? '₹' : '$'}{item.price}</h1>
+                                    <h1>{item.country === 'IN' ? `₹${item.price}` : `~$${item.price}`}</h1>
                                     {/* <p>(Incl. 18% GST)</p> */}
                                 </span>
                             </div>

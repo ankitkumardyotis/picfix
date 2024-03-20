@@ -1,4 +1,4 @@
-import { Container, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Container, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import AppContext from "@/components/AppContext";
 import Head from "next/head";
@@ -28,21 +28,21 @@ function ImageColorization() {
   const { data: session, status } = useSession();
   const [userPlan, setUserPlan] = useState('');
   const [userPlanStatus, setUserPlanStatus] = useState(false);
-  // const fetchUserPlan = async () => {
-  //   try {
-  //     const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-  //     if (!response.ok) {
-  //       throw new Error('Failed to fetch plan data');
-  //     }
-  //     const data = await response.json();
-  //     // console.log("data", data.plan)
-  //     // return data.plan;
-  //     setUserPlan(data.plan)
-  //     setUserPlanStatus(true)
-  //   } catch (error) {
-  //     console.error('Error fetching plan data:', error);
-  //   }
-  // };
+  const fetchUserPlan = async () => {
+    try {
+      const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch plan data');
+      }
+      const data = await response.json();
+      // console.log("data", data.plan)
+      // return data.plan;
+      setUserPlan(data.plan)
+      setUserPlanStatus(true)
+    } catch (error) {
+      console.error('Error fetching plan data:', error);
+    }
+  };
 
   useEffect(() => {
     if (status === "loading") {
@@ -51,7 +51,7 @@ function ImageColorization() {
       router.push("/login");
     } else {
       setLoadindSession(false);
-      // fetchUserPlan();
+      fetchUserPlan();
     }
   }, [session, status, router]);
 
@@ -66,9 +66,10 @@ function ImageColorization() {
   // }, [userPlan, router]);
 
 
-  console.log("context payh", context.path)
+  // console.log("context payh", context.path)
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
+    console.log("url for cjwbw", toSwitchRestoreUrl)
     await new Promise((resolve) => setTimeout(resolve, 500));
     setLoading(true);
     const res = await fetch("/api/generateColorizationImage", {
@@ -78,17 +79,50 @@ function ImageColorization() {
       },
       body: JSON.stringify({ imageUrl: toSwitchRestoreUrl }),
     });
-    let newPhoto = await res.json();
+    console.log("res in image colorization", res)
+    let result = await res.json();
+    console.log("res in image colorization", result)
     if (res.status !== 200) {
-      setError(newPhoto);
+      setError(result);
       setLoadCircularProgress(true)
     } else {
       setRestoredPhoto(toSwitchRestoreUrl);
-      setimageColorization(newPhoto[0].image);
-      setimageColorizationOne(newPhoto[1].image)
-      setimageColorizationTwo(newPhoto[2].image)
-      setimageColorizationThree(newPhoto[3].image)
-      setimageColorizationFour(newPhoto[4].image)
+      setimageColorization(result.output[0].image);
+      setimageColorizationOne(result.output[1].image)
+      setimageColorizationTwo(result.output[2].image)
+      setimageColorizationThree(result.output[3].image)
+      setimageColorizationFour(result.output[4].image)
+
+      if (userPlan) {
+        const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+        if (!updateResponse.ok) {
+          throw new Error('Failed to update user plan');
+        }
+        console.log("updateResponse", updateResponse)
+
+        const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: session.user.id,
+            model: result.model,
+            status: result.status,
+            createdAt: result.created_at,
+            replicateId: result.id
+          }),
+        });
+
+        console.log("historyResponse", historyResponse)
+        if (!historyResponse.ok) {
+          throw new Error('Failed to create history entry');
+        }
+      }
+
+
+
+
       setLoading(false)
       setError(null)
       setLoadCircularProgress(false)
@@ -107,14 +141,20 @@ function ImageColorization() {
       },
       body: JSON.stringify({ imageUrl: fileUrl }),
     });
-    let newPhoto = await res.json();
+
+    console.log("res in image colorization", res)
+    if (!res.ok) {
+      throw new Error('Failed to generate photo');
+    }
+    let result = await res.json();
+    console.log("res in image colorization", result)
     if (res.status !== 200) {
-      setError(newPhoto);
+      setError(result);
       setLoadCircularProgress(true)
     } else {
-      let toSwitchRestoreUrl = newPhoto;
+      let toSwitchRestoreUrl = result.output;
       generateCJWBWPhoto(toSwitchRestoreUrl);
-      setRestoreImageURLForVarient(newPhoto);
+      setRestoreImageURLForVarient(toSwitchRestoreUrl);
       setError(null)
       setLoadCircularProgress(false)
     }
@@ -138,6 +178,12 @@ function ImageColorization() {
   }, [fileUrl]);
 
 
+  if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
+    return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
+      <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
+      <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
+    </Box>
+  }
 
 
 
@@ -147,7 +193,7 @@ function ImageColorization() {
         <title> Image Colorization | PicFix.AI </title>
         <meta name="description" content="Revive your old black and white memories with vibrant colors using our AI-powered colorization model. Transform old photographs into vivid representations of cherished moments, preserving the beauty and nostalgia of the past." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/assets/logo.png" />
+        {/* <link rel="icon" href="/assets/logo.png" /> */}
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}></script>
         <script
           dangerouslySetInnerHTML={{
@@ -164,18 +210,21 @@ function ImageColorization() {
           }}
         />
       </Head>
-      <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
-      <main className='aiModels' style={{ display: 'flex', justifyContent: 'center' }} id="ClickToUp">
-        <Container maxWidth='xl' >
-          <Typography variant="h2" sx={{ paddingTop: '30px', fontSize: '3rem', fontWeight: '700', marginBottom: '5px', color: ' #000', lineHeight: '50px', textAlign: 'center' }} >
-            Image Colorization
-          </Typography>
-          <Typography variant="h6" sx={{ fontWeight: '500', color: ' #0e0e0e', textAlign: 'center' }}>
-            Adding a Splash of Color to Black and White Memories
-          </Typography>
-          <ImageComponent setFileUrl={setFileUrl} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} loading={loading} setLoading={setLoading} error={error} setError={setError} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} imageColorization={imageColorization} restoreImageURLForVarient={restoreImageURLForVarient} imageColorizationOne={imageColorizationOne} imageColorizationTwo={imageColorizationTwo} imageColorizationThree={imageColorizationThree} imageColorizationFour={imageColorizationFour} />
-        </Container >
-      </main>
+      {userPlanStatus ? <>   <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
+        <main className='aiModels' style={{ display: 'flex', justifyContent: 'center' }} id="ClickToUp">
+          <Container maxWidth='xl' >
+            <Typography variant="h2" sx={{ paddingTop: '30px', fontSize: '3rem', fontWeight: '700', marginBottom: '5px', color: ' #000', lineHeight: '50px', textAlign: 'center' }} >
+              Image Colorization
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: '500', color: ' #0e0e0e', textAlign: 'center' }}>
+              Adding a Splash of Color to Black and White Memories
+            </Typography>
+            <ImageComponent setFileUrl={setFileUrl} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} loading={loading} setLoading={setLoading} error={error} setError={setError} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} imageColorization={imageColorization} restoreImageURLForVarient={restoreImageURLForVarient} imageColorizationOne={imageColorizationOne} imageColorizationTwo={imageColorizationTwo} imageColorizationThree={imageColorizationThree} imageColorizationFour={imageColorizationFour} />
+          </Container >
+        </main></>
+        : <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
+          <CircularProgress />
+        </Box>}
     </>
   )
 }

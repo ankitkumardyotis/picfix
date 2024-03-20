@@ -68,13 +68,13 @@ function ExplorePageContainer(props) {
         }
         const { plan } = await fetchUserPlan();
         console.log("plan in explore", plan)
-        if (!plan && session) {
+        if (!plan?.remainingPoints > 0) {
             router.push("/price")
             context.setFileUrl("")
             // localStorage.setItem("path", "/price")
             return
         }
-        if (session && plan) {
+        if (session && plan?.remainingPoints > 0) {
             router.push(path)
         }
     }

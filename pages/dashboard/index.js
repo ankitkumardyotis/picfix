@@ -40,7 +40,7 @@ function Home() {
                         throw new Error('Failed to fetch plan data');
                     }
                     const data = await response.json();
-                    console.log("data", data.plan)
+                    console.log("data ===>", data.plan)
                     if (data.plan === null) {
                         router.push('/price');
                     } else {
