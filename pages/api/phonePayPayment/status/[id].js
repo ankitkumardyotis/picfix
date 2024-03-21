@@ -111,10 +111,10 @@ export default async function POST(req, res) {
           emailId: userData.email,
           planName: planDetails.name,  //to be added with actual plan
           creditPoints: {
-            increment: parseInt(planDetails.creditPoints) // Increment the existing creditPoints by 200, change this value accordingly
+            increment: parseInt(planDetails.creditPoints) 
           },
           remainingPoints: {
-            increment: parseInt(planDetails.creditPoints) // Increment the existing remainingPoints by 200, change this value accordingly
+            increment: parseInt(planDetails.creditPoints) 
           },
           createdAt: currentDate,
           expiredAt: expiryISOString,

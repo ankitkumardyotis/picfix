@@ -123,8 +123,6 @@ function ImageComponent(props) {
                                     matches={matches}
                                 />
                             )}
-                    
-
                         </div>
                     )}
                     {!props.fileUrl && (
@@ -141,11 +139,8 @@ function ImageComponent(props) {
                                 className="imageContainer box-container"
                                 ref={confetiRef}
                                 style={{ position: "relative", overflow: 'hidden' }}
-
                             >
-                                {restoreImageCompleteLoaded && props.restoredPhoto && 
-                                    
-                                (
+                                {restoreImageCompleteLoaded && props.restoredPhoto && (
                                     <ReactConfetti
                                         maxHeight={originalImageHeight}
                                         width={width}
@@ -155,26 +150,17 @@ function ImageComponent(props) {
                                         gravity={0.3}
                                         initialVelocityY={15}
                                     />
-                                    
                                 )}
-                                
                                 {props.fileUrl && (
                                     <div id="uploadedImage" className="originalImage" style={{ position: 'relative' }}>
-                                  
-
                                         <OriginalImage
                                             setOriginalImageHieght={setOriginalImageHieght}
                                             setOriginalImageWidth={setOriginalImageWidth}
                                             setIsImageLoaded={setIsImageLoaded}
                                         />
-                                       
-                                     
                                         {!matches && <span class="before-after-badge">Before</span>}
-                                   
                                     </div>
                                 )}
-                               <div style={{border:"2px solid black" , height:{height}, opacity:"4%"} }></div>
-                               
                                 <div className="restoredImageContainer" style={props.fileUrl &&
                                     props.loading === false &&
                                     !props.restoredPhoto && matches &&
@@ -182,8 +168,8 @@ function ImageComponent(props) {
                                     ? { border: "2px dotted black", borderRadius: "5px" }
                                     : null
                                 }
-                                >  
-                               
+                                >
+
                                     {props.loading === true && props.error === null ? (
                                         <div
                                             style={!matches ? {
@@ -194,7 +180,6 @@ function ImageComponent(props) {
                                             } : { display: "flex", justifyContent: 'center', alignItems: 'center' }}
                                         >
                                             {" "}
-                                         
                                             {/* <CircularProgress color="inherit" /> */}
                                             <CircularWithValueLabel />
                                         </div>
@@ -209,8 +194,6 @@ function ImageComponent(props) {
                                                 height: `${originalImageHeight}px` ? `${originalImageHeight}px` : `${originalImageHeight}px`,
                                             } : { display: "flex", justifyContent: 'center', alignItems: 'center' }}
                                         >
-                                   
-                                   
                                             <p style={{ fontSize: '80px' }}>😭</p>
                                             <h1>Server is busy.
                                                 <span style={{ cursor: 'pointer', textDecoration: 'underline' }}
@@ -227,7 +210,6 @@ function ImageComponent(props) {
                                             </h1>
                                         </div>
                                     )}
-                                    
 
                                     <div className="restoredImage" style={{ position: 'relative' }}>
                                         <Image
