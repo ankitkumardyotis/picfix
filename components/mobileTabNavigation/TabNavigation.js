@@ -27,9 +27,9 @@ export default function TabNavigation() {
                 },
             }}
         >
-            <Tab indicatorColor="inherit" sx={{ width: '30%' }} color='black' icon={<HomeIcon color='black' />} label="Home" onClick={() => router.push("/")} />
-            <Tab indicatorColor="secondary" sx={{ width: '40%' }} icon={<SpaceDashboardIcon color='#000000' />} label="My Account" onClick={() => router.push("/dashboard")} />
-            <Tab sx={{ width: '30%' }} icon={<PanoramaIcon />} label="Models" onClick={() => router.push("/#All-AI-Models")} />
+            <Tab indicatorColor="inherit" sx={{ width: '33.33%' }} color='black' icon={<HomeIcon color='black' />} label="Home" onClick={() => router.push("/")} />
+            <Tab indicatorColor="secondary" sx={{ width: '33.33%' }} icon={<SpaceDashboardIcon color='#000000' />} label="My Account" onClick={() => router.push("/dashboard")} />
+            <Tab sx={{ width: '33.33%' }} icon={<PanoramaIcon />} label="Models" onClick={() => router.push("/#All-AI-Models")} />
         </Tabs>
     );
 }

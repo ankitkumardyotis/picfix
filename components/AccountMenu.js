@@ -115,6 +115,7 @@ export default function AccountMenu() {
                 </MenuItem> */}
                 {/* <Avatar /> */}
                 {session && <> <MenuItem onClick={async() => {
+                    
                     const { plan } = await fetchUserPlan();
                     if (!plan ) {
                         router.push("/price")

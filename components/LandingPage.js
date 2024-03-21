@@ -22,7 +22,7 @@ function LandingPage() {
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-  // console.log("matches", matches)
+  console.log("matches", matches)
   const router = useRouter();
 
   // useEffect(() => {
@@ -40,7 +40,7 @@ function LandingPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 2000);
+    }, 3000);
     return () => {
       clearInterval(interval); // Clean up the interval on component unmount
     };
@@ -64,9 +64,8 @@ function LandingPage() {
             <div style={{ display: 'flex', width: '100vw', height: '60%' }}>
 
               <div className={styles.landingPageContent} style={{ marginTop: matches ? '22.5vh' : '5em' }}>
-                <h1>Introducing One-Click <br />  Photo Editing  & Beyond  <br />  </h1><span className={styles.gradientColor}>   <h1>   
-                  <Typewriter loop={false}
-                  words={['using AI ', 'with Picfix']} />  </h1>  </span>
+                <h1>Introducing One-Click <br />  Photo Editing  & Beyond  <br />  </h1><span className={styles.gradientColor}>   <h1>     <Typewriter loop={false}
+                  words={['using AI ', 'With Picfix']} />  </h1>  </span>
                 <p>Transform your blurry, low-resolution images into stunning works of art with AI. Our advanced AI-powered algorithm takes care of everything from removing noise to enhancing sharpness and restoring lost details, all with just one click.</p>
                 {
                   !matches &&
@@ -74,7 +73,7 @@ function LandingPage() {
                     <Image priority={true} src={images[currentImageIndex]} alt="Girl blur image " width={1600} height={900} />
                   </div>
                 }
-                <button onClick={handleClickOpen}>Try Now</button>
+                <button onClick={handleClickOpen}>Try Now <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
               </div>
               {
                 matches &&
