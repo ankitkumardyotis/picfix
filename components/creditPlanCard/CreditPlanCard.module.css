@@ -10,7 +10,7 @@
   align-items: center;
   gap: 40px;
   padding-bottom: 3em;
-  min-height:125vh;
+  min-height:100vh;
   background: linear-gradient(
     59deg,
     rgba(100, 214, 207, .5) 0%,
@@ -53,11 +53,11 @@
     background-color: rgba(242, 212, 159, 1);
     border-radius: 10px;
     padding: 20px;
-    cursor: pointer;
+
   }
 .price > h1 {
   display: inline;
-  margin-left: 10px;
+  /* margin-left: 10px; */
 }
 .price > p {
   display: inline;
@@ -88,7 +88,7 @@
   top: -135px; /* Adjust top value for spacing */
   right: -60px; /* Adjust right value for spacing */
   background-color: black;
-  color: teal;
+  color: rgb(255, 255, 255);
   font-weight: bold;
   /* padding: 8px 16px; */
 
@@ -104,4 +104,17 @@
   border-bottom-right-radius: 20px; */
   transform: translateY(50%) rotate(45deg);
   z-index: 1;
+}
+
+.paymentbtn{
+  background-color: #000;
+  font-weight: 400;
+  font-size: 1em;
+  border: none;
+  color: #fff;
+  margin-left: 20px;
+  padding: 7px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
 }
