@@ -6,169 +6,210 @@ import { useSession, signOut } from "next-auth/react";
 import { CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { priceStructure } from "../../constant/Constant";
 function CreditPlanCard() {
-    const [product, setProduct] = useState(null);
-    const router = useRouter();
-    const { data: session } = useSession();
-    const [countryLocation, setCountryLocation] = useState("");
-    const [priceDetails, setPriceDetails] = useState([]);
-    const [conversionRate, setConversionrate] = useState();
+  const [product, setProduct] = useState(null);
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [countryLocation, setCountryLocation] = useState("");
+  const [priceDetails, setPriceDetails] = useState([]);
+  const [conversionRate, setConversionrate] = useState();
 
-    const theme = useTheme();
-    const matches = useMediaQuery(theme.breakpoints.up("md"));
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.up("md"));
 
-    const fetchUserLocation = async () => {
-        await fetch("https://ipapi.co/json/")
-            .then((response) => response.json())
-            .then((data) => {
-                const country = data.country;
-                console.log("country", country)
-                // Check if country is US and render price accordingly
-                setCountryLocation(country);
-                if (country === "IN") {
-                    const inrPrice = priceStructure.filter((item) => item.country === "IN")
-                    setPriceDetails(inrPrice);
-                } else {
-                    const usPrice = priceStructure.filter((item) => item.country === "Others Country")
-                    setPriceDetails(usPrice);
-                }
-            })
-            .catch((error) => console.error("Error fetching IP geolocation:", error));
-        // Setting URL
-        const url_str =
-            "https://v6.exchangerate-api.com/v6/ef1fc8abb23f6d2e3dabbbc2/latest/USD";
-
-        // Making Request
-        fetch(url_str)
-            .then((response) => {
-                // Check if the response is successful
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                const req_result = data;
-                setConversionrate(req_result.conversion_rates.INR);
-            })
-            .catch((error) => {
-                console.error("There was a problem with the fetch operation:", error);
-            });
-    };
-    console.log("price=====>", priceDetails)
-    useEffect(() => {
-        fetchUserLocation();
-        // Temporarily setting the price details for INR
-        // const inrPrice = priceStructure.filter((item) => item.country === "IN")
-        // setPriceDetails(inrPrice);
-    }, []);
-
-    const successPaymentHandler = async (price) => {
-        try {
-            if (!session) {
-                router.push("/login");
-            }
-
-            if (session) {
-                const response = await fetch("/api/phonePayPayment/checkout", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ amount: price }),
-                });
-                const { url } = await response.json();
-                console.log("url", url)
-                router.push(url);
-            }
-        } catch (error) {
-            console.error("Error creating checkout:", error);
-            // Handle error if necessary
+  const fetchUserLocation = async () => {
+    await fetch("https://ipapi.co/json/")
+      .then((response) => response.json())
+      .then((data) => {
+        const country = data.country;
+        // Check if country is US and render price accordingly
+        setCountryLocation(country);
+        if (country === "IN") {
+          const inrPrice = priceStructure.filter(
+            (item) => item.country === "IN"
+          );
+          setPriceDetails(inrPrice);
+        } else {
+          const usPrice = priceStructure.filter(
+            (item) => item.country === "Others Country"
+          );
+          setPriceDetails(usPrice);
         }
-    };
-    return (
-        <div className={styles.creditCardPlan}>
-            <div className={styles.cardTitle} style={{ paddingTop: "6em" }}>
-                <span>Credit Plans</span>
-                <p style={{ marginTop: "3em", padding: "0.3rem 1.5rem" }}>
-                    Welcome to our pricing section, where simplicity meets value. We
-                    believe in offering straightforward pricing options that cater to your
-                    specific needs.{matches && <br />} Whether you're an individual
-                    looking to enhance your photos
-                </p>
-            </div>
+      })
+      .catch((error) => console.error("Error fetching IP geolocation:", error));
+    // Setting URL
+    const url_str =
+      "https://v6.exchangerate-api.com/v6/ef1fc8abb23f6d2e3dabbbc2/latest/USD";
+
+    // Making Request
+    fetch(url_str)
+      .then((response) => {
+        // Check if the response is successful
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const req_result = data;
+        setConversionrate(req_result.conversion_rates.INR);
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  };
+  console.log("price=====>", priceDetails);
+
+  useEffect(() => {
+    // fetchUserLocation();
+    // Temporarily setting the price details for INR
+    const inrPrice = priceStructure.filter((item) => item.country === "IN");
+    setPriceDetails(inrPrice);
+  }, []);
+
+  const successPaymentHandler = async (price) => {
+    try {
+      if (!session) {
+        router.push("/login");
+      }
+
+      if (session) {
+        const response = await fetch("/api/phonePayPayment/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ amount: price }),
+        });
+        const { url } = await response.json();
+        console.log("url", url);
+        router.push(url);
+      }
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      // Handle error if necessary
+    }
+  };
+  return (
+    <div className={styles.creditCardPlan}>
+      <div className={styles.cardTitle} style={{ paddingTop: "6em" }}>
+        <span>Credit Plans</span>
+        <p style={{ marginTop: "3em", padding: "0.3rem 1.5rem" }}>
+          Whether you're an individual looking to enhance your photos, or a
+          business seeking comprehensive image solutions, 
+          {matches && <br />}{" "}our pricing options
+          are designed to accommodate your specific needs.
+          
+          
+        </p>
+      </div>
+      <div
+        className={styles.cardContainer}
+        style={{
+          flexDirection: !matches && "column",
+          padding: !matches && "0.3rem 1rem",
+        }}
+      >
+        {priceDetails.map((item, idx) => {
+          return (
             <div
-                className={styles.cardContainer}
-                style={{
-                    flexDirection: !matches && "column",
-                    padding: !matches && "0.3rem 1rem",
-                }}
+              key={idx}
+              className={styles.card}
+              style={{
+                border: "1px solid teal",
+              }}
             >
-                {
-                    priceDetails.map((item, idx) => {
-                        return (
-                            <div
-                                key={idx}
-                                className={styles.card}
-                                style={{
-                                    border: "1px solid teal",
-                                }}
-                                onClick={() => successPaymentHandler(item.price)}
-                            >
-                                <h1>{item.creditPoints} Credits</h1>
-                                <br />
-                                {item.name === 'premium' && <div className={styles.ribbon}>
-                                    <div style={{ display: "flex", flexDirection: "column" }}>
-                                        {" "}
-                                        <span>⭐⭐⭐</span>
-                                        <span>Premium</span>{" "}
-                                    </div>
-                                </div>
-                                }
-                                {item.name === 'popular' && <div className={styles.ribbon}>
-                                    <div style={{ display: "flex", flexDirection: "column" }}>
-                                        {" "}
-                                        <span>⭐⭐</span>
-                                        <span>Popular</span>{" "}
-                                    </div>
-                                </div>
-                                }
-                                {/* {item.attributes.name === 'Premium' && <div className={styles.ribbon}> Premium</div>} */}
-                                <br />
-                                <hr />
-                                <br />
-                                <ul>
-                                    <li>{item.creditPoints - item.extraCreditPoints} Photo Credits</li>
-                                    {item.extraCreditPoints != 0 && <li>+{item.extraCreditPoints} Credits Extra</li>}
-                                    {item.extraCreditPoints == 0 && <><li>No Extra Credits</li></>}
-                                    <li> Free Remove Background </li>
-                                    <li>1 Credit used per model</li>
-                                    <li>Access of all Models</li>
-                                    <li>Credits will expire in 1 year</li>
-                                    {/* {item.extraCreditPoints == 0 && <><br /> <br /></>} */}
-                                    {/* <li>
+              <h1>{item.creditPoints} Credits</h1>
+              <br />
+
+              {item.name === "standard" && (
+                <div className={styles.ribbon}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {" "}
+                    <span>⭐</span>
+                    <span>Basic</span>{" "}
+                  </div>
+                </div>
+              )}
+
+              {item.name === "premium" && (
+                <div className={styles.ribbon}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {" "}
+                    <span>⭐⭐⭐</span>
+                    <span>Premium</span>{" "}
+                  </div>
+                </div>
+              )}
+              {item.name === "popular" && (
+                <div className={styles.ribbon}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {" "}
+                    <span>⭐⭐</span>
+                    <span>Popular</span>{" "}
+                  </div>
+                </div>
+              )}
+              {/* {item.attributes.name === 'Premium' && <div className={styles.ribbon}> Premium</div>} */}
+
+              <br />
+
+              <hr />
+              <br />
+              <ul>
+                <li>
+                  {item.creditPoints - item.extraCreditPoints} Photo Credits
+                </li>
+                {item.extraCreditPoints != 0 && (
+                  <li>+{item.extraCreditPoints} Credits Extra</li>
+                )}
+                {item.extraCreditPoints == 0 && (
+                  <>
+                    <li>No Extra Credits</li>
+                  </>
+                )}
+                <li> Free Remove Background </li>
+                <li>1 Credit used per model</li>
+                <li>Access of all Models</li>
+                <li>Credits will expire in 1 year</li>
+                {/* {item.extraCreditPoints == 0 && <><br /> <br /></>} */}
+                {/* <li>
                             Can be used to activate Analytics plan
                             </li>
                         <li>
                             Can be used for all Models
                         </li> */}
-                                </ul>
-                                <hr />
+              </ul>
+              <hr />
 
-                                <span className={styles.price}>
-                                    {/* {countryLocation === 'IN' ? <h1>₹{(item.attributes.price / 100) * conversionRate}</h1> : <h1>${item.attributes.price / 100}</h1>} */}
-                                    <h1>{item.country === 'IN' ? `₹${item.price}` : `~$${item.price}`}</h1>
-                                    {/* <p>(Incl. 18% GST)</p> */}
-                                </span>
-                            </div>
-                        )
-                    })
-                }
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  paddingTop: "10px",
+                }}
+              >
+                <span className={styles.price}>
+                  {/* {countryLocation === 'IN' ? <h1>₹{(item.attributes.price / 100) * conversionRate}</h1> : <h1>${item.attributes.price / 100}</h1>} */}
+                  <h1>
+                    {item.country === "IN" ? "₹" : "$"}
+                    {item.price}
+                  </h1>
+                  {/* <p>(Incl. 18% GST)</p> */}
+                </span>
 
-
-
+                <button
+                  className={styles.paymentbtn}
+                  onClick={() => successPaymentHandler(item.price)}
+                >
+                  Get Started
+                </button>
+              </div>
             </div>
-        </div>
-    );
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default CreditPlanCard;

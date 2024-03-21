@@ -28,7 +28,7 @@ function Footer() {
 
     return (
 
-        <Grid container spacing={2} sx={{ bgcolor: '#F5F5F5', py: 5, px: matches ? 3.8 : 2.2, pb: !matches && 10 }} >
+        <Grid container spacing={2} sx={{ bgcolor: '#F5F5F5', py: 5, px: matches ? 3 : 2.2, pb: !matches && 10 }} >
             <Grid item xs={12} md={6} lg={3} >
                 <Box className='footerLogo' onClick={() => { router.push('/'), context.setFileUrl('') }} >
                     <Image src="/assets/PicFixAILogo.jpg" alt="logo" width={200} height={40} />
