@@ -128,7 +128,7 @@ function Home() {
                         <div className="creditUsage" style={{ display: 'flex', flexDirection: 'row' }} >
                             <div className="creditUsageContainer" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                                 <h3 style={{ fontSize: '1.5em', }}>Credits Remaining</h3>
-                                <p style={{ fontSize: '3em' }}>{userPlan?.remainingPoints}</p>
+                                <p style={{ fontSize: '3em', color: userPlan?.remainingPoints > 10 ? 'black' : 'red' }}>{userPlan?.remainingPoints}</p>
 
                                 <p>Renews At:- {userPlan && renewAt}</p>
                             </div>
@@ -195,7 +195,7 @@ function Home() {
 
                                         <h3>Total Credits</h3>
                                     </span>
-                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.remainingPoints}</p>
+                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600', color: userPlan?.remainingPoints > 10 ? 'black' : 'red' }}>{userPlan?.remainingPoints}</p>
                                     <p>Renews At:- {userPlan && renewAt}</p>
                                 </div>
                             </div>
