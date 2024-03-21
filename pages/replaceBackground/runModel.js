@@ -259,7 +259,7 @@ function ReplaceBackgroundModel() {
                 <title>Trendy Look | PicFix.AI </title>
                 <meta name="description" content=" PicFix offers professional trendy Look services to change the color of cloth and enhance the quality of your cherished photographs. Get started today!" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                {/* <link rel="icon" href="/assets/logo.png" /> */}
+                <link rel="icon" href="/assets/logo.png" />
                 <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}></script>
                 <script
                     dangerouslySetInnerHTML={{

@@ -61,7 +61,7 @@ function UploaderComponent() {
     }
 
     return (
-        <div style={{ padding: '0' }}>
+        <div style={{ padding: '0'}}>
             <UploadDropzone
                 uploader={uploader}
                 options={uploaderOptions}
@@ -72,9 +72,10 @@ function UploaderComponent() {
                 }
                 height="45vh"
                 border="5px"
+                
             />
         </div>
     )
 }
 
-export default UploaderComponent
+export default UploaderComponent;

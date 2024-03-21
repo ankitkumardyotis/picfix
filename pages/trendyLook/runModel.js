@@ -56,21 +56,21 @@ function ClothingFashion() {
     const [userPlan, setUserPlan] = useState('');
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
-    const fetchUserPlan = async () => {
-      try {
-        const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch plan data');
-        }
-        const data = await response.json();
-        // console.log("data", data.plan)
-        // return data.plan;
-        setUserPlan(data.plan)
-        setUserPlanStatus(true)
-      } catch (error) {
-        console.error('Error fetching plan data:', error);
-      }
-    };
+    // const fetchUserPlan = async () => {
+    //   try {
+    //     const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch plan data');
+    //     }
+    //     const data = await response.json();
+    //     // console.log("data", data.plan)
+    //     // return data.plan;
+    //     setUserPlan(data.plan)
+    //     setUserPlanStatus(true)
+    //   } catch (error) {
+    //     console.error('Error fetching plan data:', error);
+    //   }
+    // };
   
     useEffect(() => {
       if (status === "loading") {
@@ -79,12 +79,19 @@ function ClothingFashion() {
         router.push("/login");
       } else {
         setLoadindSession(false);
-        fetchUserPlan();
+        // fetchUserPlan();
       }
     }, [session, status, router]);
   
   
   
+  
+    // useEffect(() => {
+    //   if (userPlanStatus && userPlan === null) {
+    //     console.log("fetchedPlan in", userPlan)
+    //     router.push("/price");
+    //   }
+    // }, [userPlan, router]);
 
     // GFPGAN model calling 
     async function generateRestorePhoto(urlFromColorization) {
@@ -99,39 +106,13 @@ function ClothingFashion() {
             },
             body: JSON.stringify({ imageUrl: urlFromColorization[3] }),
         });
-        let result = await res.json();
+        let newPhoto = await res.json();
         if (res.status !== 200) {
-            setError(result);
+            setError(newPhoto);
             setLoadCircularProgress(true)
         } else {
-            setRestoredPhoto(result.output);
-            setOriginalImageByReplicate(result.output[0]);
-            if (userPlan) {
-                const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update user plan');
-                }
-                console.log("updateResponse", updateResponse)
-    
-                const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        userId: session.user.id,
-                        model: "naklecha/fashion-ai",
-                        status: result.status,
-                        createdAt: result.created_at,
-                        replicateId: result.id
-                    }),
-                });
-    
-                console.log("historyResponse", historyResponse)
-                if (!historyResponse.ok) {
-                    throw new Error('Failed to create history entry');
-                }
-            }
+            setRestoredPhoto(newPhoto);
+            setOriginalImageByReplicate(newPhoto[0]);
             setError(null)
             setLoadCircularProgress(false)
         }
@@ -148,12 +129,12 @@ function ClothingFashion() {
             },
             body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, clothingPosition: clothingPosition }),
         });
-        let result = await res.json();
+        let newPhoto = await res.json();
         if (res.status !== 200) {
-            setError(result);
+            setError(newPhoto);
             setLoadCircularProgress(true)
         } else {
-            const urlFromColorization = result.output;
+            const urlFromColorization = newPhoto;
             generateRestorePhoto(urlFromColorization);
             setError(null)
             setLoadCircularProgress(false)
@@ -277,21 +258,13 @@ function ClothingFashion() {
         height: '100%',
     };
 
-    if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-            <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price')}}>Buy Credits</Button>
-        </Box>
-    }
-
-
     return (
         <>
             <Head>
                 <title>Trendy Look | PicFix.AI </title>
                 <meta name="description" content=" PicFix offers professional trendy Look services to change the color of cloth and enhance the quality of your cherished photographs. Get started today!" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                {/* <link rel="icon" href="/assets/logo.png" /> */}
+                <link rel="icon" href="/assets/logo.png" />
                 <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}></script>
                 <script
                     dangerouslySetInnerHTML={{

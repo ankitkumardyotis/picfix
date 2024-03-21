@@ -40,7 +40,7 @@ function Home() {
                         throw new Error('Failed to fetch plan data');
                     }
                     const data = await response.json();
-                    console.log("data ===>", data.plan)
+                    console.log("data", data.plan)
                     if (data.plan === null) {
                         router.push('/price');
                     } else {
@@ -126,7 +126,7 @@ function Home() {
                             <p>Welcome back!</p>
                         </div>
                         <div className="creditUsage" style={{ display: 'flex', flexDirection: 'row' }} >
-                            <div className="creditUsageContainer" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
+                            <div className="creditUsageContainer" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '10px' }}>
                                 <h3 style={{ fontSize: '1.5em', }}>Credits Remaining</h3>
                                 <p style={{ fontSize: '3em' }}>{userPlan?.remainingPoints}</p>
 
@@ -195,7 +195,7 @@ function Home() {
 
                                         <h3>Total Credits</h3>
                                     </span>
-                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.remainingPoints}</p>
+                                    <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600' }}>{userPlan?.creditPoints}</p>
                                     <p>Renews At:- {userPlan && renewAt}</p>
                                 </div>
                             </div>
@@ -216,7 +216,7 @@ function Home() {
                 </div>)
             }
 
-            {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            { !userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <CircularProgress />
             </div>}
             {/* {!userPlan && <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

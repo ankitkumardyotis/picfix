@@ -68,13 +68,13 @@ function ExplorePageContainer(props) {
         }
         const { plan } = await fetchUserPlan();
         console.log("plan in explore", plan)
-        if (!plan?.remainingPoints > 0) {
+        if (!plan && session) {
             router.push("/price")
             context.setFileUrl("")
             // localStorage.setItem("path", "/price")
             return
         }
-        if (session && plan?.remainingPoints > 0) {
+        if (session && plan) {
             router.push(path)
         }
     }
@@ -105,7 +105,8 @@ function ExplorePageContainer(props) {
 
                     <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
                         {/* <button>How it works</button> */}
-                        <button onClick={handleRunModelButton}>{props.buttonTwoText} <Icon fontSize='small'><ArrowOutwardIcon /></Icon></button>
+                        <button onClick={handleRunModelButton}>{props.buttonTwoText} 
+                        </button>
                     </Box>
                 </Box >
                 {/* Right Box */}

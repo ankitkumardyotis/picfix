@@ -216,5 +216,11 @@
     color: rgb(100, 214, 207);
     cursor: pointer;
     transition: all 0.3s ease-in-out;
+    
+  }
+  
+  .explorePageButtons > button:hover {
+   background-color: rgb(100, 214, 207);
+   color: #000;
   }
   

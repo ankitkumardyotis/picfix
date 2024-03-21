@@ -64,36 +64,36 @@ function DesignRoom() {
     const [userPlan, setUserPlan] = useState('');
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
-    const fetchUserPlan = async () => {
-        try {
-            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-            }
-            const data = await response.json();
-            // console.log("data", data.plan)
-            // return data.plan;
-            setUserPlan(data.plan)
-            setUserPlanStatus(true)
-        } catch (error) {
-            console.error('Error fetching plan data:', error);
-        }
-    };
-
+    // const fetchUserPlan = async () => {
+    //   try {
+    //     const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch plan data');
+    //     }
+    //     const data = await response.json();
+    //     // console.log("data", data.plan)
+    //     // return data.plan;
+    //     setUserPlan(data.plan)
+    //     setUserPlanStatus(true)
+    //   } catch (error) {
+    //     console.error('Error fetching plan data:', error);
+    //   }
+    // };
+  
     useEffect(() => {
-        if (status === "loading") {
-            setLoadindSession(true);
-        } else if (!session) {
-            router.push("/login");
-        } else {
-            setLoadindSession(false);
-            fetchUserPlan();
-        }
+      if (status === "loading") {
+        setLoadindSession(true);
+      } else if (!session) {
+        router.push("/login");
+      } else {
+        setLoadindSession(false);
+        // fetchUserPlan();
+      }
     }, [session, status, router]);
-
-
-
-
+  
+  
+  
+  
     // useEffect(() => {
     //   if (userPlanStatus && userPlan === null) {
     //     console.log("fetchedPlan in", userPlan)
@@ -146,39 +146,13 @@ function DesignRoom() {
             },
             body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt }),
         });
-        let result = await res.json();
-        console.log("NewPhoto", result)
+        let newPhoto = await res.json();
+        console.log("NewPhoto", newPhoto)
         if (res.status !== 200) {
-            setError(result);
+            setError(newPhoto);
             setLoadCircularProgress(true)
         } else {
-            if (userPlan) {
-                const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update user plan');
-                }
-                console.log("updateResponse", updateResponse)
-    
-                const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        userId: session.user.id,
-                        model: result.model,
-                        status: result.status,
-                        createdAt: result.created_at,
-                        replicateId: result.id
-                    }),
-                });
-    
-                console.log("historyResponse", historyResponse)
-                if (!historyResponse.ok) {
-                    throw new Error('Failed to create history entry');
-                }
-            }
-            setRestoredPhoto(result.output[1]);
+            setRestoredPhoto(newPhoto[1]);
             setError(null)
             setLoadCircularProgress(false)
         }
@@ -235,7 +209,7 @@ function DesignRoom() {
                     setLoadCircularProgress(true)
                 }
 
-            }, "100000")
+            }, "5000")
         } else {
             setFocusOnInputField(true);
         }
@@ -255,14 +229,6 @@ function DesignRoom() {
         height: '100%',
         order: 1,
     };
-
-    if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-            <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
-        </Box>
-    }
-
     return (
         <>
             <Head>
