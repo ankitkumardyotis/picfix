@@ -135,7 +135,6 @@ function Home() {
                             {/* <div className="creditUsageContainer " style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                                 <h3 style={{ fontSize: '1.5em', }}>Subscription Details</h3>
                                 <p style={{ fontSize: '1.5em' }}>You are using {userPlan?.variantName}</p>
-
                             </div> */}
                             <div className="creditUsageContainers" style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
                             </div>

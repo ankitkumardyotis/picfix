@@ -69,7 +69,7 @@ function ImageColorization() {
   // console.log("context payh", context.path)
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
-    console.log("url for cjwbw", toSwitchRestoreUrl)
+    // console.log("url for cjwbw", toSwitchRestoreUrl)
     await new Promise((resolve) => setTimeout(resolve, 500));
     setLoading(true);
     const res = await fetch("/api/generateColorizationImage", {
