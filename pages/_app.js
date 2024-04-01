@@ -25,6 +25,6 @@ export default function App({
         <Component {...pageProps} />
         <Footer />
       </AppContext.Provider>
-    </SessionProvider >
+    </SessionProvider>
   )
 }
