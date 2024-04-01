@@ -89,7 +89,7 @@ model WebhookEvent {
   replicateId String
   created_at  DateTime
   model       String
-  output      String
+  output      Json
   status      String
 }
 
