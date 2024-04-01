@@ -5,6 +5,7 @@ import '@/styles/globals.css'
 import { useState } from 'react';
 import AppContext from '@/components/AppContext';
 import Footer from '@/components/Footer';
+import { Analytics } from "@vercel/analytics/react"
 
 
 export default function App({
@@ -18,7 +19,8 @@ export default function App({
   <script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
   return (
     <SessionProvider session={session}>
-      <AppContext.Provider value={{ fileUrl, setFileUrl,path, setPath }}>
+      <Analytics />
+      <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath }}>
         <NavBar open={open} setOpen={setOpen} />
         <Component {...pageProps} />
         <Footer />
