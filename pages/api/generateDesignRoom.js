@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   const planData = await getUserPlan(session.user.id)
-  console.log("planData=====.",planData)
+  console.log("planData=====.", planData)
 
   if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
     res.status(402).json("Please Subscribe to a plan to use this feature.");
@@ -66,6 +66,7 @@ export default async function handler(req, res) {
       // // GET request to get the status of the image  process & return the result when it's ready
       let restoredImage = null;
       let responseFromReplicate;
+      let count = 0;
       while (!restoredImage) {
         // Loop in 1s intervals until the alt text is ready
         console.log("polling for result...");
@@ -78,7 +79,20 @@ export default async function handler(req, res) {
         });
         let jsonFinalResponse = await finalResponse.json();
         console.log("Json response" + jsonStartResponse.output);
-
+        count = count + 2;
+        if (count > 100) {
+          const cancleJson = await fetch(cancelUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + process.env.REPLICATE_API_KEY,
+            },
+          })
+          console.log("cancleJson", cancleJson)
+          res.status(500).json(cancleJson)
+          break;
+          return;
+        }
 
         if (jsonFinalResponse.status === "succeeded") {
           restoredImage = jsonFinalResponse.output;
@@ -112,7 +126,7 @@ export default async function handler(req, res) {
         } else if (jsonFinalResponse.status === "failed") {
           break;
         } else {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } res.status(200).json(responseFromReplicate);
     }

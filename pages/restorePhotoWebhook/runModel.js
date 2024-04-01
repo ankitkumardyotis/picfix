@@ -53,12 +53,76 @@ function RestorePhoto() {
     }, [session, status, router]);
 
 
+    // async function generatePhoto(fileUrl) {
+    //     await new Promise((resolve) => setTimeout(resolve, 500));
+    //     setLoading(true);
+    //     const res = await fetch("/api/generateRestoreImage", {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify({ imageUrl: fileUrl }),
+    //     });
+    //     let result = await res.json();
+    //     console.log("newPhoto=>>>>>>>>>>>>", result)
+    //     if (res.status !== 200) {
+    //         setError(result);
+    //         setLoadCircularProgress(true)
+    //     } else {
 
+    //         setRestoredPhoto(result.output);
+
+    //         if (userPlan) {
+
+    //             const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+    //             if (!response.ok) {
+    //                 throw new Error('Failed to fetch plan data');
+    //             }
+    //             // const data = await response.json();
+    //             // console.log("data after saveingś ===>", data.plan)
+
+    //             // const data = {
+    //             //     userId: session.user.id,
+    //             //     model: result.model,
+    //             //     status: result.status,
+    //             //     createdAt: result.created_at,
+    //             //     replicateId: result.id
+    //             // }
+    //             const history = await fetch('/api/dataFetchingDB/updateHistory', {
+    //                 method: "POST",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                 },
+    //                 body: JSON.stringify({
+    //                     userId: session.user.id,
+    //                     model: result.model,
+    //                     status: result.status,
+    //                     createdAt: result.created_at,
+    //                     replicateId: result.id
+    //                 }),
+
+    //             });
+    //             // console.log("history", history)
+    //             if (!history.ok) {
+    //                 throw new Error('Failed to fetch plan data');
+    //             }
+    //             // const saveHistory=await createHistory(data);
+    //             // console.log("rersponse from replicate ", data)
+    //         }
+
+
+
+    //         setError(null)
+    //         setLoadCircularProgress(false)
+    //     }
+    //     setLoading(false);
+    // }
     async function generatePhoto(fileUrl) {
         setLoading(true);
         let count = 0;
         try {
             const timeCount = setInterval(() => {
+                console.log("hello This is Interval", count)
                 count++
             }, 1000);
 
@@ -67,13 +131,14 @@ function RestorePhoto() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ imageUrl: fileUrl, apiName: 'restorePhoto' }),
+                body: JSON.stringify({ imageUrl: fileUrl }),
             });
             if (!res.ok) {
                 throw new Error('Failed to generate photo');
             }
             const result = await res.json();
-            const replicateImageId = result.id;
+            const replicateImageId = result.id
+            console.log("result of prediction", result)
             let webhookDBResponse;
 
             while (!webhookDBResponse) {
@@ -84,47 +149,76 @@ function RestorePhoto() {
                     // console.log("response", data)
 
                     webhookDBResponse = data;
-                    if (data.webhookData.output[0]) {
+                    if (data.webhookData.output) {
                         clearInterval(timeCount);
-                        if (userPlan) {
-
-                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                            if (!response.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    userId: session.user.id,
-                                    model: data.webhookData.model,
-                                    status: data.webhookData.status,
-                                    createdAt: data.webhookData.created_at,
-                                    replicateId: data.webhookData.id
-                                }),
-
-                            });
-                            // console.log("history", history)
-                            if (!history.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                        }
-                        setRestoredPhoto(data.webhookData.output[0]);
+                        setRestoredPhoto(data.webhookData.output);
                     }
 
                 } else {
                     if (count > 99) {
                         clearInterval(timeCount);
+                        console.log("time out===================>")
                         const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
                         setLoadCircularProgress(true)
+                        console.log("not success")
                         break;
+                        return;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 1000));
+                    // console.log("checkPredictionInDB", response)
                 }
+                console.log("You are out of loop")
             }
+
+
+
+            // const successfulWebhookRes = await fetch("/api/replicatePredictionWebhook/restorePhotoWebhook");
+            // console.log("Succeesffull webhook", successfulWebhookRes)
+
+            // let successfulWebhookRes;
+            // while (successfulWebhookRes != "wait") {
+            //     await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every 10 seconds
+            //     successfulWebhookRes = await fetch("/api/replicatePredictionWebhook/restorePhotoWebhook");
+            //     console.log("Succeesffull webhook", successfulWebhookRes);
+            // }
+
+            // Step 4: Once you receive the successful webhook response, update state or perform further actions
+            // const webhookData = await successfulWebhookRes.json();
+            // console.log("Webhook response", webhookData);
+
+            // Step 5: Handle other operations like updating user plan, etc. if needed
+
+
+            // setRestoredPhoto(result);
+
+            // if (userPlan) {
+            //     const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+            //     if (!updateResponse.ok) {
+            //         throw new Error('Failed to update user plan');
+            //     }
+            //     console.log("updateResponse", updateResponse)
+
+            //     const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
+            //         method: "POST",
+            //         headers: {
+            //             "Content-Type": "application/json",
+            //         },
+            //         body: JSON.stringify({
+            //             userId: session.user.id,
+            //             model: result.model,
+            //             status: result.status,
+            //             createdAt: result.created_at,
+            //             replicateId: result.id
+            //         }),
+            //     });
+
+            //     console.log("historyResponse", historyResponse)
+            //     if (!historyResponse.ok) {
+            //         throw new Error('Failed to create history entry');
+            //     }
+            // }
+
             setError(null);
         } catch (error) {
             console.error('Error generating photo==>', error);
@@ -133,7 +227,7 @@ function RestorePhoto() {
             setLoading(false);
         }
     }
-
+    console.log("Restore photo replicate url", restoredPhoto)
     useEffect(() => {
         if (fileUrl) {
             generatePhoto(fileUrl);

@@ -57,112 +57,231 @@ function ClothingFashion() {
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
     const fetchUserPlan = async () => {
-      try {
-        const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch plan data');
+        try {
+            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+            }
+            const data = await response.json();
+            // console.log("data", data.plan)
+            // return data.plan;
+            setUserPlan(data.plan)
+            setUserPlanStatus(true)
+        } catch (error) {
+            console.error('Error fetching plan data:', error);
         }
-        const data = await response.json();
-        // console.log("data", data.plan)
-        // return data.plan;
-        setUserPlan(data.plan)
-        setUserPlanStatus(true)
-      } catch (error) {
-        console.error('Error fetching plan data:', error);
-      }
     };
-  
+
     useEffect(() => {
-      if (status === "loading") {
-        setLoadindSession(true);
-      } else if (!session) {
-        router.push("/login");
-      } else {
-        setLoadindSession(false);
-        fetchUserPlan();
-      }
+        if (status === "loading") {
+            setLoadindSession(true);
+        } else if (!session) {
+            router.push("/login");
+        } else {
+            setLoadindSession(false);
+            fetchUserPlan();
+        }
     }, [session, status, router]);
-  
-  
-  
+
+
+
 
     // GFPGAN model calling 
     async function generateRestorePhoto(urlFromColorization) {
         console.log(" url for gfpgan", urlFromColorization);
         setLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      
-        const res = await fetch("/api/generateRestoreImage", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ imageUrl: urlFromColorization[3] }),
-        });
-        let result = await res.json();
-        if (res.status !== 200) {
-            setError(result);
-            setLoadCircularProgress(true)
-        } else {
-            setRestoredPhoto(result.output);
-            setOriginalImageByReplicate(result.output[0]);
-            if (userPlan) {
-                const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update user plan');
-                }
-                console.log("updateResponse", updateResponse)
-    
-                const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        userId: session.user.id,
-                        model: "naklecha/fashion-ai",
-                        status: result.status,
-                        createdAt: result.created_at,
-                        replicateId: result.id
-                    }),
-                });
-    
-                console.log("historyResponse", historyResponse)
-                if (!historyResponse.ok) {
-                    throw new Error('Failed to create history entry');
+        let count = 0;
+        try {
+            const timeCount = setInterval(() => {
+                count++
+            }, 1000);
+
+            const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ imageUrl: urlFromColorization[3], apiName: 'restorePhoto' }),
+            });
+            if (!res.ok) {
+                throw new Error('Failed to generate photo');
+            }
+            const result = await res.json();
+            const replicateImageId = result.id;
+            let webhookDBResponse;
+
+            console.log("result===================>", result)
+
+            while (!webhookDBResponse) {
+
+                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
+                if (response.status == 200) {
+                    const data = await response.json();
+                    console.log("response in trendy llook", data)
+
+                    webhookDBResponse = data;
+                    if (data.webhookData.output[0]) {
+                        clearInterval(timeCount);
+                        if (userPlan) {
+
+                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch plan data');
+                            }
+                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    userId: session.user.id,
+                                    model: data.webhookData.model,
+                                    status: data.webhookData.status,
+                                    createdAt: data.webhookData.created_at,
+                                    replicateId: data.webhookData.id
+                                }),
+
+                            });
+                            // console.log("history", history)
+                            if (!history.ok) {
+                                throw new Error('Failed to fetch plan data');
+                            }
+                        }
+                        setRestoredPhoto(data.webhookData.output[0]);
+                    }
+
+                } else {
+                    if (count > 199) {
+                        clearInterval(timeCount);
+                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                        setError("true");
+                        setLoadCircularProgress(true)
+                        break;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
                 }
             }
-            setError(null)
-            setLoadCircularProgress(false)
+            setError(null);
+        } catch (error) {
+            console.error('Error generating photo==>', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
+
+
+
+
+    // if (res.status !== 200) {
+    //     setError(result);
+    //     setLoadCircularProgress(true)
+    // } else {
+    //     setRestoredPhoto(result.output);
+    //     setOriginalImageByReplicate(result.output[0]);
+    //     setError(null)
+    //     setLoadCircularProgress(false)
+    // }
+    // setLoading(false);
+
+
+
+
+
+
+
+    // async function generatePhoto(fileUrl) {
+    //     await new Promise((resolve) => setTimeout(resolve, 500));
+    //     setLoading(true);
+    //     const res = await fetch("/api/generateClothingFashion", {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, clothingPosition: clothingPosition }),
+    //     });
+    //     let result = await res.json();
+    //     if (res.status !== 200) {
+    //         setError(result);
+    //         setLoadCircularProgress(true)
+    //     } else {
+    //         const urlFromColorization = result.output;
+    //         generateRestorePhoto(urlFromColorization);
+    //         setError(null)
+    //         setLoadCircularProgress(false)
+    //         // setOriginalImageByReplicate(newPhoto[0]);
+    //     }
+    // }
+
 
     async function generatePhoto(fileUrl) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
         setLoading(true);
-        const res = await fetch("/api/generateClothingFashion", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, clothingPosition: clothingPosition }),
-        });
-        let result = await res.json();
-        if (res.status !== 200) {
-            setError(result);
-            setLoadCircularProgress(true)
-        } else {
-            const urlFromColorization = result.output;
-            generateRestorePhoto(urlFromColorization);
-            setError(null)
-            setLoadCircularProgress(false)
-            // setOriginalImageByReplicate(newPhoto[0]);
+        let count = 0;
+        try {
+            const timeCount = setInterval(() => {
+                count++
+            }, 1000);
+
+            const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, clothingPosition: clothingPosition, apiName: 'trendyLook' }),
+            });
+            if (!res.ok) {
+                throw new Error('Failed to generate photo');
+            }
+            const result = await res.json();
+            const replicateImageId = result.id;
+            let webhookDBResponse;
+            while (!webhookDBResponse) {
+                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
+                if (response.status == 200) {
+                    const data = await response.json();
+                    console.log("response in cloth fashion", data)
+
+                    webhookDBResponse = data;
+                    // if (data.webhookData.output.length > 0) {
+                    // clearInterval(timeCount);
+                    const urlFromColorization = data.webhookData.output[0];
+                    console.log("data inside if ", data.webhookData);
+                    generateRestorePhoto(urlFromColorization);
+                    // setRestoredPhoto(data.webhookData.output[0]);
+                    // }
+
+                } else {
+                    if (count > 199) {
+                        console.log("count ", count)
+                        clearInterval(timeCount);
+                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                        setError("true");
+                        setLoadCircularProgress(true)
+                        break;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                }
+            }
+
+            // if (res.status !== 200) {
+            //     setError(result);
+            //     setLoadCircularProgress(true)
+            // } else {
+            //     const urlFromColorization = result.output;
+            //     generateRestorePhoto(urlFromColorization);
+            //     setError(null)
+            //     setLoadCircularProgress(false)
+            //     // setOriginalImageByReplicate(newPhoto[0]);
+            // }
+        } catch (error) {
+            console.error('Error generating photo==>', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
+
+
     }
-
-
-
 
     const handleInputChange = (event) => {
         setPrompt(event.target.value);
@@ -250,13 +369,13 @@ function ClothingFashion() {
         }
         if (fileUrl && requireValuePrompt) {
             generatePhoto(fileUrl);
-            setTimeout(() => {
-                if (!restoredPhoto) {
-                    setError("true");
-                    setLoadCircularProgress(true)
-                }
+            // setTimeout(() => {
+            //     if (!restoredPhoto) {
+            //         setError("true");
+            //         setLoadCircularProgress(true)
+            //     }
 
-            }, "100000")
+            // }, "100000")
             setClicktoGo(true)
 
         } else {
@@ -280,7 +399,7 @@ function ClothingFashion() {
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
         return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
             <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price')}}>Buy Credits</Button>
+            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
         </Box>
     }
 
@@ -394,7 +513,7 @@ function ClothingFashion() {
                                                     {" "}
                                                     {/* <CircularProgress color="inherit" /> */}
                                                     <CircularWithValueLabel />
-                                                    
+
                                                 </div>
                                             ) : (!restoredPhoto && loadCircularProgress === true &&
                                                 <div
@@ -412,8 +531,8 @@ function ClothingFashion() {
                                                         <span style={{ cursor: 'pointer', textDecoration: 'underline' }}
                                                             onClick={() => {
                                                                 setFileUrl(''),
-                                                                setRestoredPhoto(''),
-                                                                setLoadCircularProgress(false)
+                                                                    setRestoredPhoto(''),
+                                                                    setLoadCircularProgress(false)
                                                                 setLoading(false)
                                                                 setError(null)
                                                                 router.push('#ClickToUp')

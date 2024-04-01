@@ -18,67 +18,118 @@ function RemoveBackground() {
 
     const router = useRouter();
     const { data: session, status } = useSession();
-    const [userPlan, setUserPlan] = useState('');
-    const [userPlanStatus, setUserPlanStatus] = useState(false);
-    // const fetchUserPlan = async () => {
-    //   try {
-    //     const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-    //     if (!response.ok) {
-    //       throw new Error('Failed to fetch plan data');
-    //     }
-    //     const data = await response.json();
-    //     // console.log("data", data.plan)
-    //     // return data.plan;
-    //     setUserPlan(data.plan)
-    //     setUserPlanStatus(true)
-    //   } catch (error) {
-    //     console.error('Error fetching plan data:', error);
-    //   }
-    // };
-  
-    useEffect(() => {
-      if (status === "loading") {
-        setLoadindSession(true);
-      } else if (!session) {
-        router.push("/login");
-      } else {
-        setLoadindSession(false);
-        // fetchUserPlan();
-      }
-    }, [session, status, router]);
-  
-  
-  
-  
-    // useEffect(() => {
-    //   if (userPlanStatus && userPlan === null) {
-    //     console.log("fetchedPlan in", userPlan)
-    //     router.push("/price");
-    //   }
-    // }, [userPlan, router]);
+    // const [userPlan, setUserPlan] = useState('');
+    // const [userPlanStatus, setUserPlanStatus] = useState(false);
+
 
     useEffect(() => {
-        async function generatePhoto(fileUrl) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            setLoading(true);
-            const res = await fetch("/api/genarateRemoveImage", {
+        if (status === "loading") {
+            setLoadindSession(true);
+        } else if (!session) {
+            router.push("/login");
+        } else {
+            setLoadindSession(false);
+        }
+    }, [session, status, router]);
+
+    async function generatePhoto(fileUrl) {
+        setLoading(true);
+        let count = 0;
+        try {
+            const timeCount = setInterval(() => {
+                count++
+            }, 1000);
+
+            const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ imageUrl: fileUrl }),
+                body: JSON.stringify({ imageUrl: fileUrl, apiName: 'backgroundRemoval' }),
             });
-            let newPhoto = await res.json();
-            if (res.status !== 200) {
-                setError(newPhoto);
-                setLoadCircularProgress(true)
-            } else {
-                setRestoredPhoto(newPhoto);
-                setError(null)
-                setLoadCircularProgress(false)
+            if (!res.ok) {
+                throw new Error('Failed to generate photo');
             }
+            const result = await res.json();
+            const replicateImageId = result.id;
+            let webhookDBResponse;
+
+            while (!webhookDBResponse) {
+
+                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
+                if (response.status == 200) {
+                    const data = await response.json();
+                    // console.log("response", data)
+
+                    webhookDBResponse = data;
+                    if (data.webhookData.output[0]) {
+                        clearInterval(timeCount);
+
+                        const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                userId: session.user.id,
+                                model: data.webhookData.model,
+                                status: data.webhookData.status,
+                                createdAt: data.webhookData.created_at,
+                                replicateId: data.webhookData.id
+                            }),
+
+                        });
+                        // console.log("history", history)
+                        if (!history.ok) {
+                            throw new Error('Failed to fetch plan data');
+                        }
+                        setRestoredPhoto(data.webhookData.output[0]);
+                    }
+
+                } else {
+                    if (count > 99) {
+                        clearInterval(timeCount);
+                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                        setError("true");
+                        setLoadCircularProgress(true)
+                        break;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                }
+            }
+            setError(null);
+        } catch (error) {
+            console.error('Error generating photo==>', error);
+            setError(error.message);
+        } finally {
             setLoading(false);
         }
+    }
+
+
+
+    useEffect(() => {
+        // async function generatePhoto(fileUrl) {
+        //     await new Promise((resolve) => setTimeout(resolve, 500));
+        //     setLoading(true);
+        //     const res = await fetch("/api/genarateRemoveImage", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({ imageUrl: fileUrl }),
+        //     });
+        //     let newPhoto = await res.json();
+        //     if (res.status !== 200) {
+        //         setError(newPhoto);
+        //         setLoadCircularProgress(true)
+        //     } else {
+        //         setRestoredPhoto(newPhoto);
+        //         setError(null)
+        //         setLoadCircularProgress(false)
+        //     }
+        //     setLoading(false);
+        // }
 
         if (fileUrl) {
             generatePhoto(fileUrl);
@@ -92,6 +143,11 @@ function RemoveBackground() {
             }, 100000);
         }
     }, [fileUrl]);
+
+
+
+
+
 
     if (status === "loading" || !session) {
         return <div>Loading...</div>;

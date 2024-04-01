@@ -70,110 +70,256 @@ function ImageColorization() {
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
     console.log("url for cjwbw", toSwitchRestoreUrl)
-    await new Promise((resolve) => setTimeout(resolve, 500));
     setLoading(true);
-    const res = await fetch("/api/generateColorizationImage", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imageUrl: toSwitchRestoreUrl }),
-    });
-    console.log("res in image colorization", res)
-    let result = await res.json();
-    console.log("res in image colorization", result)
-    if (res.status !== 200) {
-      setError(result);
-      setLoadCircularProgress(true)
-    } else {
-      setRestoredPhoto(toSwitchRestoreUrl);
-      setimageColorization(result.output[0].image);
-      setimageColorizationOne(result.output[1].image)
-      setimageColorizationTwo(result.output[2].image)
-      setimageColorizationThree(result.output[3].image)
-      setimageColorizationFour(result.output[4].image)
+    let count = 0;
+    try {
+      const timeCount = setInterval(() => {
+        count++
+      }, 1000);
 
-      if (userPlan) {
-        const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-        if (!updateResponse.ok) {
-          throw new Error('Failed to update user plan');
+      const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl: toSwitchRestoreUrl, apiName: 'imageColorization' }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to generate photo');
+      }
+      const result = await res.json();
+      const replicateImageId = result.id;
+      let webhookDBResponse;
+
+      // if (res.status !== 200) {
+      //   setError(result);
+      //   setLoadCircularProgress(true)
+      // } else {
+      // setRestoredPhoto(toSwitchRestoreUrl);
+      // setimageColorization(result.output[0].image);
+      // setimageColorizationOne(result.output[1].image)
+      // setimageColorizationTwo(result.output[2].image)
+      // setimageColorizationThree(result.output[3].image)
+      // setimageColorizationFour(result.output[4].image)
+
+
+
+      while (!webhookDBResponse) {
+
+        const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
+        if (response.status == 200) {
+          const data = await response.json();
+          // console.log("response", data)
+
+          webhookDBResponse = data;
+          if (data.webhookData.output[0]) {
+            clearInterval(timeCount);
+            if (userPlan) {
+
+              const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+              if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+              }
+              const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId: session.user.id,
+                  model: data.webhookData.model,
+                  status: data.webhookData.status,
+                  createdAt: data.webhookData.created_at,
+                  replicateId: data.webhookData.id
+                }),
+
+              });
+              // console.log("history", history)
+              if (!history.ok) {
+                throw new Error('Failed to fetch plan data');
+              }
+            }
+            // setRestoredPhoto(data.webhookData.output[0]);
+            setRestoredPhoto(toSwitchRestoreUrl);
+            setimageColorization(data.webhookData.output[0][0].image);
+            setimageColorizationOne(data.webhookData.output[0][1].image)
+            setimageColorizationTwo(data.webhookData.output[0][2].image)
+            setimageColorizationThree(data.webhookData.output[0][3].image)
+            setimageColorizationFour(data.webhookData.output[0][4].image)
+          }
+
+        } else {
+          if (count > 99) {
+            clearInterval(timeCount);
+            const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+            setError("true");
+            setLoadCircularProgress(true)
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        console.log("updateResponse", updateResponse)
+      }
+      setError(null);
 
-        const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: session.user.id,
-            model: result.model,
-            status: result.status,
-            createdAt: result.created_at,
-            replicateId: result.id
-          }),
-        });
+    } catch (error) {
+      console.error('Error generating photo==>', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
 
-        console.log("historyResponse", historyResponse)
-        if (!historyResponse.ok) {
-          throw new Error('Failed to create history entry');
+
+  }
+
+
+
+  // setLoading(false)
+  // setError(null)
+  // setLoadCircularProgress(false)
+
+
+  // async function generateCJWBWPhoto(toSwitchRestoreUrl) {
+  //   // console.log("url for cjwbw", toSwitchRestoreUrl)
+  //   await new Promise((resolve) => setTimeout(resolve, 500));
+  //   setLoading(true);
+  //   const res = await fetch("/api/generateColorizationImage", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ imageUrl: toSwitchRestoreUrl }),
+  //   });
+  //   console.log("res in image colorization", res)
+  //   let result = await res.json();
+  //   console.log("res in image colorization", result)
+  //   if (res.status !== 200) {
+  //     setError(result);
+  //     setLoadCircularProgress(true)
+  //   } else {
+  //     setRestoredPhoto(toSwitchRestoreUrl);
+  //     setimageColorization(result.output[0].image);
+  //     setimageColorizationOne(result.output[1].image)
+  //     setimageColorizationTwo(result.output[2].image)
+  //     setimageColorizationThree(result.output[3].image)
+  //     setimageColorizationFour(result.output[4].image)
+
+  //     if (userPlan) {
+  //       const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+  //       if (!updateResponse.ok) {
+  //         throw new Error('Failed to update user plan');
+  //       }
+  //       console.log("updateResponse", updateResponse)
+
+  //       const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           userId: session.user.id,
+  //           model: result.model,
+  //           status: result.status,
+  //           createdAt: result.created_at,
+  //           replicateId: result.id
+  //         }),
+  //       });
+
+  //       console.log("historyResponse", historyResponse)
+  //       if (!historyResponse.ok) {
+  //         throw new Error('Failed to create history entry');
+  //       }
+  //     }
+
+
+
+
+  //     setLoading(false)
+  //     setError(null)
+  //     setLoadCircularProgress(false)
+  //   }
+  // }
+
+  // GFPGAN model calling 
+  async function generateRestorePhoto(fileUrl) {
+    setLoading(true);
+    let count = 0;
+    try {
+      const timeCount = setInterval(() => {
+        count++
+      }, 1000);
+
+      const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl: fileUrl, apiName: 'restorePhoto' }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to generate photo');
+      }
+      const result = await res.json();
+      const replicateImageId = result.id;
+      console.log("result in restore =====>", result)
+      let webhookDBResponse;
+      while (!webhookDBResponse) {
+
+        const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
+        console.log("respoone", response)
+        if (response.status == 200) {
+          const data = await response.json();
+          console.log("response", data)
+
+          webhookDBResponse = data;
+          // console.log("webhook response in restore photo", webhookData)
+          // if (data) {
+          clearInterval(timeCount);
+          let toSwitchRestoreUrl = data.webhookData.output[0];
+          console.log("toSwitchRestoreUrl in restore=====>", toSwitchRestoreUrl);
+          generateCJWBWPhoto(toSwitchRestoreUrl);
+          setRestoreImageURLForVarient(toSwitchRestoreUrl);
+          // }
+
+        } else {
+          if (count > 99) {
+            clearInterval(timeCount);
+            const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+            setError("true");
+            setLoadCircularProgress(true)
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
 
-
-
-      setLoading(false)
-      setError(null)
-      setLoadCircularProgress(false)
+      // } else {
+      //   let toSwitchRestoreUrl = result.output;
+      //   generateCJWBWPhoto(toSwitchRestoreUrl);
+      //   setRestoreImageURLForVarient(toSwitchRestoreUrl);
+      //   setError(null)
+      //   setLoadCircularProgress(false)
+      // }
+      // setLoading(false);
+    }
+    catch (error) {
+      console.error('Error generating photo==>', error);
+      setError(error.message);
     }
   }
-
-  // GFPGAN model calling 
-  async function generateRestorePhoto(fileUrl) {
-    console.log(" url for gfpgan", fileUrl);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setLoading(true);
-    const res = await fetch("/api/generateRestoreImage", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imageUrl: fileUrl }),
-    });
-
-    console.log("res in image colorization", res)
-    if (!res.ok) {
-      throw new Error('Failed to generate photo');
-    }
-    let result = await res.json();
-    console.log("res in image colorization", result)
-    if (res.status !== 200) {
-      setError(result);
-      setLoadCircularProgress(true)
-    } else {
-      let toSwitchRestoreUrl = result.output;
-      generateCJWBWPhoto(toSwitchRestoreUrl);
-      setRestoreImageURLForVarient(toSwitchRestoreUrl);
-      setError(null)
-      setLoadCircularProgress(false)
-    }
-    // setLoading(false);
-  }
-
   useEffect(() => {
     if (fileUrl) {
       generateRestorePhoto(fileUrl);
-      setTimeout(() => {
-        if (!restoredPhoto) {
-          setError("true");
-          setLoadCircularProgress(true)
-          console.log("not success")
-        } else {
-          // alert("success")
-        }
+      // setTimeout(() => {
+      //   if (!restoredPhoto) {
+      //     setError("true");
+      //     setLoadCircularProgress(true)
+      //     console.log("not success")
+      //   } else {
+      //     // alert("success")
+      //   }
 
-      }, "100000")
+      // }, "100000")
     }
   }, [fileUrl]);
 

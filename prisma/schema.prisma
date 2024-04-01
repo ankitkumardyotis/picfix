@@ -33,15 +33,15 @@ datasource db {
 // }
 
 model Plan {
-  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId                String    @unique @db.ObjectId
-  userName              String?
-  emailId               String?
-  planName              String
-  creditPoints          Int
-  remainingPoints       Int
-  createdAt             DateTime
-  expiredAt             DateTime?
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @unique @db.ObjectId
+  userName        String?
+  emailId         String?
+  planName        String
+  creditPoints    Int
+  remainingPoints Int
+  createdAt       DateTime
+  expiredAt       DateTime?
 }
 
 model PaymentHistory {
@@ -84,14 +84,14 @@ model User {
   @@map("users")
 }
 
-// model WebhookEvent {
-//   id              String   @id @default(auto()) @map("_id") @db.ObjectId
-//   createdAt       DateTime @default(now())
-//   eventName       String
-//   processed       Boolean  @default(false)
-//   body            Json
-//   processingError String?
-// }
+model WebhookEvent {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  replicateId String
+  created_at  DateTime
+  model       String
+  output      Json
+  status      String
+}
 
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId

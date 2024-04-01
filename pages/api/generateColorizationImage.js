@@ -42,10 +42,12 @@ export default async function handler(req, res) {
     let jsonStartResponse = await startResponse.json();
     console.log("Responses", jsonStartResponse);
     let endpointUrl = jsonStartResponse.urls.get;
+    let cancelUrl = jsonStartResponse.urls.cancel;
 
     // GET request to get the status of the image restoration process & return the result when it's ready
     let restoredImage = null;
     let responseFromReplicate;
+    let count = 0;
 
     while (!restoredImage) {
       // Loop in 1s intervals until the alt text is ready
@@ -58,7 +60,22 @@ export default async function handler(req, res) {
         },
       });
       let jsonFinalResponse = await finalResponse.json();
-      console.log("responseFromReplicate in image colorization", jsonFinalResponse)
+      console.log("count ", count)
+      count=count+2;
+      
+      if (count > 80) {
+        const cancleJson = await fetch(cancelUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Token " + process.env.REPLICATE_API_KEY,
+          },
+        })
+        console.log("cancleJson", cancleJson)
+        res.status(500).json(cancleJson)
+        break;
+        return;
+      }
       if (jsonFinalResponse.status === "succeeded") {
         restoredImage = jsonFinalResponse.output;
         responseFromReplicate = jsonFinalResponse
@@ -91,7 +108,7 @@ export default async function handler(req, res) {
       } else if (jsonFinalResponse.status === "failed") {
         break;
       } else {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     } res.status(200).json(responseFromReplicate)
   }
