@@ -37,6 +37,8 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
+   console.log(session)
+
     const fetchUserPlan = async () => {
         console.log("kjbhgv")
         try {
@@ -58,8 +60,16 @@ export default function AccountMenu() {
 
     return (
         <React.Fragment>
+        <div onClick={handleClick} style={{cursor:"pointer"}}>
+         {session ?
+         <div>
+         <div style={{ width: '12px', height: '12px' , backgroundColor:"green" ,borderRadius: '50%' ,position:"absolute" , right:"30px" ,top:"6px", border:"2px solid white" }}></div>
+     
+          <img style={{ width: '35px', height: '35px', marginRight:"10px", borderRadius: '50%',  }} src={session.user.image} alt={session.user.name} /> </div>
+          :
             <Icon
-                onClick={handleClick}
+             
+          
                 size="large"
                 // sx={{ pr: 8 }}
                 aria-controls={open ? 'account-menu' : undefined}
@@ -72,7 +82,10 @@ export default function AccountMenu() {
                 <WidgetsIcon fontSize='large' />
                 {/* < Avatar alt={session ? session?.user.name : "jhbhb"} src={session && session?.user.image} /> */}
 
-            </Icon >
+            </Icon>
+
+         }
+         </div>
             <Menu
                 autoFocus={false}
                 disableScrollLock={true}
@@ -114,6 +127,7 @@ export default function AccountMenu() {
                     <UpgradeIcon fontSize="large" />  Buy Credits
                 </MenuItem> */}
                 {/* <Avatar /> */}
+                
                 {session && <> <MenuItem onClick={async() => {
                     
                     const { plan } = await fetchUserPlan();
@@ -125,7 +139,7 @@ export default function AccountMenu() {
                     }
                     router.push('/dashboard')
                 }}>
-                    {!session.user.image ? <img style={{ width: '40px', height: '40px', borderRadius: '50%' }} href={session.user.image} alt={session.user.name} /> : <Avatar />}  My account
+                    {session && <img style={{ width: '35px', height: '35px', marginRight:"10px", borderRadius: '50%' }} src={session.user.image} alt={session.user.name} /> } My Account
                 </MenuItem>
                     <Divider />
                 </>}
