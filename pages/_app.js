@@ -5,11 +5,7 @@ import '@/styles/globals.css'
 import { useEffect, useState } from 'react';
 import AppContext from '@/components/AppContext';
 import Footer from '@/components/Footer';
-<<<<<<< HEAD
 import Script from "next/script";
-=======
-import { Analytics } from "@vercel/analytics/react"
->>>>>>> 2fac2e4fbf2718a7eb8a6eeaa6229ba2d028b132
 
 
 export default function App({
@@ -25,7 +21,6 @@ export default function App({
   // <script src='../../utils/transformer.js'>
   // </script>
   return (
-<<<<<<< HEAD
     <>
       <SessionProvider session={session}>
         <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, setRemoveImageFromTransformerJs }}>
@@ -36,15 +31,5 @@ export default function App({
       </SessionProvider >
 
     </>
-=======
-    <SessionProvider session={session}>
-      <Analytics />
-      <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath }}>
-        <NavBar open={open} setOpen={setOpen} />
-        <Component {...pageProps} />
-        <Footer />
-      </AppContext.Provider>
-    </SessionProvider>
->>>>>>> 2fac2e4fbf2718a7eb8a6eeaa6229ba2d028b132
   )
 }
