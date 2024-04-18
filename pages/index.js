@@ -14,7 +14,7 @@ export default function Home({ open, setOpen }) {
 
 
 
-  return (    
+  return (
     <>
 
       <Head>
@@ -48,7 +48,7 @@ export default function Home({ open, setOpen }) {
         {/* <Footer /> */}
       </main>
 
-
+  
     </>
   );
 }
