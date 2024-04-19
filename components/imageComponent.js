@@ -33,7 +33,6 @@ function ImageComponent(props) {
     const [restoreImageCompleteLoaded, setRestoreImageCompleteLoaded] = useState(false);
 
 
-
     useEffect(() => {
         if (matches) {
             setToggleClick(true);
@@ -161,8 +160,8 @@ function ImageComponent(props) {
                                         {!matches && <span class="before-after-badge">Before</span>}
                                     </div>
                                 )}
-                                <div style={{border:"2px solid black" , height:{height}, opacity:"4%"} }></div>
-                                
+                                <div style={{ border: "2px solid black", height: { height }, opacity: "4%" }}></div>
+
                                 <div className="restoredImageContainer" style={props.fileUrl &&
                                     props.loading === false &&
                                     !props.restoredPhoto && matches &&

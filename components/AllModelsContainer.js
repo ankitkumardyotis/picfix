@@ -11,29 +11,29 @@ export default function AllModelsContainer() {
   const handleRestoreImage = () => {
     router.push('/restorePhoto')
     context.setFileUrl('')
-    localStorage.setItem('path','/restorePhoto')
+    localStorage.setItem('path', '/restorePhoto')
   }
   const handleBlurImage = () => {
     context.setFileUrl('')
     router.push('/imageColorization')
-    localStorage.setItem('path','/imageColorization')
+    localStorage.setItem('path', '/imageColorization')
 
   }
   const handleRemoveBG = () => {
     context.setFileUrl('')
     router.push('/backgroundRemoval')
-    localStorage.setItem('path','/backgroundRemoval')
-    
+    localStorage.setItem('path', '/backgroundRemoval')
+
   }
   const handleTrendyLook = () => {
     context.setFileUrl('')
     router.push('/trendyLook')
-    localStorage.setItem('path','/trendyLook')
+    localStorage.setItem('path', '/trendyLook')
   }
   const handleRoomDesign = () => {
     context.setFileUrl('')
     router.push('/aiHomeMakeover')
-    localStorage.setItem('path','/aiHomeMakeover')
+    localStorage.setItem('path', '/aiHomeMakeover')
   }
   const imageStyle = {
     borderRadius: '5px 5px 0px 0px',
@@ -73,8 +73,10 @@ export default function AllModelsContainer() {
             </p>
           </div>
         </div>
-        <div className="card" onClick={handleRemoveBG}>
-          <div className="card-img">
+        <div className="card" style={{ position: 'relative' }} onClick={handleRemoveBG}>
+          {/* <div className="ribbon">Free</div> */}
+          <div class="ribbon right"><h6 style={{fontSize:'28px'}}>Free</h6></div>
+          <div className="card-img ">
             <Image style={imageStyle} src="/assets/remove-background.jpg" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
