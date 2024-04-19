@@ -399,7 +399,6 @@
   animation: flyRocket 1s linear normal; /* Adjust duration and timing function as needed */
 }
 
-
 #upload-button {
   /* margin-top: 3rem; */
   display: flex;
@@ -407,7 +406,6 @@
   justify-content: center;
   align-items: center;
 }
-
 
 #upload-button {
   gap: 0.4rem;
@@ -456,4 +454,57 @@ canvas {
     justify-content: center;
     align-items: center;
   } */
+}
+
+.custom-loader {
+  width: 40px;
+  height: 40px;
+  color: #000000;
+  position: relative;
+  background: radial-gradient(10px, currentColor 94%, #0000);
+}
+.custom-loader:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(9px at bottom right, #0000 94%, currentColor) top
+      left,
+    radial-gradient(9px at bottom left, #0000 94%, currentColor) top right,
+    radial-gradient(9px at top right, #0000 94%, currentColor) bottom left,
+    radial-gradient(9px at top left, #0000 94%, currentColor) bottom right;
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  animation: sp8 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
+}
+@keyframes sp8 {
+  33% {
+    inset: -10px;
+    transform: rotate(0deg);
+  }
+  66% {
+    inset: -10px;
+    transform: rotate(90deg);
+  }
+  100% {
+    inset: 0;
+    transform: rotate(90deg);
+  }
+}
+
+.ribbon {
+  --f: 0.5em; /* control the folded part */
+  position: absolute;
+  top: 0;
+  color: #fff;
+  padding: .1em 3em;
+  background: var(--c,#bd1550);
+  border-bottom :var(--f) solid #0007;
+  clip-path: polygon(
+    100% calc(100% - var(--f)),100% 100%,calc(100% - var(--f)) calc(100% - var(--f)),var(--f) calc(100% - var(--f)), 0 100%,0 calc(100% - var(--f)),999px calc(100% - var(--f) - 999px),calc(100% - 999px) calc(100% - var(--f) - 999px))
+}
+.right {
+  right: 0;
+  transform: translate(calc((1 - cos(45deg))*100%), -100%) rotate(45deg);
+  transform-origin: 0% 100%;
 }

@@ -176,7 +176,7 @@ export default function RemoveBackground() {
                         </div>}
                     </div>
                         <div className="bgremovedImage" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            {status == "Analysing..." && <CircularProgress />}
+                            {status == "Analysing..." && <div class="custom-loader"></div>}
                             {status === "Done!" && <div> <img src={bgRemovedImage} alt="Removed Image" style={{ borderRadius: '5px', width: '100%' }} /></div>}
                         </div>
                     </>}
