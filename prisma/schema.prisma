@@ -44,21 +44,39 @@ model Plan {
   expiredAt       DateTime?
 }
 
+// PhonePay Payment Schema
+// model PaymentHistory {
+//   id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+//   transactionId         String   @unique
+//   userId                String   @db.ObjectId
+//   userName              String
+//   emailId               String
+//   planName              String
+//   creditPoints          Int
+//   createdAt             DateTime
+//   amount                Int
+//   currency              String
+//   paymentStatus         String
+//   merchantId            String
+//   merchantTransactionId String
+//   paymentInstrument     Json
+// }
+
+
 model PaymentHistory {
   id                    String   @id @default(auto()) @map("_id") @db.ObjectId
   transactionId         String   @unique
+  orderId               String
   userId                String   @db.ObjectId
   userName              String
   emailId               String
+  contact               String
   planName              String
   creditPoints          Int
   createdAt             DateTime
   amount                Int
   currency              String
   paymentStatus         String
-  merchantId            String
-  merchantTransactionId String
-  paymentInstrument     Json
 }
 
 model History {

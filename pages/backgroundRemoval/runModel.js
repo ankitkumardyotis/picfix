@@ -68,7 +68,6 @@ export default function RemoveBackground() {
     useEffect(() => {
         const statusLabel = document.getElementById('status');
         const container = document.getElementById('removedBackgroundImage');
-        console.log("container================", container);
 
         if (statusLabel && container) {
             const initialStatus = statusLabel.textContent;

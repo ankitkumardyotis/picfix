@@ -64,6 +64,15 @@ function DesignRoom() {
     const [userPlan, setUserPlan] = useState('');
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
+
+    const { timerForRunModel } = useContext(AppContext);
+    const timerForRunModelRef = useRef(timerForRunModel);
+    useEffect(() => {
+        timerForRunModelRef.current = timerForRunModel;
+    }, [timerForRunModel]);
+
+
+
     const fetchUserPlan = async () => {
         try {
             const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
@@ -187,12 +196,11 @@ function DesignRoom() {
 
 
     async function generatePhoto(fileUrl) {
+        console.log("fileUrl============================================", fileUrl)
         setLoading(true);
-        let count = 0;
+
         try {
-            const timeCount = setInterval(() => {
-                count++
-            }, 1000);
+
 
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
@@ -205,6 +213,7 @@ function DesignRoom() {
                 throw new Error('Failed to generate photo');
             }
             const result = await res.json();
+            console.log("result =====================", result)
             const replicateImageId = result.id;
             let webhookDBResponse;
 
@@ -213,11 +222,10 @@ function DesignRoom() {
                 const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
                 if (response.status == 200) {
                     const data = await response.json();
-                    console.log("response", data)
+                    console.log("response======================================", data)
 
                     webhookDBResponse = data;
                     if (data.webhookData.output[0][1]) {
-                        clearInterval(timeCount);
                         if (userPlan) {
 
                             const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
@@ -243,13 +251,13 @@ function DesignRoom() {
                                 throw new Error('Failed to fetch plan data');
                             }
                         }
+                        console.log("image ",data.webhookData.output[0][1])
                         setRestoredPhoto(data.webhookData.output[0][1]);
                     }
 
                 } else {
-                    if (count > 99) {
-                        clearInterval(timeCount);
-                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                    if (timerForRunModelRef.current > 98) {
+                        await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
                         setLoadCircularProgress(true)
                         break;

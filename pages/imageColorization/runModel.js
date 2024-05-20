@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Container, Typography } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import AppContext from "@/components/AppContext";
 import Head from "next/head";
 import ImageComponent from "@/components/imageComponent";
@@ -28,6 +28,14 @@ function ImageColorization() {
   const { data: session, status } = useSession();
   const [userPlan, setUserPlan] = useState('');
   const [userPlanStatus, setUserPlanStatus] = useState(false);
+
+  const { timerForRunModel } = useContext(AppContext);
+  const timerForRunModelRef = useRef(timerForRunModel);
+  useEffect(() => {
+    timerForRunModelRef.current = timerForRunModel;
+  }, [timerForRunModel]);
+
+
   const fetchUserPlan = async () => {
     try {
       const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
@@ -56,6 +64,7 @@ function ImageColorization() {
   }, [session, status, router]);
 
 
+  console.log("context in image colorization container=============================", context.timerForRunModel);
 
 
   // useEffect(() => {
@@ -71,11 +80,11 @@ function ImageColorization() {
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
     console.log("url for cjwbw", toSwitchRestoreUrl)
     setLoading(true);
-    let count = 0;
+    // let count = 0;
     try {
-      const timeCount = setInterval(() => {
-        count++
-      }, 1000);
+      // const timeCount = setInterval(() => {
+      //   count++
+      // }, 1000);
 
       const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
         method: "POST",
@@ -149,9 +158,11 @@ function ImageColorization() {
           }
 
         } else {
-          if (count > 99) {
-            clearInterval(timeCount);
-            const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+          console.log("timerForRunModelRef in image colorization", timerForRunModelRef.current)
+          if (timerForRunModelRef.current > 98) {
+            console.log("You Are Done in image colorization at", timerForRunModelRef.current)
+
+            await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
             setError("true");
             setLoadCircularProgress(true)
             break;
@@ -242,11 +253,11 @@ function ImageColorization() {
   // GFPGAN model calling 
   async function generateRestorePhoto(fileUrl) {
     setLoading(true);
-    let count = 0;
+    // let count = 0;
     try {
-      const timeCount = setInterval(() => {
-        count++
-      }, 1000);
+      // const timeCount = setInterval(() => {
+      //   count++
+      // }, 1000);
 
       const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
         method: "POST",
@@ -273,7 +284,7 @@ function ImageColorization() {
           webhookDBResponse = data;
           // console.log("webhook response in restore photo", webhookData)
           // if (data) {
-          clearInterval(timeCount);
+          // clearInterval(timeCount);
           let toSwitchRestoreUrl = data.webhookData.output[0];
           console.log("toSwitchRestoreUrl in restore=====>", toSwitchRestoreUrl);
           generateCJWBWPhoto(toSwitchRestoreUrl);
@@ -281,9 +292,10 @@ function ImageColorization() {
           // }
 
         } else {
-          if (count > 99) {
-            clearInterval(timeCount);
-            const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+          console.log("timerForRunModelRef in restore, ", timerForRunModelRef.current)
+          if (timerForRunModelRef.current > 99) {
+            // clearInterval(timeCount);
+            await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
             setError("true");
             setLoadCircularProgress(true)
             break;
@@ -310,16 +322,6 @@ function ImageColorization() {
   useEffect(() => {
     if (fileUrl) {
       generateRestorePhoto(fileUrl);
-      // setTimeout(() => {
-      //   if (!restoredPhoto) {
-      //     setError("true");
-      //     setLoadCircularProgress(true)
-      //     console.log("not success")
-      //   } else {
-      //     // alert("success")
-      //   }
-
-      // }, "100000")
     }
   }, [fileUrl]);
 

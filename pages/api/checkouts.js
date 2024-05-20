@@ -38,7 +38,6 @@ export default async (req, res) => {
         'receipt_thank_you_note': 'Thank you for purchase Picfix.ai!'
       }
     }
-
     try {
       const checkout = await ls.createCheckout({
         storeId: process.env.LEMONSQUEEZY_STORE_ID,

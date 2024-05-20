@@ -24,7 +24,7 @@ export default async function handler(req, res) {
         // }
         output.push(successfulPrediction.output)
 
-        const saveWebhookData = await prisma.WebhookEvent.create({
+        await prisma.WebhookEvent.create({
             data: {
                 replicateId: successfulPrediction.id,
                 created_at: successfulPrediction.created_at,

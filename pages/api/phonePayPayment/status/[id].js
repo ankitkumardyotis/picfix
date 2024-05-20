@@ -42,8 +42,6 @@ export default async function POST(req, res) {
 
   try {
     const response = await axios.request(options);
-    console.log("respponse data", response.data.data.merchantTransactionId)
-    console.log("respponse data", response.data)
     if (response.data.code === "PAYMENT_SUCCESS") {
       // const data = {
       //   transactionId: response.data.data.transactionId,

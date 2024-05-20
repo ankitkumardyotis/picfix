@@ -58,12 +58,12 @@ function CreditPlanCard() {
       });
   };
   console.log("price=====>", priceDetails);
+  console.log("countryLocation=====>", countryLocation);
 
   useEffect(() => {
-    // fetchUserLocation();
-    // Temporarily setting the price details for INR
-    const inrPrice = priceStructure.filter((item) => item.country === "IN");
-    setPriceDetails(inrPrice);
+    fetchUserLocation();
+    const Price = priceStructure.filter((item) => item.country === countryLocation);
+    setPriceDetails(Price);
   }, []);
 
   const successPaymentHandler = async (price) => {
@@ -71,18 +71,47 @@ function CreditPlanCard() {
       if (!session) {
         router.push("/login");
       }
-
+      // Phone pay payment integration
+      // if (session) {
+      //   const response = await fetch("/api/phonePayPayment/checkout", {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ amount: price }),
+      //   });
+      //   const { url } = await response.json();
+      //   console.log("url", url);
+      //   router.push(url);
+      // }
       if (session) {
-        const response = await fetch("/api/phonePayPayment/checkout", {
+        const response = await fetch("/api/razorpayPayment/createCheckout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ amount: price }),
+          body: JSON.stringify({ amount: price, currency: countryLocation }),
         });
-        const { url } = await response.json();
-        console.log("url", url);
-        router.push(url);
+        const { order } = await response.json();
+
+        const options = {
+          key: process.env.RAZORPAY_TEST_KEY_ID,
+          amount: order.amount,
+          name: 'PicFix.ai',
+          currency: order.currency,
+          image: 'https://www.picfix.ai/favicon.ico',
+          order_id: order.id,
+          callback_url: "api/razorpayPayment/verifyPayment",
+          prefill: {
+            name: session.user.name,
+            email: session.user.email,
+          },
+          theme: {
+            "color": "#b2b2ff"
+          }
+        };
+        const razor = new window.Razorpay(options);
+        razor.open();
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
@@ -95,11 +124,11 @@ function CreditPlanCard() {
         <span>Credit Plans</span>
         <p style={{ marginTop: "3em", padding: "0.3rem 1.5rem" }}>
           Whether you're an individual looking to enhance your photos, or a
-          business seeking comprehensive image solutions, 
+          business seeking comprehensive image solutions,
           {matches && <br />}{" "}our pricing options
           are designed to accommodate your specific needs.
-          
-          
+
+
         </p>
       </div>
       <div

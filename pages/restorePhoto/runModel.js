@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Container, Typography } from "@mui/material";
-import React, { use, useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useRef, useState } from "react";
 import AppContext from "@/components/AppContext";
 import Head from "next/head";
 import ImageComponent from "@/components/imageComponent";
@@ -53,15 +53,15 @@ function RestorePhoto() {
     }, [session, status, router]);
 
 
+    const { timerForRunModel } = useContext(AppContext);
+    const timerForRunModelRef = useRef(timerForRunModel);
+    useEffect(() => {
+        timerForRunModelRef.current = timerForRunModel;
+    }, [timerForRunModel]);
 
-    async function generatePhoto(fileUrl) {
+    const generatePhoto = async (fileUrl) => {
         setLoading(true);
-        let count = 0;
         try {
-            const timeCount = setInterval(() => {
-                count++
-            }, 1000);
-
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
                 headers: {
@@ -76,50 +76,25 @@ function RestorePhoto() {
             const replicateImageId = result.id;
             let webhookDBResponse;
 
+            console.log("outside webhook");
             while (!webhookDBResponse) {
-
-                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
-                if (response.status == 200) {
+                console.log("context.timerForRunModel innnnnnnnnnnnnn", timerForRunModelRef.current);
+                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`);
+                if (response.status === 200) {
                     const data = await response.json();
-                    // console.log("response", data)
-
                     webhookDBResponse = data;
                     if (data.webhookData.output[0]) {
-                        clearInterval(timeCount);
-                        if (userPlan) {
-
-                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                            if (!response.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    userId: session.user.id,
-                                    model: data.webhookData.model,
-                                    status: data.webhookData.status,
-                                    createdAt: data.webhookData.created_at,
-                                    replicateId: data.webhookData.id
-                                }),
-
-                            });
-                            // console.log("history", history)
-                            if (!history.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                        }
+                        console.log("webhook available ");
+                        // clearInterval(timeCount);
+                        // Update user plan and history as needed here
                         setRestoredPhoto(data.webhookData.output[0]);
                     }
-
                 } else {
-                    if (count > 99) {
-                        clearInterval(timeCount);
-                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                    console.log("you are in else block", typeof (timerForRunModelRef.current), timerForRunModelRef.current);
+                    if (timerForRunModelRef.current > 99) {
+                        await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
-                        setLoadCircularProgress(true)
+                        setLoadCircularProgress(true);
                         break;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -132,22 +107,19 @@ function RestorePhoto() {
         } finally {
             setLoading(false);
         }
-    }
-
+    };
     useEffect(() => {
         if (fileUrl) {
             generatePhoto(fileUrl);
-            console.log("first")
             setTimeout(() => {
                 if (!restoredPhoto) {
                     setError("true");
-                    setLoadCircularProgress(true)
-                    console.log("not success")
+                    setLoadCircularProgress(true);
+                    console.log("not success");
                 } else {
                     // alert("success")
                 }
-
-            }, "100000")
+            }, 100000);
         }
     }, [fileUrl]);
 

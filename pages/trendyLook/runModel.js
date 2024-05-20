@@ -55,6 +55,15 @@ function ClothingFashion() {
     const { data: session, status } = useSession();
     const [userPlan, setUserPlan] = useState('');
 
+    const { timerForRunModel } = useContext(AppContext);
+    const timerForRunModelRef = useRef(timerForRunModel);
+    useEffect(() => {
+        timerForRunModelRef.current = timerForRunModel;
+    }, [timerForRunModel]);
+
+
+
+
     const [userPlanStatus, setUserPlanStatus] = useState(false);
     const fetchUserPlan = async () => {
         try {
@@ -88,13 +97,13 @@ function ClothingFashion() {
 
     // GFPGAN model calling 
     async function generateRestorePhoto(urlFromColorization) {
-        console.log(" url for gfpgan", urlFromColorization);
-        setLoading(true);
-        let count = 0;
+        // setLoading(true);
+        console.log("Url", urlFromColorization)
+        // let count = 0;
         try {
-            const timeCount = setInterval(() => {
-                count++
-            }, 1000);
+            // const timeCount = setInterval(() => {
+            //     count++
+            // }, 1000);
 
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
@@ -121,7 +130,7 @@ function ClothingFashion() {
 
                     webhookDBResponse = data;
                     if (data.webhookData.output[0]) {
-                        clearInterval(timeCount);
+                        // clearInterval(timeCount);
                         if (userPlan) {
 
                             const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
@@ -135,7 +144,7 @@ function ClothingFashion() {
                                 },
                                 body: JSON.stringify({
                                     userId: session.user.id,
-                                    model: data.webhookData.model,
+                                    model: 'naklecha/fashion-ai',
                                     status: data.webhookData.status,
                                     createdAt: data.webhookData.created_at,
                                     replicateId: data.webhookData.id
@@ -151,9 +160,10 @@ function ClothingFashion() {
                     }
 
                 } else {
-                    if (count > 199) {
-                        clearInterval(timeCount);
-                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                    console.log("Restore photo timer outside  ", timerForRunModelRef.current)
+                    if (timerForRunModelRef.current > 98) {
+                        // clearInterval(timeCount);
+                        await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
                         setLoadCircularProgress(true)
                         break;
@@ -161,7 +171,7 @@ function ClothingFashion() {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                 }
             }
-            setError(null);
+            // setError(null);
         } catch (error) {
             console.error('Error generating photo==>', error);
             setError(error.message);
@@ -173,54 +183,15 @@ function ClothingFashion() {
 
 
 
-    // if (res.status !== 200) {
-    //     setError(result);
-    //     setLoadCircularProgress(true)
-    // } else {
-    //     setRestoredPhoto(result.output);
-    //     setOriginalImageByReplicate(result.output[0]);
-    //     setError(null)
-    //     setLoadCircularProgress(false)
-    // }
-    // setLoading(false);
-
-
-
-
-
-
-
-    // async function generatePhoto(fileUrl) {
-    //     await new Promise((resolve) => setTimeout(resolve, 500));
-    //     setLoading(true);
-    //     const res = await fetch("/api/generateClothingFashion", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, clothingPosition: clothingPosition }),
-    //     });
-    //     let result = await res.json();
-    //     if (res.status !== 200) {
-    //         setError(result);
-    //         setLoadCircularProgress(true)
-    //     } else {
-    //         const urlFromColorization = result.output;
-    //         generateRestorePhoto(urlFromColorization);
-    //         setError(null)
-    //         setLoadCircularProgress(false)
-    //         // setOriginalImageByReplicate(newPhoto[0]);
-    //     }
-    // }
 
 
     async function generatePhoto(fileUrl) {
         setLoading(true);
-        let count = 0;
+        // let count = 0;
         try {
-            const timeCount = setInterval(() => {
-                count++
-            }, 1000);
+            // const timeCount = setInterval(() => {
+            //     count++
+            // }, 1000);
 
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
@@ -239,46 +210,31 @@ function ClothingFashion() {
                 const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
                 if (response.status == 200) {
                     const data = await response.json();
-                    console.log("response in cloth fashion", data)
 
                     webhookDBResponse = data;
                     // if (data.webhookData.output.length > 0) {
                     // clearInterval(timeCount);
                     const urlFromColorization = data.webhookData.output[0];
-                    console.log("data inside if ", data.webhookData);
                     generateRestorePhoto(urlFromColorization);
                     // setRestoredPhoto(data.webhookData.output[0]);
                     // }
 
                 } else {
-                    if (count > 199) {
-                        console.log("count ", count)
-                        clearInterval(timeCount);
-                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
-                        setError("true");
-                        setLoadCircularProgress(true)
+                    console.log("you are outside treddy  look timer", timerForRunModelRef.current)
+                    if (timerForRunModelRef.current > 98) {
+                        console.log("you are inside treddy  look timer", timerForRunModelRef.current)
+                        await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                        // setError("true");
+                        // setLoadCircularProgress(true)
                         break;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                 }
             }
-
-            // if (res.status !== 200) {
-            //     setError(result);
-            //     setLoadCircularProgress(true)
-            // } else {
-            //     const urlFromColorization = result.output;
-            //     generateRestorePhoto(urlFromColorization);
-            //     setError(null)
-            //     setLoadCircularProgress(false)
-            //     // setOriginalImageByReplicate(newPhoto[0]);
-            // }
         } catch (error) {
             console.error('Error generating photo==>', error);
             setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+        } 
 
 
     }
