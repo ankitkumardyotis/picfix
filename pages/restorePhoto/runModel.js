@@ -87,6 +87,31 @@ function RestorePhoto() {
                         console.log("webhook available ");
                         // clearInterval(timeCount);
                         // Update user plan and history as needed here
+                        if (userPlan) {
+
+                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch plan data');
+                            }
+                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    userId: session.user.id,
+                                    model: data.webhookData.model,
+                                    status: data.webhookData.status,
+                                    createdAt: data.webhookData.created_at,
+                                    replicateId: data.webhookData.id
+                                }),
+
+                            });
+                            // console.log("history", history)
+                            if (!history.ok) {
+                                throw new Error('Failed to fetch plan data');
+                            }
+                        }
                         setRestoredPhoto(data.webhookData.output[0]);
                     }
                 } else {
