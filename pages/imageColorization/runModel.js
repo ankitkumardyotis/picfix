@@ -94,19 +94,6 @@ function ImageColorization() {
       const replicateImageId = result.id;
       let webhookDBResponse;
 
-      // if (res.status !== 200) {
-      //   setError(result);
-      //   setLoadCircularProgress(true)
-      // } else {
-      // setRestoredPhoto(toSwitchRestoreUrl);
-      // setimageColorization(result.output[0].image);
-      // setimageColorizationOne(result.output[1].image)
-      // setimageColorizationTwo(result.output[2].image)
-      // setimageColorizationThree(result.output[3].image)
-      // setimageColorizationFour(result.output[4].image)
-
-
-
       while (!webhookDBResponse) {
 
         const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
@@ -154,7 +141,6 @@ function ImageColorization() {
           console.log("timerForRunModelRef in image colorization", timerForRunModelRef.current)
           if (timerForRunModelRef.current > 98) {
             console.log("You Are Done in image colorization at", timerForRunModelRef.current)
-
             await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
             setError("true");
             setLoadCircularProgress(true)
@@ -168,7 +154,10 @@ function ImageColorization() {
     } catch (error) {
       console.error('Error generating photo==>', error);
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
+
   }
 
 
@@ -242,11 +231,8 @@ function ImageColorization() {
   // GFPGAN model calling 
   async function generateRestorePhoto(fileUrl) {
     setLoading(true);
-    // let count = 0;
+
     try {
-      // const timeCount = setInterval(() => {
-      //   count++
-      // }, 1000);
 
       const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
         method: "POST",
