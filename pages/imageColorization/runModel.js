@@ -79,13 +79,7 @@ function ImageColorization() {
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
     console.log("url for cjwbw", toSwitchRestoreUrl)
-    setLoading(true);
-    // let count = 0;
     try {
-      // const timeCount = setInterval(() => {
-      //   count++
-      // }, 1000);
-
       const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
         method: "POST",
         headers: {
@@ -122,7 +116,6 @@ function ImageColorization() {
 
           webhookDBResponse = data;
           if (data.webhookData.output[0]) {
-            clearInterval(timeCount);
             if (userPlan) {
 
               const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
@@ -175,11 +168,7 @@ function ImageColorization() {
     } catch (error) {
       console.error('Error generating photo==>', error);
       setError(error.message);
-    } finally {
-      setLoading(false);
     }
-
-
   }
 
 
