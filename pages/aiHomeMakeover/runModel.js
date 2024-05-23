@@ -251,7 +251,7 @@ function DesignRoom() {
                                 throw new Error('Failed to fetch plan data');
                             }
                         }
-                        console.log("image ",data.webhookData.output[0][1])
+                        console.log("image ", data.webhookData.output[0][1])
                         setRestoredPhoto(data.webhookData.output[0][1]);
                     }
 
@@ -344,11 +344,14 @@ function DesignRoom() {
         order: 1,
     };
 
+    // if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
+    //     return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
+    //         <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
+    //         <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
+    //     </Box>
+    // }
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-            <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
-        </Box>
+        return router.push('/price')
     }
 
     return (

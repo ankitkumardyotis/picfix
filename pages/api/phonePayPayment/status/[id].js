@@ -79,8 +79,7 @@ export default async function POST(req, res) {
       const [planDetails] = priceStructure.filter((item) => item.currency === currency && item.price == (response.data.data.amount / 100))
 
       // Add Payment details to the database
-      console.log("userData=====>", userData)
-      console.log("planDetails=====>", planDetails)
+
       const createPayment = await prisma.PaymentHistory.create({
         data: {
           transactionId: response.data.data.transactionId,

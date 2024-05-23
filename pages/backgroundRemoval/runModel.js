@@ -1,6 +1,8 @@
 import ToggleButtonContainer from '@/components/toggleButtonContainer';
 import { Box, CircularProgress, Container, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useSession } from 'next-auth/react';
 import Head from 'next/head'
+import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react'
 import ReactCompareImage from 'react-compare-image';
 import ReactConfetti from 'react-confetti';
@@ -16,6 +18,8 @@ export default function RemoveBackground() {
     const [originalImageHeight, setOriginalImageHieght] = useState(0);
     const { width, height } = useWindowSize();
     const matches = useMediaQuery(theme.breakpoints.down('md').replace(/^@media( ?)/m, '')) ?? false
+    const { data: session } = useSession();
+    const router = useRouter();
 
     useEffect(() => {
         if (matches) {
@@ -23,9 +27,12 @@ export default function RemoveBackground() {
         }
     }, [matches]);
 
-    console.log("width", width)
-    console.log("hiegth", height)
-    console.log("original image height", originalImageHeight)
+
+    // useEffect(() => {
+    //     if (!session) {
+    //         router.push("/login");
+    //     }
+    // }, [session]);
 
     useEffect(() => {
         const script = document.createElement('script');
@@ -98,7 +105,34 @@ export default function RemoveBackground() {
         }
     }, []);
 
+    async function saveHistory() {
+        const currentTime = new Date();
+        const createdAt = currentTime.toISOString();
+        const history = await fetch('/api/dataFetchingDB/updateHistory', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userId: session.user.id,
+                model: 'Remove Background',
+                status: 'succeeded',
+                createdAt: createdAt,
+                replicateId: ''
+            }),
 
+        });
+        // console.log("history", history)
+        if (!history.ok) {
+            throw new Error('Failed to fetch plan data');
+        }
+    }
+
+    useEffect(() => {
+        if (status == 'Done!') {
+            saveHistory();
+        }
+    }, [status])
 
     return (
         <div>

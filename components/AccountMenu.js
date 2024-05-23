@@ -30,6 +30,7 @@ export default function AccountMenu() {
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState("");
     const open = Boolean(anchorEl);
+    const [plan, setPlan] = useState(null)
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -37,55 +38,58 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
-   console.log(session)
+    React.useEffect(() => {
+        fetchUserPlan()
+    }, [session])
+    React.useEffect(()=>{
+
+    },[plan])
+
 
     const fetchUserPlan = async () => {
-        console.log("kjbhgv")
         try {
             const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            console.log("response====", response)
             if (!response.ok) {
                 throw new Error('Failed to fetch plan data');
             }
-            const data = await response.json();
-            console.log("data", data)
-            // return data.plan;
-            // setUserPlan(data.plan)
-            // setUserPlanStatus(true)
+            const {plan} = await response.json();
+            setPlan(plan)
             return data;
         } catch (error) {
             console.error('Error fetching plan data:', error);
         }
     };
-
+    console.log("session===========",session)
     return (
         <React.Fragment>
-        <div onClick={handleClick} style={{cursor:"pointer"}}>
-         {session ?
-         <div>
-         <div style={{ width: '12px', height: '12px' , backgroundColor:"green" ,borderRadius: '50%' ,position:"absolute" , right:"30px" ,top:"6px", border:"2px solid white" }}></div>
-     
-          <img style={{ width: '35px', height: '35px', marginRight:"10px", borderRadius: '50%',  }} src={session.user.image} alt={session.user.name} /> </div>
-          :
-            <Icon
-             
-          
-                size="large"
-                // sx={{ pr: 8 }}
-                aria-controls={open ? 'account-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                sx={{ cursor: 'pointer' }}
-                fontSize='large'
-            // cursor="pointer"
-            >
-                <WidgetsIcon fontSize='large' />
-                {/* < Avatar alt={session ? session?.user.name : "jhbhb"} src={session && session?.user.image} /> */}
+            <div onClick={handleClick} style={{ cursor: "pointer" }}>
+                {session ?
+                    <div>
+                        <div style={{  paddingLeft:'.1em',paddingRight:'.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", left: "1365px", top: "28px", border: "2px solid white", }}>
+                            <p style={{ color: 'white', fontSize: '.7em' }}>{plan?.remainingPoints}</p>
+                        </div>
 
-            </Icon>
+                        <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%',border:'1px solid teal' }} src={session.user.image} alt='' /> </div>
+                    :
+                    <Icon
 
-         }
-         </div>
+
+                        size="large"
+                        // sx={{ pr: 8 }}
+                        aria-controls={open ? 'account-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
+                        sx={{ cursor: 'pointer' }}
+                        fontSize='large'
+                    // cursor="pointer"
+                    >
+                        <WidgetsIcon fontSize='large' />
+                        {/* < Avatar alt={session ? session?.user.name : "jhbhb"} src={session && session?.user.image} /> */}
+
+                    </Icon>
+
+                }
+            </div>
             <Menu
                 autoFocus={false}
                 disableScrollLock={true}
@@ -127,11 +131,11 @@ export default function AccountMenu() {
                     <UpgradeIcon fontSize="large" />  Buy Credits
                 </MenuItem> */}
                 {/* <Avatar /> */}
-                
-                {session && <> <MenuItem onClick={async() => {
-                    
+
+                {session && <> <MenuItem onClick={async () => {
+
                     const { plan } = await fetchUserPlan();
-                    if (!plan ) {
+                    if (!plan) {
                         router.push("/price")
                         context.setFileUrl("")
                         // localStorage.setItem("path", "/price")
@@ -139,7 +143,7 @@ export default function AccountMenu() {
                     }
                     router.push('/dashboard')
                 }}>
-                    {session && <img style={{ width: '35px', height: '35px', marginRight:"10px", borderRadius: '50%' }} src={session.user.image} alt={session.user.name} /> } My Account
+                    {session && <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%' }} src={session.user.image} alt={session.user.name} />} My Account
                 </MenuItem>
                     <Divider />
                 </>}

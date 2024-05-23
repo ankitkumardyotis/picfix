@@ -41,40 +41,36 @@ function ExplorePageContainer(props) {
                 throw new Error('Failed to fetch plan data');
             }
             const data = await response.json();
-            console.log("data", data)
-            // return data.plan;
-            // setUserPlan(data.plan)
-            // setUserPlanStatus(true)  
             return data;
         } catch (error) {
             console.error('Error fetching plan data:', error);
         }
     };
 
-    const path = props.routePath;
+    // const path = props.routePath;
 
 
-    console.log("path", path)
+    // console.log("path", path)
     const handleRunModelButton = async () => {
-        // console.log("planData", userPlan)
+
         if (!session) {
-            router.push("/login")
-            context.setFileUrl("")
-            localStorage.setItem("path", '/restorePhoto')
-            return
-        }
-        const { plan } = await fetchUserPlan();
-        // console.log("plan in explore", plan)
-        if (!plan?.remainingPoints > 0) {
-            if (path != '/backgroundRemoval/runModel') {
-                router.push("/price")
-                context.setFileUrl("")
-                // localStorage.setItem("path", "/price")
+            console.log("session")
+            console.log("session")
+            localStorage.setItem("path", props.routePath)
+            router.push('/login');
+        } else {
+            console.log("plan ==================kjbhb")
+            // For free use of remove background 
+            if (props.routePath == '/backgroundRemoval/runModel') {
+                router.push('/backgroundRemoval/runModel')
+                return;
             }
-            return
-        }
-        if (session && plan?.remainingPoints > 0) {
-            if (path != '/backgroundRemoval/runModel') router.push(path)
+            const { plan } = await fetchUserPlan();
+            if (plan && plan.remainingPoints > 0) {
+                router.push(props.routePath)
+            } else {
+                router.push('price')
+            }
         }
     }
 

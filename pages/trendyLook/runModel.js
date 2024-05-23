@@ -187,12 +187,8 @@ function ClothingFashion() {
 
     async function generatePhoto(fileUrl) {
         setLoading(true);
-        // let count = 0;
         try {
-            // const timeCount = setInterval(() => {
-            //     count++
-            // }, 1000);
-
+  
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
                 headers: {
@@ -224,8 +220,8 @@ function ClothingFashion() {
                     if (timerForRunModelRef.current > 98) {
                         console.log("you are inside treddy  look timer", timerForRunModelRef.current)
                         await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
-                        // setError("true");
-                        // setLoadCircularProgress(true)
+                        setError(true);
+                        setLoadCircularProgress(true)
                         break;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -234,7 +230,7 @@ function ClothingFashion() {
         } catch (error) {
             console.error('Error generating photo==>', error);
             setError(error.message);
-        } 
+        }
 
 
     }
@@ -325,13 +321,6 @@ function ClothingFashion() {
         }
         if (fileUrl && requireValuePrompt) {
             generatePhoto(fileUrl);
-            // setTimeout(() => {
-            //     if (!restoredPhoto) {
-            //         setError("true");
-            //         setLoadCircularProgress(true)
-            //     }
-
-            // }, "100000")
             setClicktoGo(true)
 
         } else {
@@ -353,12 +342,8 @@ function ClothingFashion() {
     };
 
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-            <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
-        </Box>
+        return router.push('/price')
     }
-
 
     return (
         <>
