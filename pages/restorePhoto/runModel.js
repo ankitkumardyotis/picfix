@@ -104,7 +104,7 @@ function RestorePhoto() {
                         setRestoredPhoto(data.webhookData.output[0]);
                     }
                 } else {
-                    if (timerForRunModelRef.current > 8) {
+                    if (timerForRunModelRef.current > 98) {
                         await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
                         setLoadCircularProgress(true);
