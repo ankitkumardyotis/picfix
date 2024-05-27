@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Container, Typography } from "@mui/material";
-import React, { use, useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useRef, useState } from "react";
 import AppContext from "@/components/AppContext";
 import Head from "next/head";
 import ImageComponent from "@/components/imageComponent";
@@ -32,8 +32,6 @@ function RestorePhoto() {
                 throw new Error('Failed to fetch plan data');
             }
             const data = await response.json();
-            // console.log("data", data.plan)
-            // return data.plan;
             setUserPlan(data.plan)
             setUserPlanStatus(true)
         } catch (error) {
@@ -43,25 +41,20 @@ function RestorePhoto() {
 
     useEffect(() => {
         if (status === "loading") {
-            setLoadindSession(true);
-        } else if (!session) {
-            router.push("/login");
-        } else {
-            setLoadindSession(false);
-            fetchUserPlan();
-        }
+        } else if (!session) router.push("/login");
+        else fetchUserPlan();
     }, [session, status, router]);
 
 
+    const { timerForRunModel } = useContext(AppContext);
+    const timerForRunModelRef = useRef(timerForRunModel);
+    useEffect(() => {
+        timerForRunModelRef.current = timerForRunModel;
+    }, [timerForRunModel]);
 
-    async function generatePhoto(fileUrl) {
+    const generatePhoto = async (fileUrl) => {
         setLoading(true);
-        let count = 0;
         try {
-            const timeCount = setInterval(() => {
-                count++
-            }, 1000);
-
             const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
                 method: "POST",
                 headers: {
@@ -77,15 +70,12 @@ function RestorePhoto() {
             let webhookDBResponse;
 
             while (!webhookDBResponse) {
-
-                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
-                if (response.status == 200) {
+                const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`);
+                if (response.status === 200) {
                     const data = await response.json();
-                    // console.log("response", data)
-
                     webhookDBResponse = data;
                     if (data.webhookData.output[0]) {
-                        clearInterval(timeCount);
+                        // Update user plan and history as needed here
                         if (userPlan) {
 
                             const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
@@ -113,13 +103,11 @@ function RestorePhoto() {
                         }
                         setRestoredPhoto(data.webhookData.output[0]);
                     }
-
                 } else {
-                    if (count > 99) {
-                        clearInterval(timeCount);
-                        const cancelResponse = await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
+                    if (timerForRunModelRef.current > 98) {
+                        await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
                         setError("true");
-                        setLoadCircularProgress(true)
+                        setLoadCircularProgress(true);
                         break;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -132,30 +120,14 @@ function RestorePhoto() {
         } finally {
             setLoading(false);
         }
-    }
-
+    };
     useEffect(() => {
-        if (fileUrl) {
-            generatePhoto(fileUrl);
-            console.log("first")
-            setTimeout(() => {
-                if (!restoredPhoto) {
-                    setError("true");
-                    setLoadCircularProgress(true)
-                    console.log("not success")
-                } else {
-                    // alert("success")
-                }
-
-            }, "100000")
-        }
+        if (fileUrl) generatePhoto(fileUrl);
     }, [fileUrl]);
 
+
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-            <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-            <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
-        </Box>
+        return router.push('/price')
     }
 
 

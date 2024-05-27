@@ -35,47 +35,42 @@ function ExplorePageContainer(props) {
 
 
     const fetchUserPlan = async () => {
-        console.log("kjbhgv")
         try {
             const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            console.log("response====", response)
             if (!response.ok) {
                 throw new Error('Failed to fetch plan data');
             }
             const data = await response.json();
-            console.log("data", data)
-            // return data.plan;
-            // setUserPlan(data.plan)
-            // setUserPlanStatus(true)
             return data;
         } catch (error) {
             console.error('Error fetching plan data:', error);
         }
     };
 
-    const path = props.routePath;
+    // const path = props.routePath;
 
 
-    console.log("path", path)
+    // console.log("path", path)
     const handleRunModelButton = async () => {
-        // console.log("planData", userPlan)
-        console.log("session", session)
+
         if (!session) {
-            router.push("/login")
-            context.setFileUrl("")
-            localStorage.setItem("path", '/restorePhoto')
-            return
-        }
-        const { plan } = await fetchUserPlan();
-        console.log("plan in explore", plan)
-        if (!plan?.remainingPoints > 0) {
-            router.push("/price")
-            context.setFileUrl("")
-            // localStorage.setItem("path", "/price")
-            return
-        }
-        if (session && plan?.remainingPoints > 0) {
-            router.push(path)
+            console.log("session")
+            console.log("session")
+            localStorage.setItem("path", props.routePath)
+            router.push('/login');
+        } else {
+            console.log("plan ==================kjbhb")
+            // For free use of remove background 
+            if (props.routePath == '/backgroundRemoval/runModel') {
+                router.push('/backgroundRemoval/runModel')
+                return;
+            }
+            const { plan } = await fetchUserPlan();
+            if (plan && plan.remainingPoints > 0) {
+                router.push(props.routePath)
+            } else {
+                router.push('price')
+            }
         }
     }
 
@@ -105,7 +100,7 @@ function ExplorePageContainer(props) {
 
                     <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
                         {/* <button>How it works</button> */}
-                        <button onClick={handleRunModelButton}>{props.buttonTwoText} 
+                        <button onClick={handleRunModelButton}>{props.buttonTwoText}
                         </button>
                     </Box>
                 </Box >

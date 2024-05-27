@@ -17,17 +17,19 @@ export default function App({
   const [path, setPath] = useState('')
   const [open, setOpen] = useState(false);
   const [removeImageFromTransformerJs, setRemoveImageFromTransformerJs] = useState('');
+  const [timerForRunModel, setTimerForRunModel] = useState(0)
   // <script script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script >
   // <script src='../../utils/transformer.js'>
   // </script>
   return (
     <>
       <SessionProvider session={session}>
-        <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, setRemoveImageFromTransformerJs }}>
+        <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs,timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs }}>
           <NavBar open={open} setOpen={setOpen} />
           <Component {...pageProps} />
           <Footer />
         </AppContext.Provider>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </SessionProvider >
 
     </>

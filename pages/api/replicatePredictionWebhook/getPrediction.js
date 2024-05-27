@@ -44,6 +44,7 @@ export default async function handler(req, res) {
 
             });
             let jsonStartResponse = await startResponse.json();
+            console.log("jsonStartResponse=========================================", jsonStartResponse)
 
             res.status(200).json(jsonStartResponse);
         } catch (err) {

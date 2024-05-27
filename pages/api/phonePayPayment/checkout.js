@@ -8,6 +8,7 @@ import { decryptSessionId, encryptSessionId } from '@/utils/encryptSessionAlgori
 export default async function handler(req, res) {
     const { amount } = req.body
     const session = await getServerSession(req, res, authOptions)
+    console.log("session=================================================", session)
     if (!session) {
         res.status(401).json({ message: "You are not Authorised" })
         return;

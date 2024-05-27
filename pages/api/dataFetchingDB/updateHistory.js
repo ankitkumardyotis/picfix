@@ -5,7 +5,6 @@ import prisma from '@/lib/prisma';
 
 export default async function handler(req, res) {
     const { model, status, createdAt, replicateId, userId } = req.body
-    console.log("data in create hoistory", model, status, createdAt, replicateId, userId)
 
     try {
         const history = await prisma.history.create({

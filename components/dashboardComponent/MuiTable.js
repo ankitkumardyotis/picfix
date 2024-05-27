@@ -7,7 +7,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import formattedDate from '@/utils/formateDate/formatDate';
 import diffrenceTime from '@/utils/formateDate/diffrenceTime';
 
 const columns = [
@@ -27,40 +26,35 @@ const columns = [
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
   },
-  // {
-  //   id: 'density',
-  //   label: 'Run Time',
-  //   minWidth: 170,
-  //   align: 'right',
-  //   format: (value) => value.toFixed(2),
-  // },
 ];
-
-
 
 export default function MuiTable({ userHistory }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const newDataAfterDateFormat = userHistory.map((item, idx) => {
-    const diffrenceInTime = diffrenceTime(item.createdAt)
+
+  // Sort userHistory by createdAt in descending order
+  const sortedUserHistory = [...userHistory].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const newDataAfterDateFormat = sortedUserHistory.map((item, idx) => {
+    const diffrenceInTime = diffrenceTime(item.createdAt);
     let model;
     if (item.model === "tencentarc/gfpgan") {
-      model = "Restore Photos"
-    } if (item.model === "cjwbw/bigcolor") {
-      model = "Image Colorization"
-    } if (item.model === "naklecha/fashion-ai") {
-      model = "Trendy Look"
-    } if (item.model === "jagilley/controlnet-hough") {
-      model = "AI Home Makeover"
-    } if (item.model === "cjwbw/rembg") {
-      model = "Background Removal"
+      model = "Restore Photos";
+    } else if (item.model === "cjwbw/bigcolor") {
+      model = "Image Colorization";
+    } else if (item.model === "naklecha/fashion-ai") {
+      model = "Trendy Look";
+    } else if (item.model === "jagilley/controlnet-hough") {
+      model = "AI Home Makeover";
+    } else if (item.model === "cjwbw/rembg") {
+      model = "Background Removal";
+    } else {
+      model = item.model;
     }
-    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1 };
+    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1};
   });
 
-
-
-  const [rows, setRows] = React.useState(newDataAfterDateFormat)
+  const [rows, setRows] = React.useState(newDataAfterDateFormat);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -71,10 +65,8 @@ export default function MuiTable({ userHistory }) {
     setPage(0);
   };
 
-
-
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden',boxShadow:'none' }}>
+    <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 'none' }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -95,7 +87,7 @@ export default function MuiTable({ userHistory }) {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => {
                 return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
+                  <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                     {columns.map((column) => {
                       const value = row[column.id];
                       return (

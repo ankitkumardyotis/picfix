@@ -2,14 +2,13 @@
 
 // import prisma from '@/lib/prisma';
 // import fun from "@/lib/resend";
+import { getToken } from "next-auth/jwt"
+
+const secret = process.env.NEXTAUTH_SECRET
 // 
 export default async function handler(req, res) {
 
-
-    // fun()
-
-
-    return res.status(200).json({ message: 'ypu are welcome' });
-
-
+    const token = await getToken({ req, secret })
+    console.log("JSON Web Token", token)
+    res.end()
 }
