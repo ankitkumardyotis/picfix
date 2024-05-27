@@ -3,7 +3,6 @@ import HomeIcon from '@mui/icons-material/Home';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import PanoramaIcon from '@mui/icons-material/Panorama';
 import { Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
-import MuiTable from '@/components/creditPlanCard-old/MuiTable';
 // import prisma from '@/lib/prisma';
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router';

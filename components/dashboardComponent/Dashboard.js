@@ -1,5 +1,5 @@
 import React from 'react'
-import MuiTable from '../creditPlanCard-old/MuiTable'
+import MuiTable from './MuiTable'
 import TabNavigation from '../mobileTabNavigation/TabNavigation'
 import Image from 'next/image'
 
