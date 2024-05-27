@@ -30,7 +30,6 @@ const index = () => {
         }
     }, [session])
 
-    console.log("paymentHistoryList", paymentHistoryList)
 
     return (
         <Box

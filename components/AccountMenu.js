@@ -68,7 +68,6 @@ export default function AccountMenu() {
                         <div style={{  paddingLeft:'.1em',paddingRight:'.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", left: "1365px", top: "28px", border: "2px solid white", }}>
                             <p style={{ color: 'white', fontSize: '.7em' }}>{plan?.remainingPoints}</p>
                         </div>
-
                         <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%',border:'1px solid teal' }} src={session.user.image} alt='' /> </div>
                     :
                     <Icon
@@ -133,8 +132,6 @@ export default function AccountMenu() {
                 {/* <Avatar /> */}
 
                 {session && <> <MenuItem onClick={async () => {
-
-                    const { plan } = await fetchUserPlan();
                     if (!plan) {
                         router.push("/price")
                         context.setFileUrl("")
