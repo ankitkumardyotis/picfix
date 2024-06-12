@@ -8,6 +8,7 @@ import { file } from "jszip";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { createHistory, updatePlan } from "@/lib/userData";
+import Uploader from "@/components/uploadContainerbase64/Uploader";
 
 
 function RestorePhoto() {
@@ -130,6 +131,16 @@ function RestorePhoto() {
         return router.push('/price')
     }
 
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setFileUrl(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <>
@@ -156,13 +167,17 @@ function RestorePhoto() {
             </Head>
             {userPlanStatus ? <><div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
                 <main className="aiModels" style={{ display: "flex", justifyContent: "center" }} >
-                    <Container maxWidth="xl">
+                    <Container maxWidth="xl" >
                         <Typography variant="h2" sx={{ paddingTop: "30px", fontSize: "3rem", fontWeight: "700", marginBottom: "5px", color: " #000", lineHeight: "50px", textAlign: "center", }}>
                             Restore Photo
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: "500", marginBottom: "5px", color: " #0e0e0e", textAlign: "center", }}>
                             Enhance your images like a pro!
                         </Typography>
+
+                        {!fileUrl && <Box display='flex' justifyContent='center'>
+                            <Uploader handleImageUpload={handleImageUpload} />
+                        </Box>}
                         <ImageComponent setError={setError} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} setFileUrl={setFileUrl} cropUploadedImage={cropUploadedImage} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} loading={loading} setLoading={setLoading} error={error} />
 
                     </Container>

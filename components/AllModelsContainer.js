@@ -25,10 +25,10 @@ export default function AllModelsContainer() {
     localStorage.setItem('path', '/backgroundRemoval')
 
   }
-  const handleTrendyLook = () => {
+  const handleObjectRemove = () => {
     context.setFileUrl('')
-    router.push('/trendyLook')
-    localStorage.setItem('path', '/trendyLook')
+    router.push('/removeObject')
+    localStorage.setItem('path', '/object-remover')
   }
   const handleRoomDesign = () => {
     context.setFileUrl('')
@@ -89,18 +89,17 @@ export default function AllModelsContainer() {
             </p>
           </div>
         </div>
-        <div className="card" onClick={handleTrendyLook}>
+        <div className="card" onClick={handleObjectRemove}>
           <div className="card-img">
-            <Image style={imageStyle} src="/assets/models/trendyLookImage.jpg" alt="Picture of the author" width={400} height={300} />
+            <Image style={imageStyle} src="/assets/models/remove-object-picfix-pic-landing-page.png" alt="Picture of the author" width={400} height={300} />
           </div>
           <div className="card-info">
             <h2>
-              Try Trendy look
+             Remove Objects
             </h2>
             <br />
             <p>
-              Elevate your social media with AI-generated fashion enhancements. Embrace trends, captivate followers with personalized style modifications.
-            </p>
+            Effortlessly remove unwanted objects from your photos. Achieve a clean, professional look with just a few clicks. Perfect for creating flawless, polished images.            </p>
           </div>
         </div>
         <div className="card" onClick={handleRoomDesign}>

@@ -7,6 +7,7 @@ import ImageStrip from '@/components/ImageStrip';
 import JSZip from 'jszip';
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import Uploader from "@/components/uploadContainerbase64/Uploader";
 
 
 function ImageColorization() {
@@ -311,6 +312,16 @@ function ImageColorization() {
   //   </Box>
   // }
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setFileUrl(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
 
   return (
@@ -345,6 +356,9 @@ function ImageColorization() {
             <Typography variant="h6" sx={{ fontWeight: '500', color: ' #0e0e0e', textAlign: 'center' }}>
               Adding a Splash of Color to Black and White Memories
             </Typography>
+            {!fileUrl && <Box display='flex' justifyContent='center'>
+              <Uploader handleImageUpload={handleImageUpload} />
+            </Box>}
             <ImageComponent setFileUrl={setFileUrl} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} loading={loading} setLoading={setLoading} error={error} setError={setError} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} imageColorization={imageColorization} restoreImageURLForVarient={restoreImageURLForVarient} imageColorizationOne={imageColorizationOne} imageColorizationTwo={imageColorizationTwo} imageColorizationThree={imageColorizationThree} imageColorizationFour={imageColorizationFour} />
           </Container >
         </main></>

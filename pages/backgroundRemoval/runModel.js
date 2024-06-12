@@ -28,11 +28,7 @@ export default function RemoveBackground() {
     }, [matches]);
 
 
-    // useEffect(() => {
-    //     if (!session) {
-    //         router.push("/login");
-    //     }
-    // }, [session]);
+
 
     useEffect(() => {
         const script = document.createElement('script');

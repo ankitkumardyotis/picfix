@@ -173,13 +173,13 @@ export default function AccountMenu() {
                     Background Removal
                 </MenuItem>
                 <MenuItem onClick={() => {
-                    router.push('/trendyLook')
-                    localStorage.setItem('path', '/trendyLook')
+                    router.push('/removeObject')
+                    localStorage.setItem('path', '/removeObject')
                 }}>
                     <ListItemIcon>
                         <WhatshotIcon fontSize="small" />
                     </ListItemIcon>
-                    Trendy Look
+                   Remove Objects
                 </MenuItem>
                 <MenuItem onClick={() => {
                     router.push('/aiHomeMakeover')

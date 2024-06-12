@@ -29,6 +29,14 @@ const nextConfig = {
   images: {
     domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com"],
   },
+
+  api: {
+    bodyParser: {
+      sizeLimit: '16mb', // Adjust this value as needed
+    },
+  },
+
+
 };
 
 export default nextConfig;

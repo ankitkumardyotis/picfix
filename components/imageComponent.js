@@ -124,11 +124,11 @@ function ImageComponent(props) {
                             )}
                         </div>
                     )}
-                    {!props.fileUrl && (
+                    {/* {!props.fileUrl && (
                         <div className="uploader-custom-border">
                             <UploaderComponent cropUploadedImage={props.cropUploadedImage} />
                         </div>
-                    )}
+                    )} */}
                 </div>
 
                 {toggleClick === false ? (
@@ -326,6 +326,7 @@ function ImageComponent(props) {
                                 router.push('#ClickToUp');
                                 setOriginalImageWidth(0);
                                 setOriginalImageHieght(0);
+
 
                             }}
                         >

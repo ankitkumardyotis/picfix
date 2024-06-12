@@ -15,11 +15,12 @@ import Head from "next/head";
 import SelectDropdown from "@/components/SelectDropdown";
 import ReactCompareImage from "react-compare-image";
 import { UploadDropzone } from 'react-uploader';
-import { Uploader } from "uploader";
+// import { Uploader } from "uploader";
 import { useWindowSize } from "react-use";
 import { useRouter } from 'next/router';
 import CircularWithValueLabel from "@/components/CircularProgressWithLabel";
 import { useSession } from "next-auth/react";
+import Uploader from "@/components/uploadContainerbase64/Uploader";
 
 
 const uploader = Uploader({
@@ -353,6 +354,16 @@ function DesignRoom() {
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
         return router.push('/price')
     }
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setFileUrl(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <>
@@ -407,7 +418,7 @@ function DesignRoom() {
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div className="uploader-custom-border" >
                                         {/* <UploaderComponent requireValuePrompt={requireValuePrompt} fileUrl={fileUrl} setFileUrl={setFileUrl} /> */}
-                                        <UploadDropzone
+                                        {/* <UploadDropzone
                                             uploader={uploader}
                                             options={uploaderOptions}
                                             onUpdate={files => {
@@ -419,8 +430,10 @@ function DesignRoom() {
                                             // }
                                             height="45vh"
                                             border="5px"
-                                        />
-
+                                        /> */}
+                                        <Box display='flex' justifyContent='center'>
+                                            <Uploader handleImageUpload={handleImageUpload} />
+                                        </Box>
                                     </div>
                                     <p style={{ textAlign: 'center', marginTop: '.5em' }}>
                                         <b><i> **Please provide a photo of the room you would like to design </i></b></p>
