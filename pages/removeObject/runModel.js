@@ -2,6 +2,8 @@ import AppContext from '@/components/AppContext';
 import MaskEditor from '@/components/MaskEditor/MaskEditor';
 import ImageComponent from '@/components/imageComponent';
 import Uploader from '@/components/uploadContainerbase64/Uploader';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { useState, useRef, useEffect, useContext } from 'react';
 
 export default function Home() {
@@ -17,6 +19,30 @@ export default function Home() {
   const context = useContext(AppContext);
   const fileUrl = context.fileUrl;
   const setFileUrl = context.setFileUrl;
+  const [userPlan, setUserPlan] = useState('');
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [userPlanStatus, setUserPlanStatus] = useState(false);
+  const fetchUserPlan = async () => {
+    try {
+      const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch plan data');
+      }
+      const data = await response.json();
+      setUserPlan(data.plan)
+      setUserPlanStatus(true)
+    } catch (error) {
+      console.error('Error fetching plan data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (status === "loading") {
+    } else if (!session) router.push("/login");
+    else fetchUserPlan();
+  }, [session, status, router]);
+
 
   useEffect(() => {
     if (imageSrc) {
@@ -50,6 +76,33 @@ export default function Home() {
           const data = await response.json();
           webhookDBResponse = data;
           if (data.webhookData.output[0]) {
+
+            if (userPlan) {
+
+              const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+              if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+              }
+              const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId: session.user.id,
+                  model: data.webhookData.model,
+                  status: data.webhookData.status,
+                  createdAt: data.webhookData.created_at,
+                  replicateId: data.webhookData.id
+                }),
+
+              });
+              // console.log("history", history)
+              if (!history.ok) {
+                throw new Error('Failed to fetch plan data');
+              }
+            }
+
             setRestoredPhoto(data.webhookData.output[0]);
             setError(null);
             setLoading(false)
@@ -113,7 +166,7 @@ export default function Home() {
 
   return (
     <div className='aiModels' style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} >
-      <h1  style={{marginBottom:'1rem',marginTop:'2rem'}} >Upload an Image and see magic</h1>
+      <h1 style={{ marginBottom: '1rem', marginTop: '2rem' }} >Upload an Image and see magic</h1>
 
       {!imageSrc && isShowUploader && <Uploader handleImageUpload={handleImageUpload} />}
       {!restorePhoto && <MaskEditor canvasRef={canvasRef}

@@ -41,9 +41,9 @@ export default function AccountMenu() {
     React.useEffect(() => {
         fetchUserPlan()
     }, [session])
-    React.useEffect(()=>{
+    React.useEffect(() => {
 
-    },[plan])
+    }, [plan])
 
 
     const fetchUserPlan = async () => {
@@ -52,23 +52,23 @@ export default function AccountMenu() {
             if (!response.ok) {
                 throw new Error('Failed to fetch plan data');
             }
-            const {plan} = await response.json();
+            const { plan } = await response.json();
             setPlan(plan)
             return data;
         } catch (error) {
             console.error('Error fetching plan data:', error);
         }
     };
-    console.log("session===========",session)
+    console.log("session===========", session)
     return (
         <React.Fragment>
             <div onClick={handleClick} style={{ cursor: "pointer" }}>
                 {session ?
                     <div>
-                        <div style={{  paddingLeft:'.1em',paddingRight:'.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", left: "1365px", top: "28px", border: "2px solid white", }}>
+                        <div style={{ paddingLeft: '.1em', paddingRight: '.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", left: "1365px", top: "28px", border: "2px solid white", }}>
                             <p style={{ color: 'white', fontSize: '.7em' }}>{plan?.remainingPoints}</p>
                         </div>
-                        <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%',border:'1px solid teal' }} src={session.user.image} alt='' /> </div>
+                        <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%', border: '1px solid teal' }} src={session.user.image} alt='' /> </div>
                     :
                     <Icon
 
@@ -146,6 +146,7 @@ export default function AccountMenu() {
                 </>}
 
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/restorePhoto')
                     localStorage.setItem('path', '/restorePhoto')
                 }}>
@@ -155,6 +156,7 @@ export default function AccountMenu() {
                     Restore Photos
                 </MenuItem>
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/imageColorization')
                     localStorage.setItem('path', '/imageColorization')
                 }}>
@@ -164,6 +166,7 @@ export default function AccountMenu() {
                     Image Colorization
                 </MenuItem>
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/backgroundRemoval')
                     localStorage.setItem('path', '/backgroundRemoval')
                 }}>
@@ -173,15 +176,17 @@ export default function AccountMenu() {
                     Background Removal
                 </MenuItem>
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/removeObject')
                     localStorage.setItem('path', '/removeObject')
                 }}>
                     <ListItemIcon>
                         <WhatshotIcon fontSize="small" />
                     </ListItemIcon>
-                   Remove Objects
+                    Remove Objects
                 </MenuItem>
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/aiHomeMakeover')
                     localStorage.setItem('path', '/aiHomeMakeover')
                     // context.setFileUrl('')
@@ -192,6 +197,7 @@ export default function AccountMenu() {
                     AI Home Makeover
                 </MenuItem>
                 <MenuItem onClick={() => {
+                    context.setFileUrl('')
                     router.push('/price'),
                         localStorage.setItem('path', '/price')
                     // context.setFileUrl('')

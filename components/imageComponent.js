@@ -326,7 +326,7 @@ function ImageComponent(props) {
                                 router.push('#ClickToUp');
                                 setOriginalImageWidth(0);
                                 setOriginalImageHieght(0);
-
+                                window.location.reload()
 
                             }}
                         >
