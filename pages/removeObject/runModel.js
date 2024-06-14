@@ -2,6 +2,7 @@ import AppContext from '@/components/AppContext';
 import MaskEditor from '@/components/MaskEditor/MaskEditor';
 import ImageComponent from '@/components/imageComponent';
 import Uploader from '@/components/uploadContainerbase64/Uploader';
+import { Typography } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState, useRef, useEffect, useContext } from 'react';
@@ -166,7 +167,14 @@ export default function Home() {
 
   return (
     <div className='aiModels' style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} >
-      <h1 style={{ marginBottom: '1rem', marginTop: '2rem' }} >Upload an Image and see magic</h1>
+
+      <Typography variant="h2" sx={{ paddingTop: "30px", fontSize: "3rem", fontWeight: "700", marginBottom: "5px", color: " #000", lineHeight: "50px", textAlign: "center", }}>
+        Remove Objects
+      </Typography>
+      <Typography variant="h6" sx={{ fontWeight: "500", marginBottom: "5px", color: " #0e0e0e", textAlign: "center", }}>
+        Upload an Image and see magic
+      </Typography>
+
 
       {!imageSrc && isShowUploader && <Uploader handleImageUpload={handleImageUpload} />}
       {!restorePhoto && <MaskEditor canvasRef={canvasRef}
