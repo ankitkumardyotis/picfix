@@ -42,8 +42,8 @@ export default function MuiTable({ userHistory }) {
       model = "Restore Photos";
     } else if (item.model === "cjwbw/bigcolor") {
       model = "Image Colorization";
-    } else if (item.model === "naklecha/fashion-ai") {
-      model = "Trendy Look";
+    } else if (item.model === "allenhooo/lama") {
+      model = "Remove Objects";
     } else if (item.model === "jagilley/controlnet-hough") {
       model = "AI Home Makeover";
     } else if (item.model === "cjwbw/rembg") {

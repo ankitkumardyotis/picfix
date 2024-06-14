@@ -6,7 +6,7 @@ import { useRouter } from 'next/router'
 import ExplorePageContainer from '@/components/ExplorePageContainer';
 
 
-function ReplaceBackground() {
+function Fashion() {
 
     const router = useRouter();
     const beforeImageOne = '/assets/models/pexels-nathan-thomas-3019349.jpg'
@@ -20,15 +20,15 @@ function ReplaceBackground() {
     const matches = useMediaQuery(theme.breakpoints.up('md'));
 
     const imagesPath = [
-        '/assets/models/girl with diffrent color by trendy look ai.jpg',
-        '/assets/models/trendy look 1600X900 boy.jpg',
+        '/assets/models/remove-object-picfix-pic-1.png',
+        '/assets/models/remove-object-picfix-pic-2.png',
     ]
 
-    const heading = ' Redesign Your Look with AI-Powered Replace Background '
+    const heading= "Clean Up Your Photos with AI Object Removal"
 
-    const description = ' Transform your social media presence with our AI-generated fashion enhancements. Embrace the AI generated trends and captivate your followers with striking and personalized style modifications.'
-    const buttonTwoText = 'Try Replace Background'
-    const routePath = '/replaceBackground/runModel'
+    const description = ' Effortlessly remove unwanted objects from your photos using our advanced AI tool. Achieve a clean, professional look with just a few clicks. Perfect for creating flawless, polished images.'
+    const buttonTwoText = 'Try Remove Objects'
+    const routePath = '/removeObject/runModel'
 
 
 
@@ -36,10 +36,9 @@ function ReplaceBackground() {
     return (
         <>
             <ExplorePageContainer imagesPath={imagesPath} heading={heading} description={description} buttonTwoText={buttonTwoText} routePath={routePath} />
-
         </>
 
     )
 }
 
-export default ReplaceBackground
+export default Fashion

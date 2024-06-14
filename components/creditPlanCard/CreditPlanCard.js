@@ -11,7 +11,7 @@ function CreditPlanCard() {
   const { data: session } = useSession();
   const [countryLocation, setCountryLocation] = useState("");
   const [priceDetails, setPriceDetails] = useState([]);
-  const [conversionRate, setConversionrate] = useState();
+  // const [conversionRate, setConversionrate] = useState();
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
@@ -41,21 +41,21 @@ function CreditPlanCard() {
       "https://v6.exchangerate-api.com/v6/ef1fc8abb23f6d2e3dabbbc2/latest/USD";
 
     // Making Request
-    fetch(url_str)
-      .then((response) => {
-        // Check if the response is successful
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const req_result = data;
-        setConversionrate(req_result.conversion_rates.INR);
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
+    // fetch(url_str)
+    //   .then((response) => {
+    //     // Check if the response is successful
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+    //     return response.json();
+    //   })
+    //   .then((data) => {
+    //     const req_result = data;
+    //     setConversionrate(req_result.conversion_rates.INR);
+    //   })
+    //   .catch((error) => {
+    //     console.error("There was a problem with the fetch operation:", error);
+    //   });
   };
   console.log("price=====>", priceDetails);
   console.log("countryLocation=====>", countryLocation);
