@@ -107,10 +107,10 @@ export default function AccountMenu() {
     console.log("session===========", session)
     return (
         <React.Fragment>
-            <div onClick={handleClick} style={{ cursor: "pointer" }}>
+            <div onClick={handleClick} style={{ cursor: "pointer",position:'relative' }}>
                 {session ?
                     <div>
-                        <div style={{ paddingLeft: '.1em', paddingRight: '.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", left: "1365px", top: "28px", border: "2px solid white", }}>
+                        <div style={{ paddingLeft: '.1em', paddingRight: '.1em', backgroundColor: "teal", display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '5px', position: "absolute", right: "0", bottom: "0", border: "2px solid white", }}>
                             <p style={{ color: 'white', fontSize: '.7em' }}>{plan?.remainingPoints}</p>
                         </div>
                         <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%', border: '1px solid teal' }} src={session.user.image} alt='' /> </div>
