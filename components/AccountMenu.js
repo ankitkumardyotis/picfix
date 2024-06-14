@@ -22,6 +22,7 @@ import AppContext from './AppContext';
 import { Logout, PriceCheck } from '@mui/icons-material';
 import { signOut, useSession } from 'next-auth/react';
 import LoginIcon from '@mui/icons-material/Login';
+// import { io } from "socket.io-client";
 
 export default function AccountMenu() {
     // logout
@@ -44,6 +45,50 @@ export default function AccountMenu() {
     React.useEffect(() => {
 
     }, [plan])
+
+
+    // const [isConnected, setIsConnected] = useState(false);
+    // const [transport, setTransport] = useState("N/A");
+    // const socket = io();
+    // React.useEffect(() => {
+    //     // if (socket.connected) {
+    //     //     onConnect();
+    //     // }
+
+    //     // function onConnect() {
+    //     //     setIsConnected(true);
+    //     //     setTransport(socket.io.engine.transport.name);
+
+    //     //     socket.io.engine.on("upgrade", (transport) => {
+    //     //         setTransport(transport.name);
+    //     //     });
+    //     // }
+
+    //     // function onDisconnect() {
+    //     //     setIsConnected(false);
+    //     //     setTransport("N/A");
+    //     // }
+
+    //     // socket.on("connect", onConnect);
+    //     // socket.on("disconnect", onDisconnect);
+
+    //     const onModelRun = ({ decrementValue }) => {
+    //         setPlan((prevPlan) => ({
+    //             ...prevPlan, remainingPoints: prevPlan.remainingPoints - decrementValue
+    //         }))
+    //     }
+
+    //     if (session?.user.id) {
+    //         socket.connect()
+    //         socket.on("model-run-success", onModelRun)
+    //     }
+
+    //     return () => {
+    //         socket.disconnect()
+    //         socket.off("model-run-success", onModelRun);
+    //     };
+
+    // }, [router.query, session?.user.id]);
 
 
     const fetchUserPlan = async () => {
