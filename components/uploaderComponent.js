@@ -45,18 +45,13 @@ function UploaderComponent() {
                 "shade800": "#fff",
                 "shade900": "#fff" //upload an image text 
             },
-            // width: '1000px'
         },
         tags: [
             "picfix"
         ],
-        // onUpdate: (files) => {
-        //     console.log(files)
-        // },
+ 
         showFinishButton: false,
-        // dropzoneRenderer: ({ open }) => (
-        //     <CustomButton onClick={open} />
-        // ),
+
 
     }
 

@@ -7,7 +7,7 @@ function demoPage() {
     const { data: session, status } = useSession();
     const checkoutHandler = async (amount) => {
         const result = await axios.get("api/razorpayPayment/createCheckout")
-        console.log("result", result)
+    
 
         const options = {
             key: process.env.RAZORPAY_TEST_KEY_ID,

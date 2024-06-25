@@ -23,18 +23,12 @@ function Home() {
             localStorage.setItem("path", context.path)
         } else {
             const pathdata = localStorage.getItem('path');
-            console.log("path in login", pathdata)
             if (session) {
                 if (pathdata) {
                     router.push(pathdata)
-                    // localStorage.clear();
                 } else {
                     router.push('/dashboard')
                 }
-                // router.push(pathdata ? pathdata : '/dashboard');
-                // if (pathdata) {
-                //     localStorage.clear();
-                // }
             }
         }
     } else {

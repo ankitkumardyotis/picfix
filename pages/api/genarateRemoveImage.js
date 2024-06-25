@@ -49,15 +49,15 @@ export default async function handler(req, res) {
     });
 
     let jsonStartResponse = await startResponse.json();
-    console.log("Json response in rem bg" + jsonStartResponse);
+  
     let endpointUrl = jsonStartResponse.urls.get;
-    console.log(process.env.REPLICATE_API_KEY);
+   
 
     // // GET request to get the status of the image restoration process & return the result when it's ready
     let removeBackground = null;
     while (!removeBackground) {
       // Loop in 1s intervals until the alt text is ready
-      console.log("polling for result in Remove Background...");
+
       let finalResponse = await fetch(endpointUrl, {
         method: "GET",
         headers: {
@@ -70,20 +70,6 @@ export default async function handler(req, res) {
       if (jsonFinalResponse.status === "succeeded") {
         removeBackground = jsonFinalResponse.output;
 
-        // const saveCreditPoint = await prisma.plan.update({
-        //   where: {
-        //     id: planData[0].id, // Assuming you only have one plan per user
-        //     userId: session.user.id
-        //   },
-        //   data: {
-        //     remainingPoints: {
-        //       decrement: 1
-        //     }
-        //   },
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // })
-        // console.log("jsonFinalResponse", jsonFinalResponse)
 
         const createPlan = await prisma.history.create({
           data: {
@@ -96,7 +82,6 @@ export default async function handler(req, res) {
         }).catch(err => {
           console.error('Error creating Plan:', err);
         });
-        // console.log("createPlan", createPlan);
       } else if (jsonFinalResponse.status === "failed") {
         break;
       } else {
@@ -104,7 +89,6 @@ export default async function handler(req, res) {
       }
     } res.status(200).json(removeBackground ? removeBackground : "Failed to restore image");
   } catch (err) {
-    console.log("Error in restore image", err);
     res.status(500).json("Server is busy please try again later");
   }
 }

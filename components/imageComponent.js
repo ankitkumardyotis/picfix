@@ -44,7 +44,6 @@ function ImageComponent(props) {
     //  DownLoad Images with Zip if multiple images available 
 
     const handleDownloadFile = () => {
-        console.log("you are in download function");
         // Define an array of image URLs
         let imageUrls = [props.restoredPhoto, props.imageColorization, props.imageColorizationOne, props.imageColorizationTwo, props.imageColorizationThree, props.imageColorizationFour, props.restoreImageURLForVarient];
         // Create a new instance of JSZip

@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
     const fileUrl = req.body.imageUrl;
     const prompt = req.body.prompt;
-    console.log(prompt , fileUrl);
     // POST request to Replicate to start the image  generation process
     let startResponse = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
@@ -26,7 +25,6 @@ export default async function handler(req, res) {
       let restoredImage = null;
       while (!restoredImage) {
         // Loop in 1s intervals until the alt text is ready
-        console.log("polling for result...");
         let finalResponse = await fetch(endpointUrl, {
           method: "GET",
           headers: {
@@ -35,12 +33,9 @@ export default async function handler(req, res) {
           },
         });
         let jsonFinalResponse = await finalResponse.json();
-        // console.log("Json response" + jsonStartResponse);
-  
   
         if (jsonFinalResponse.status === "succeeded") {
           restoredImage = jsonFinalResponse.output;
-          console.log(restoredImage + "restored image in fashion app");
         } else if (jsonFinalResponse.status === "failed") {
           break;
         } else {

@@ -22,7 +22,6 @@ function Home() {
 
 
     const { data: session, status } = useSession()
-    // console.log("session", session)
     const router = useRouter()
     const [userPlan, setUserPlan] = useState(null)
     const [userHistory, setUserHistory] = useState([])
@@ -43,7 +42,6 @@ function Home() {
                         throw new Error('Failed to fetch plan data');
                     }
                     const data = await response.json();
-                    console.log("data ===>", data.plan)
                     if (data.plan === null) {
                         router.push('/price');
                     } else {
@@ -83,7 +81,6 @@ function Home() {
         createdAt = formattedDate(userPlan.createdAt)
     }
 
-    console.log("userPlan", userPlan)
 
     if (!session) {
         return <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

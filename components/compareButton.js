@@ -4,7 +4,6 @@ import React from 'react'
 function CompareButton() {
     const handleSwitch = (event) => {
         setShowRestored(!showRestored);
-        // console.log('Switch toggled:', event);
     };
 
     const IOSSwitch = styled((props) => (

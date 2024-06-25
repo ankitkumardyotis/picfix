@@ -47,19 +47,12 @@ function ExplorePageContainer(props) {
         }
     };
 
-    // const path = props.routePath;
-
-
-    // console.log("path", path)
     const handleRunModelButton = async () => {
 
         if (!session) {
-            console.log("session")
-            console.log("session")
             localStorage.setItem("path", props.routePath)
             router.push('/login');
         } else {
-            console.log("plan ==================kjbhb")
             // For free use of remove background 
             if (props.routePath == '/backgroundRemoval/runModel') {
                 router.push('/backgroundRemoval/runModel')

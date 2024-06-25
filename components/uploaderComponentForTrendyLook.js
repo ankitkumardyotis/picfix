@@ -13,8 +13,7 @@ const uploader = Uploader({
 
 
 function UploaderComponent({ requireValue, setFileUrl, fileUrl }) {
-    // console.log(requireValue);
-    // const context = useContext(AppContext);
+
     const uploaderOptions = {
         maxFileCount: 1,
         mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
@@ -51,13 +50,9 @@ function UploaderComponent({ requireValue, setFileUrl, fileUrl }) {
         tags: [
             "picfix"
         ],
-        // onUpdate: (files) => {
-        //     console.log(files)
-        // },
+
         showFinishButton: false,
-        // dropzoneRenderer: ({ open }) => (
-        //     <CustomButton onClick={open} />
-        // ),
+        
 
     }
 

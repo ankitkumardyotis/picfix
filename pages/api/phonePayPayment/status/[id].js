@@ -15,7 +15,6 @@ export default async function POST(req, res) {
       id: decryptSession
     }
   })
-  console.log("userData in status id", userData)
   
   if (!userData) {
     res.status(401).json({ message: "You are not Authorised" })
@@ -43,25 +42,7 @@ export default async function POST(req, res) {
   try {
     const response = await axios.request(options);
     if (response.data.code === "PAYMENT_SUCCESS") {
-      // const data = {
-      //   transactionId: response.data.data.transactionId,
-      //   userId: userData.id,
-      //   userName: userData.name,
-      //   emailId: userData.email,
-      //   planName: "Free",  //to be added with actual plan
-      //   creditPoints: 200, //to be added with actual plan        
-      //   remainingPoints: 100, //to be added with actual plan    
-      //   createdAt: new Date(),
-      //   expiredAt: new Date(), //to be added with actual plan
-      //   status: response.data.code,
-      //   amount: response.data.data.amount,
-      //   currency: 'INR',//to be added with actual plan         
-      //   paymentStatus: response.data.code,
-      //   merchantId: response.data.data.merchantId,
-      //   merchantTransactionId: response.data.data.merchantTransactionId,
-      //   paymentInstrument: response.data.data.paymentInstrument,
-      // }
-      // Get the current date
+
       const currentDate = new Date();
 
       // Add one year to the current date
@@ -70,17 +51,13 @@ export default async function POST(req, res) {
 
       // Convert expiry date to ISO string format
       const expiryISOString = expiryDate.toISOString();
-
-      console.log("Current Date:", currentDate.toISOString());
-      console.log("Expiry Date:", expiryISOString);
-
       // Create a plan details object
       const currency = "INR";
       const [planDetails] = priceStructure.filter((item) => item.currency === currency && item.price == (response.data.data.amount / 100))
 
       // Add Payment details to the database
 
-      const createPayment = await prisma.PaymentHistory.create({
+     await prisma.PaymentHistory.create({
         data: {
           transactionId: response.data.data.transactionId,
           userId: userData.id,
@@ -99,7 +76,7 @@ export default async function POST(req, res) {
       })
 
 
-      const createPlan = await prisma.Plan.upsert({
+      await prisma.Plan.upsert({
         where: {
           userId: userData.id // Assuming userId is unique and identifies the user uniquely
         },
@@ -127,13 +104,6 @@ export default async function POST(req, res) {
           expiredAt: expiryISOString,
         }
       });
-
-
-      console.log("create plan", createPlan)
-
-
-
-
 
       res.writeHead(301, { Location: `${process.env.NEXTAUTH_URL}/dashboard` });
       res.end();

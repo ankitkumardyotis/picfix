@@ -2,7 +2,7 @@
 export default async function handler(req, res) {
 
     const { replicateId } = req.query;
-    console.log("replicateId =======>", replicateId)
+
 
     const response = await fetch(`https://api.replicate.com/v1/predictions/${replicateId}/cancel`, {
         method: "POST",

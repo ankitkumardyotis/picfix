@@ -8,14 +8,12 @@ import { decryptSessionId, encryptSessionId } from '@/utils/encryptSessionAlgori
 export default async function handler(req, res) {
     const { amount } = req.body
     const session = await getServerSession(req, res, authOptions)
-    console.log("session=================================================", session)
     if (!session) {
         res.status(401).json({ message: "You are not Authorised" })
         return;
     }
     const encryptSession = encryptSessionId(session.user.id)
     const transactionId = "DT-" + uuidv4().toString(36).slice(-22);
-    console.log("Transaction Id", transactionId)
     const payload = {
         merchantId: process.env.MERCHANT_ID,
         merchantTransactionId: transactionId,
@@ -34,9 +32,6 @@ export default async function handler(req, res) {
     const fullUrl = dataBase64 + "/pg/v1/pay" + process.env.SALT_KEY;
     const dataSha256 = sha256(fullUrl)
     const checksum = dataSha256 + "###" + process.env.SALT_INDEX
-    console.log("checksum", checksum)
-    console.log("dataBase64", dataBase64)
-
     const response = await axios.post(process.env.PHONEPAY_CHECKOUT_URL,
         {
             request: dataBase64,
@@ -49,9 +44,7 @@ export default async function handler(req, res) {
             }
         }
     ).catch((error) => {
-        console.log("Error in Checkout", error.message)
         res.status(500).json({ error: error.message })
     })
-    console.log("response in checkout", response.data)
     res.status(200).json({ url: response.data.data.instrumentResponse.redirectInfo.url, transactionId })
 }
