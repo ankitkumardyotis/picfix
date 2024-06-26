@@ -2,7 +2,7 @@ import { SessionProvider } from "next-auth/react"
 import '@/styles/globals.css'
 import NavBar from '@/components/NavBar'
 import '@/styles/globals.css'
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AppContext from '@/components/AppContext';
 import Footer from '@/components/Footer';
 import Script from "next/script";
@@ -18,15 +18,18 @@ export default function App({
   const [open, setOpen] = useState(false);
   const [removeImageFromTransformerJs, setRemoveImageFromTransformerJs] = useState('');
   const [timerForRunModel, setTimerForRunModel] = useState(0)
-  // <script script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script >
-  // <script src='../../utils/transformer.js'>
-  // </script>
+  const [creditPoints, setCreditPoints] = useState(0)
   return (
     <>
       <SessionProvider session={session}>
-        <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs,timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs }}>
-          <NavBar open={open} setOpen={setOpen} />
-          <Component {...pageProps} />
+        <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
+          <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+          {useMemo(() => <Component {...pageProps} />, [fileUrl,
+            path,
+            open,
+            removeImageFromTransformerJs,
+            pageProps,
+            timerForRunModel])}
           <Footer />
         </AppContext.Provider>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />

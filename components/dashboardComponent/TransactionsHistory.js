@@ -73,7 +73,6 @@ function TransactionsHistory() {
     };
 
 
-    console.log("selected row", selectedRowData)
     return (
         <div style={{ flex: 5, backgroundColor: 'white' }}>
             <div style={{ textAlign: 'start', margin: "3em", marginBottom: '2em' }}>

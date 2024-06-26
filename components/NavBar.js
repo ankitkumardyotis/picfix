@@ -33,7 +33,7 @@ function NavBar({ open, setOpen }) {
                     </Link>
                 </div>
                 <div  >
-                <AccountMenu />
+                    <AccountMenu />
                     {/* {session ? <AccountMenu /> : <div>
                         <button onClick={handleGetStarted} style={{ padding: '.5em', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', backgroundColor: 'black', color: 'rgb(100, 214, 207)', border: 'none' }}>Get started </button>
                     </div>} */}

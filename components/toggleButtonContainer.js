@@ -8,9 +8,6 @@ function ToggleButtonContainer({ toggleClick, setToggleClick, matches }) {
 
 
     const handleSwitch = (event) => {
-        // setShowRestored(!showRestored);
-        // console.log(event.target.checked);
-        // 'Switch toggled:', event
         setToggleClick(event.target.checked);
     };
 

@@ -81,6 +81,8 @@ export default function Home() {
             if (userPlan) {
 
               const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+              const newCreditpoints = await response.json();
+              context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
               if (!response.ok) {
                 throw new Error('Failed to fetch plan data');
               }
@@ -98,7 +100,6 @@ export default function Home() {
                 }),
 
               });
-              // console.log("history", history)
               if (!history.ok) {
                 throw new Error('Failed to fetch plan data');
               }

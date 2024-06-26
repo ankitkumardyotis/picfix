@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   const planData = await getUserPlan(session.user.id)
-  console.log("planData=====.", planData)
+
 
   if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
     res.status(402).json("Please Subscribe to a plan to use this feature.");
@@ -40,7 +40,6 @@ export default async function handler(req, res) {
     });
 
     let jsonStartResponse = await startResponse.json();
-    console.log("Responses", jsonStartResponse);
     let endpointUrl = jsonStartResponse.urls.get;
     let cancelUrl = jsonStartResponse.urls.cancel;
 
@@ -51,7 +50,6 @@ export default async function handler(req, res) {
 
     while (!restoredImage) {
       // Loop in 1s intervals until the alt text is ready
-      console.log("polling for result...");
       let finalResponse = await fetch(endpointUrl, {
         method: "GET",
         headers: {
@@ -60,7 +58,6 @@ export default async function handler(req, res) {
         },
       });
       let jsonFinalResponse = await finalResponse.json();
-      console.log("count ", count)
       count=count+2;
       
       if (count > 80) {
@@ -71,7 +68,6 @@ export default async function handler(req, res) {
             Authorization: "Token " + process.env.REPLICATE_API_KEY,
           },
         })
-        console.log("cancleJson", cancleJson)
         res.status(500).json(cancleJson)
         break;
         return;
@@ -79,32 +75,6 @@ export default async function handler(req, res) {
       if (jsonFinalResponse.status === "succeeded") {
         restoredImage = jsonFinalResponse.output;
         responseFromReplicate = jsonFinalResponse
-        // removed because already creadit deducted in generate photo api that is (GFPGAN)
-        // const saveCreditPoint = await prisma.plan.update({
-        //   where: {
-        //     id: planData[0].id, // Assuming you only have one plan per user
-        //     userId: session.user.id
-        //   },
-        //   data: {
-        //     remainingPoints: {
-        //       decrement: 1
-        //     }
-        //   },
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // })
-
-        // const createPlan = await prisma.history.create({
-        //   data: {
-        //     userId: session.user.id,
-        //     model: jsonFinalResponse.model,
-        //     status: jsonFinalResponse.status,
-        //     createdAt: jsonFinalResponse.created_at,
-        //     replicateId: jsonFinalResponse.id
-        //   }
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // });
       } else if (jsonFinalResponse.status === "failed") {
         break;
       } else {
@@ -113,7 +83,6 @@ export default async function handler(req, res) {
     } res.status(200).json(responseFromReplicate)
   }
   catch (err) {
-    console.log("Error in restore image", err);
     res.status(500).json("Server is busy please try again later");
   }
 }

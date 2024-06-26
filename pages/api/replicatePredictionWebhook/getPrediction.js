@@ -16,26 +16,9 @@ export default async function handler(req, res) {
     const apiName = req.body.apiName;
     const maskedImageUrl = req.body.maskedImageUrl
 
-    console.log("masked Image ")
-    console.log("file url")
-
-    //   const session = await getServerSession(req, res, authOptions)
-    //   if (!session) {
-    //     res.status(401).json("Unauthorized");
-    //     return;
-    //   }
-    //   const planData = await getUserPlan(session.user.id)
-    //   console.log("planData=====.",planData)
-
-    //   if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
-    //     res.status(402).json("Please Subscribe to a plan to use this feature.");
-    //     return;
-    //   }
-
 
     if (apiName === 'restorePhoto') {
         // Restore Photo
-        console.log(" Restore Photo ======================>")
 
         try {
             // POST request to Replicate to start the image restoration generation process
@@ -56,7 +39,6 @@ export default async function handler(req, res) {
 
             });
             let jsonStartResponse = await startResponse.json();
-            console.log("jsonStartResponse=========================================", jsonStartResponse)
 
             res.status(200).json(jsonStartResponse);
         } catch (err) {
@@ -65,7 +47,6 @@ export default async function handler(req, res) {
     }
     if (apiName === 'backgroundRemoval') {
         // Remove Background
-        console.log("Remove Backgound API ======================>")
         try {
             // POST request to Replicate to start the image restoration generation process
             const callbackURL = `${process.env.REPLICATE_WEBHOOK_URL}/api/replicatePredictionWebhook/restorePhotoWebhook`;
@@ -125,7 +106,6 @@ export default async function handler(req, res) {
             });
 
             let jsonStartResponse = await startResponse.json();
-            console.log("jsonStartResponse============",jsonStartResponse)
 
             res.status(200).json(jsonStartResponse);
         } catch (err) {
@@ -137,7 +117,6 @@ export default async function handler(req, res) {
     if (apiName === 'trendyLook') {
         const prompt = req.body.prompt;
         const clothingPosition = req.body.clothingPosition;
-        console.log("Trendy look ======================>")
         try {
             // POST request to Replicate to start the image restoration generation process
             const callbackURL = `${process.env.REPLICATE_WEBHOOK_URL}/api/replicatePredictionWebhook/restorePhotoWebhook`;
@@ -169,7 +148,6 @@ export default async function handler(req, res) {
     }
 
     if (apiName === 'imageColorization') {
-        console.log("Image Colorization ======================>")
         try {
             // POST request to Replicate to start the image restoration generation process
             const callbackURL = `${process.env.REPLICATE_WEBHOOK_URL}/api/replicatePredictionWebhook/restorePhotoWebhook`;
@@ -197,7 +175,6 @@ export default async function handler(req, res) {
 
     if (apiName === 'object-remove') {
         // object-remove
-        console.log(" object-remove ======================>")
 
         try {
             // POST request to Replicate to start the image restoration generation process
@@ -221,7 +198,6 @@ export default async function handler(req, res) {
 
             });
             let jsonStartResponse = await startResponse.json();
-            console.log("jsonStartResponse=========================================", jsonStartResponse)
 
             res.status(200).json(jsonStartResponse);
         } catch (err) {

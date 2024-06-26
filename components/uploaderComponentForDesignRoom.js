@@ -12,8 +12,7 @@ const uploader = Uploader({
 
 
 function UploaderComponent({ requireValue, setFileUrl, fileUrl }) {
-    // console.log(requireValue);
-    // const context = useContext(AppContext);
+
     const uploaderOptions = {
         maxFileCount: 1,
         mimeTypes: ["image/jpeg", "image/png", "image/jpg"],

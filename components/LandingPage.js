@@ -22,7 +22,6 @@ function LandingPage() {
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-  // console.log("matches", matches)
   const router = useRouter();
 
   // useEffect(() => {

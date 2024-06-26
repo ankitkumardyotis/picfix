@@ -44,8 +44,6 @@ function ImageColorization() {
         throw new Error('Failed to fetch plan data');
       }
       const data = await response.json();
-      // console.log("data", data.plan)
-      // return data.plan;
       setUserPlan(data.plan)
       setUserPlanStatus(true)
     } catch (error) {
@@ -65,21 +63,8 @@ function ImageColorization() {
   }, [session, status, router]);
 
 
-  console.log("context in image colorization container=============================", context.timerForRunModel);
-
-
-  // useEffect(() => {
-  //   if (userPlanStatus && userPlan === null) {
-  //     console.log("fetchedPlan in", userPlan)
-  //     router.push("/price");
-  //   }
-  // }, [userPlan, router]);
-
-
-  // console.log("context payh", context.path)
   // CJWBW model calling
   async function generateCJWBWPhoto(toSwitchRestoreUrl) {
-    console.log("url for cjwbw", toSwitchRestoreUrl)
     try {
       const res = await fetch("/api/replicatePredictionWebhook/getPrediction", {
         method: "POST",
@@ -100,13 +85,13 @@ function ImageColorization() {
         const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
         if (response.status == 200) {
           const data = await response.json();
-          // console.log("response", data)
-
           webhookDBResponse = data;
           if (data.webhookData.output[0]) {
             if (userPlan) {
 
               const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+              const newCreditpoints = await response.json();
+              context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
               if (!response.ok) {
                 throw new Error('Failed to fetch plan data');
               }
@@ -124,7 +109,6 @@ function ImageColorization() {
                 }),
 
               });
-              // console.log("history", history)
               if (!history.ok) {
                 throw new Error('Failed to fetch plan data');
               }
@@ -139,9 +123,7 @@ function ImageColorization() {
           }
 
         } else {
-          console.log("timerForRunModelRef in image colorization", timerForRunModelRef.current)
           if (timerForRunModelRef.current > 98) {
-            console.log("You Are Done in image colorization at", timerForRunModelRef.current)
             await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
             setError("true");
             setLoadCircularProgress(true)
@@ -162,74 +144,6 @@ function ImageColorization() {
   }
 
 
-
-  // setLoading(false)
-  // setError(null)
-  // setLoadCircularProgress(false)
-
-
-  // async function generateCJWBWPhoto(toSwitchRestoreUrl) {
-  //   // console.log("url for cjwbw", toSwitchRestoreUrl)
-  //   await new Promise((resolve) => setTimeout(resolve, 500));
-  //   setLoading(true);
-  //   const res = await fetch("/api/generateColorizationImage", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ imageUrl: toSwitchRestoreUrl }),
-  //   });
-  //   console.log("res in image colorization", res)
-  //   let result = await res.json();
-  //   console.log("res in image colorization", result)
-  //   if (res.status !== 200) {
-  //     setError(result);
-  //     setLoadCircularProgress(true)
-  //   } else {
-  //     setRestoredPhoto(toSwitchRestoreUrl);
-  //     setimageColorization(result.output[0].image);
-  //     setimageColorizationOne(result.output[1].image)
-  //     setimageColorizationTwo(result.output[2].image)
-  //     setimageColorizationThree(result.output[3].image)
-  //     setimageColorizationFour(result.output[4].image)
-
-  //     if (userPlan) {
-  //       const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-  //       if (!updateResponse.ok) {
-  //         throw new Error('Failed to update user plan');
-  //       }
-  //       console.log("updateResponse", updateResponse)
-
-  //       const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           userId: session.user.id,
-  //           model: result.model,
-  //           status: result.status,
-  //           createdAt: result.created_at,
-  //           replicateId: result.id
-  //         }),
-  //       });
-
-  //       console.log("historyResponse", historyResponse)
-  //       if (!historyResponse.ok) {
-  //         throw new Error('Failed to create history entry');
-  //       }
-  //     }
-
-
-
-
-  //     setLoading(false)
-  //     setError(null)
-  //     setLoadCircularProgress(false)
-  //   }
-  // }
-
-  // GFPGAN model calling 
   async function generateRestorePhoto(fileUrl) {
     setLoading(true);
 
@@ -247,30 +161,21 @@ function ImageColorization() {
       }
       const result = await res.json();
       const replicateImageId = result.id;
-      console.log("result in restore =====>", result)
       let webhookDBResponse;
       while (!webhookDBResponse) {
 
         const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
-        console.log("respoone", response)
         if (response.status == 200) {
-          const data = await response.json();
-          console.log("response", data)
+          const data = await response.json()
 
           webhookDBResponse = data;
-          // console.log("webhook response in restore photo", webhookData)
-          // if (data) {
-          // clearInterval(timeCount);
           let toSwitchRestoreUrl = data.webhookData.output[0];
-          console.log("toSwitchRestoreUrl in restore=====>", toSwitchRestoreUrl);
           generateCJWBWPhoto(toSwitchRestoreUrl);
           setRestoreImageURLForVarient(toSwitchRestoreUrl);
           // }
 
         } else {
-          console.log("timerForRunModelRef in restore, ", timerForRunModelRef.current)
           if (timerForRunModelRef.current > 99) {
-            // clearInterval(timeCount);
             await fetch(`/api/replicatePredictionWebhook/cancelPrediction?replicateId=${replicateImageId}`);
             setError("true");
             setLoadCircularProgress(true)
@@ -279,16 +184,6 @@ function ImageColorization() {
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
-
-
-      // } else {
-      //   let toSwitchRestoreUrl = result.output;
-      //   generateCJWBWPhoto(toSwitchRestoreUrl);
-      //   setRestoreImageURLForVarient(toSwitchRestoreUrl);
-      //   setError(null)
-      //   setLoadCircularProgress(false)
-      // }
-      // setLoading(false);
     }
     catch (error) {
       console.error('Error generating photo==>', error);
@@ -305,23 +200,17 @@ function ImageColorization() {
   if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
     return router.push('/price')
   }
-  // if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-  //   return <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-  //     <h4>Uh Oh ! It look like You Don't Have much credit points to run this model</h4>
-  //     <Button variant="contain" sx={{ border: '1px solid teal' }} onClick={() => { router.push('/price') }}>Buy Credits</Button>
-  //   </Box>
-  // }
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setFileUrl(e.target.result);
-        };
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFileUrl(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-};
+  };
 
 
   return (

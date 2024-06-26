@@ -66,7 +66,7 @@ function DesignRoom() {
 
     const [userPlanStatus, setUserPlanStatus] = useState(false);
 
-    const { timerForRunModel } = useContext(AppContext);
+    const { timerForRunModel, setCreditPoints } = useContext(AppContext);
     const timerForRunModelRef = useRef(timerForRunModel);
     useEffect(() => {
         timerForRunModelRef.current = timerForRunModel;
@@ -81,8 +81,7 @@ function DesignRoom() {
                 throw new Error('Failed to fetch plan data');
             }
             const data = await response.json();
-            // console.log("data", data.plan)
-            // return data.plan;
+
             setUserPlan(data.plan)
             setUserPlanStatus(true)
         } catch (error) {
@@ -104,100 +103,9 @@ function DesignRoom() {
 
 
 
-    // useEffect(() => {
-    //   if (userPlanStatus && userPlan === null) {
-    //     console.log("fetchedPlan in", userPlan)
-    //     router.push("/price");
-    //   }
-    // }, [userPlan, router]);
-    const uploaderOptions = {
-        maxFileCount: 1,
-        mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
-        editor: {
-            images:
-            {
-                crop: false,
-                cropRatio: 1
-            }
-        },
-        metadata: {
-            "myCustomField1": true,
-            "myCustomField2": {
-                "hello": "world"
-            },
-        },
-        styles: {
-            colors: {
-                'active': '#000',
-                "error": "red",
-                "primary": "#000",
-                "shade100": "#000",
-                "shade200": "#fff",
-                "shade300": "#000",
-                "shade400": "#000", // drag and drop text
-                "shade500": "#fff",
-                "shade600": "transparent",
-                "shade700": "#fff",
-                "shade800": "#fff",
-                "shade900": "#fff" //upload an image text 
-            },
-        },
-        showFinishButton: false,
-    }
-
-    // const fileUrl = context.fileUrl;
-    // async function generatePhoto(fileUrl) { // Call the function to generate the photo after click on the button i.e click to go
-    //     await new Promise((resolve) => setTimeout(resolve, 500));
-    //     setLoading(true);
-    //     const res = await fetch("/api/generateDesignRoom", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify({ imageUrl: fileUrl, prompt: prompt, apiName: "aiHomeMakeOver" }),
-    //     });
-    //     let result = await res.json();
-    //     console.log("NewPhoto", result)
-    //     if (res.status !== 200) {
-    //         setError(result);
-    //         setLoadCircularProgress(true)
-    //     } else {
-    //         if (userPlan) {
-    //             const updateResponse = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-    //             if (!updateResponse.ok) {
-    //                 throw new Error('Failed to update user plan');
-    //             }
-    //             console.log("updateResponse", updateResponse)
-
-    //             const historyResponse = await fetch('/api/dataFetchingDB/updateHistory', {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                 },
-    //                 body: JSON.stringify({
-    //                     userId: session.user.id,
-    //                     model: result.model,
-    //                     status: result.status,
-    //                     createdAt: result.created_at,
-    //                     replicateId: result.id
-    //                 }),
-    //             });
-
-    //             console.log("historyResponse", historyResponse)
-    //             if (!historyResponse.ok) {
-    //                 throw new Error('Failed to create history entry');
-    //             }
-    //         }
-    //         setRestoredPhoto(result.output[1]);
-    //         setError(null)
-    //         setLoadCircularProgress(false)
-    //     }
-    //     setLoading(false);
-    // }
 
 
     async function generatePhoto(fileUrl) {
-        console.log("fileUrl============================================", fileUrl)
         setLoading(true);
 
         try {
@@ -214,7 +122,6 @@ function DesignRoom() {
                 throw new Error('Failed to generate photo');
             }
             const result = await res.json();
-            console.log("result =====================", result)
             const replicateImageId = result.id;
             let webhookDBResponse;
 
@@ -223,13 +130,16 @@ function DesignRoom() {
                 const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`)
                 if (response.status == 200) {
                     const data = await response.json();
-                    console.log("response======================================", data)
 
                     webhookDBResponse = data;
                     if (data.webhookData.output[0][1]) {
                         if (userPlan) {
 
                             const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+                       
+                            const newCreditpoints = await response.json();
+                            setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
+                  
                             if (!response.ok) {
                                 throw new Error('Failed to fetch plan data');
                             }
@@ -247,12 +157,11 @@ function DesignRoom() {
                                 }),
 
                             });
-                            // console.log("history", history)
+                        
                             if (!history.ok) {
                                 throw new Error('Failed to fetch plan data');
                             }
                         }
-                        console.log("image ", data.webhookData.output[0][1])
                         setRestoredPhoto(data.webhookData.output[0][1]);
                     }
 
@@ -291,7 +200,7 @@ function DesignRoom() {
                 link.click();
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
             });
     };
 

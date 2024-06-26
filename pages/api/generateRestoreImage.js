@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     return;
   }
   const planData = await getUserPlan(session.user.id)
-  console.log("planData=====.",planData)
 
   if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
     res.status(402).json("Please Subscribe to a plan to use this feature.");
@@ -34,18 +33,14 @@ export default async function handler(req, res) {
         input: { img: fileUrl, version: "v1.4", scale: 2 },
       }),
     });
-    console.log("startResponse", startResponse)
     let jsonStartResponse = await startResponse.json();
-    // console.log("Json response" + JSON.stringify(jsonStartResponse));
     let endpointUrl = jsonStartResponse.urls.get;
 
     // // GET request to get the status of the image restoration process & return the result when it's ready
     let restoredImage = null;
     let responseFromReplicate;
-    console.log("responseFromReplicate in restore photo", jsonStartResponse)
     while (!restoredImage) {
       // Loop in 1s intervals until the alt text is ready
-      console.log("polling for result...");
       let finalResponse = await fetch(endpointUrl, {
         method: "GET",
         headers: {
@@ -58,42 +53,13 @@ export default async function handler(req, res) {
       if (jsonFinalResponse.status === "succeeded") {
         restoredImage = jsonFinalResponse.output;
         responseFromReplicate = jsonFinalResponse
-        // const saveCreditPoint = await prisma.plan.update({
-        //   where: {
-        //     id: planData[0].id, // Assuming you only have one plan per user
-        //     userId: session.user.id
-        //   },
-        //   data: {
-        //     remainingPoints: {
-        //       decrement: 1
-        //     }
-        //   },
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // })
-
-        // const createPlan = await prisma.history.create({
-        //   data: {
-        //     userId: session.user.id,
-        //     model: jsonFinalResponse.model,
-        //     status: jsonFinalResponse.status,
-        //     createdAt: jsonFinalResponse.created_at,
-        //     replicateId: jsonFinalResponse.id
-        //   }
-        // }).catch(err => {
-        //   console.error('Error creating Plan:', err);
-        // });
-
-
       } else if (jsonFinalResponse.status === "failed") {
         break;
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-      console.log("final responseFromReplicate in restore photo", responseFromReplicate)
     } res.status(200).json(responseFromReplicate);
   } catch (err) {
-    console.log("Error in restore image", err);
     res.status(500).json("Server is busy please try again later");
   }
 }

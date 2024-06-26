@@ -15,13 +15,7 @@ const instance = new Razorpay({
 export default async function handler(req, res) {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    const session = await getServerSession(req, res, authOptions)
-
-    console.log("session", session)
-    // if (!session) {
-    //     // Signed in
-    //     res.status(200).json({ message: "You are not Authorised" })
-    // }                    
+    const session = await getServerSession(req, res, authOptions)                 
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -36,10 +30,6 @@ export default async function handler(req, res) {
 
         const [planDetails] = priceStructure.filter((item) => item.currency === order.items[0].currency && item.price == (order.items[0].amount / 100))
 
-        console.log("planDetails=====>", planDetails)
-
-
-        console.log("order====================", order)
         await prisma.PaymentHistory.create({
             data: {
                 transactionId: razorpay_payment_id,
@@ -63,7 +53,7 @@ export default async function handler(req, res) {
         const expiryISOString = expiryDate.toISOString();
 
 
-        const createPlan = await prisma.Plan.upsert({
+       await prisma.Plan.upsert({
             where: {
                 userId: session.user.id // Assuming userId is unique and identifies the user uniquely
             },

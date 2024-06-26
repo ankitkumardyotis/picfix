@@ -32342,9 +32342,6 @@ async function predict(b) {
   } else {
     console.error("Element with id 'removedBackgroundImage' not found.");
   }
-
-  // console.log("Image=======", imageDataURL)
-
   const fileName = Date.now();
   document.getElementById('download-button').addEventListener('click', function () {
     const link = document.createElement('a');
