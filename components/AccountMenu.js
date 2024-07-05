@@ -39,9 +39,9 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
-    React.useEffect(() => {
-        fetchUserPlan()
-    }, [session])
+    // React.useEffect(() => {
+    //     // fetchUserPlan()
+    // }, [session])
     React.useEffect(() => {
 
     }, [plan])
@@ -50,19 +50,19 @@ export default function AccountMenu() {
 
 
 
-    const fetchUserPlan = async () => {
-        try {
-            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-            }
-            const { plan } = await response.json();
-            setPlan(plan)
-            context.setCreditPoints(plan.remainingPoints)
-        } catch (error) {
-            console.error('Error fetching plan data:', error);
-        }
-    };
+    // const fetchUserPlan = async () => {
+    //     try {
+    //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch plan data');
+    //         }
+    //         const { plan } = await response.json();
+    //         setPlan(plan)
+    //         context.setCreditPoints(plan.remainingPoints)
+    //     } catch (error) {
+    //         console.error('Error fetching plan data:', error);
+    //     }
+    // };
   
     return (
         <React.Fragment>
@@ -136,12 +136,12 @@ export default function AccountMenu() {
                 {/* <Avatar /> */}
 
                 {session && <> <MenuItem onClick={async () => {
-                    if (!plan) {
-                        router.push("/price")
-                        context.setFileUrl("")
-                        // localStorage.setItem("path", "/price")
-                        return
-                    }
+                    // if (!plan) {
+                    //     router.push("/price")
+                    //     context.setFileUrl("")
+                    //     // localStorage.setItem("path", "/price")
+                    //     return
+                    // }
                     router.push('/dashboard')
                 }}>
                     {session && <img style={{ width: '35px', height: '35px', marginRight: "10px", borderRadius: '50%' }} src={session.user.image} alt={session.user.name} />} My Account

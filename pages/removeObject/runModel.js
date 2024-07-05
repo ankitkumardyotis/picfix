@@ -41,7 +41,7 @@ export default function Home() {
   useEffect(() => {
     if (status === "loading") {
     } else if (!session) router.push("/login");
-    else fetchUserPlan();
+    // else fetchUserPlan();
   }, [session, status, router]);
 
 
@@ -78,14 +78,14 @@ export default function Home() {
           webhookDBResponse = data;
           if (data.webhookData.output[0]) {
 
-            if (userPlan) {
+            // if (userPlan) {
 
-              const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-              const newCreditpoints = await response.json();
-              context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
-              if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-              }
+            //   const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+            //   const newCreditpoints = await response.json();
+            //   context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
+            //   if (!response.ok) {
+            //     throw new Error('Failed to fetch plan data');
+            //   }
               const history = await fetch('/api/dataFetchingDB/updateHistory', {
                 method: "POST",
                 headers: {
@@ -100,10 +100,10 @@ export default function Home() {
                 }),
 
               });
-              if (!history.ok) {
-                throw new Error('Failed to fetch plan data');
-              }
-            }
+            //   if (!history.ok) {
+            //     throw new Error('Failed to fetch plan data');
+            //   }
+            // }
 
             setRestoredPhoto(data.webhookData.output[0]);
             setError(null);

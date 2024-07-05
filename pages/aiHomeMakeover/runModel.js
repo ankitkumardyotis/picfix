@@ -74,20 +74,20 @@ function DesignRoom() {
 
 
 
-    const fetchUserPlan = async () => {
-        try {
-            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-            }
-            const data = await response.json();
+    // const fetchUserPlan = async () => {
+    //     try {
+    //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch plan data');
+    //         }
+    //         const data = await response.json();
 
-            setUserPlan(data.plan)
-            setUserPlanStatus(true)
-        } catch (error) {
-            console.error('Error fetching plan data:', error);
-        }
-    };
+    //         setUserPlan(data.plan)
+    //         setUserPlanStatus(true)
+    //     } catch (error) {
+    //         console.error('Error fetching plan data:', error);
+    //     }
+    // };
 
     useEffect(() => {
         if (status === "loading") {
@@ -96,7 +96,7 @@ function DesignRoom() {
             router.push("/login");
         } else {
             setLoadindSession(false);
-            fetchUserPlan();
+            // fetchUserPlan();
         }
     }, [session, status, router]);
 
@@ -133,16 +133,16 @@ function DesignRoom() {
 
                     webhookDBResponse = data;
                     if (data.webhookData.output[0][1]) {
-                        if (userPlan) {
+                        // if (userPlan) {
 
-                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+                        //     const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
                        
-                            const newCreditpoints = await response.json();
-                            setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
+                        //     const newCreditpoints = await response.json();
+                        //     setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
                   
-                            if (!response.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
+                        //     if (!response.ok) {
+                        //         throw new Error('Failed to fetch plan data');
+                        //     }
                             const history = await fetch('/api/dataFetchingDB/updateHistory', {
                                 method: "POST",
                                 headers: {
@@ -158,10 +158,10 @@ function DesignRoom() {
 
                             });
                         
-                            if (!history.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                        }
+                        //     if (!history.ok) {
+                        //         throw new Error('Failed to fetch plan data');
+                        //     }
+                        // }
                         setRestoredPhoto(data.webhookData.output[0][1]);
                     }
 

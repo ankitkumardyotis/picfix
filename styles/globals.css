@@ -543,3 +543,50 @@ svg {
   }
 }
 
+.ribbonHeading {
+  font-family: "Nixie One", cursive;
+  font-size: 20px;
+  width: 35%;
+  position: relative;
+  background: #93dfb8;
+  color: #000;
+  text-align: center;
+  padding: 0.5em 1.5em; /* Adjust to suit */
+  margin: 2em auto 3em; /* Based on 24px vertical rhythm. 48px bottom margin - normally 24 but the ribbon 'graphics' take up 24px themselves so we double it. */
+}
+.ribbonHeading:before,
+.ribbonHeading:after {
+  content: "";
+  position: absolute;
+  display: block;
+  bottom: -1em;
+  border: 1.5em solid #7ac69f;
+  z-index: -1;
+}
+.ribbonHeading:before {
+  left: -2em;
+  border-right-width: 1.5em;
+  border-left-color: transparent;
+}
+.ribbonHeading:after {
+  right: -2em;
+  border-left-width: 1.5em;
+  border-right-color: transparent;
+}
+.ribbonHeading-content:before,
+.ribbonHeading-content:after {
+  content: "";
+  position: absolute;
+  display: block;
+  border-style: solid;
+  border-color: #60ac85 transparent transparent transparent;
+  bottom: -1em;
+}
+.ribbonHeading-content:before {
+  left: 0;
+  border-width: 1em 0 0 1em;
+}
+.ribbonHeading-content:after {
+  right: 0;
+  border-width: 1em 1em 0 0;
+}

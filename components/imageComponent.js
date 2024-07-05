@@ -250,7 +250,7 @@ function ImageComponent(props) {
                         }}
                     >
                         {props.fileUrl && (
-                            <Box sx={{ width: '100%', height: '100%' }}>
+                            <Box sx={{ width: '100%',minWidth:'40vw', height: '100%' }}>
                                 <ReactCompareImage leftImageLabel='before' leftImage={props.fileUrl} rightImageLabel='after' rightImage={props.restoredPhoto} />
                             </Box>
                         )}

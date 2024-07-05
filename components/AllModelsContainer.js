@@ -57,10 +57,22 @@ export default function AllModelsContainer() {
   return (
 
     <div className='modelContainer' ref={ref}>
+      {/* <div style={{ textAlign: 'center', marginTop: '2em' }}>
+        <h2>
+          All Model's  are free for limited time
+        </h2>
+      </div> */}
+      <div style={{ textAlign: 'center', marginTop: '2em' }}>
+        <h2 class="ribbonHeading">
+          <span class="ribbonHeading-content">  All Model's  are free for limited time</span>
+        </h2>
+      </div>
+
       <div className='allCardContainer flex-container'>
         {inView && <Zoom in={checked} style={{ transitionDelay: checked ? '100ms' : '0ms' }}>
 
-          <div className="card" onClick={handleRestoreImage}>
+          <div className="card" style={{ position: 'relative' }} onClick={handleRestoreImage}>
+            <div class="ribbon right"><h6 style={{ fontSize: '28px' }}>Free</h6></div>
             <div className="card-img">
               <Image style={imageStyle} src="/assets/girlImg1.jpg" alt="Picture of the author" width={400} height={300} />
             </div>
@@ -76,7 +88,8 @@ export default function AllModelsContainer() {
           </div>
         </Zoom>}
         {inView && <Zoom in={checked} style={{ transitionDelay: checked ? '150ms' : '0ms' }}>
-          <div className="card" onClick={handleBlurImage}>
+          <div className="card" style={{ position: 'relative' }} onClick={handleBlurImage}>
+            <div class="ribbon right"><h6 style={{ fontSize: '28px' }}>Free</h6></div>
             <div className="card-img">
               <Image style={imageStyle} src="/assets/Hedy lammar image-colorization 1200X300.jpg" alt="Picture of the author" width={400} height={300} />
             </div>
@@ -110,7 +123,8 @@ export default function AllModelsContainer() {
           </div>
         </Zoom>}
         {inView && <Zoom in={checked} style={{ transitionDelay: checked ? '400ms' : '0ms' }}>
-          <div className="card" onClick={handleObjectRemove}>
+          <div className="card" style={{ position: 'relative' }} onClick={handleObjectRemove}>
+            <div class="ribbon right"><h6 style={{ fontSize: '28px' }}>Free</h6></div>
             <div className="card-img">
               <Image style={imageStyle} src="/assets/models/remove-object-picfix-pic-landing-page.png" alt="Picture of the author" width={400} height={300} />
             </div>
@@ -126,7 +140,8 @@ export default function AllModelsContainer() {
         </Zoom>}
 
         {inView && <Zoom in={checked} style={{ transitionDelay: checked ? '500ms' : '0ms' }}>
-          <div className="card" onClick={handleRoomDesign} >
+          <div className="card" style={{ position: 'relative' }} onClick={handleRoomDesign} >
+            <div class="ribbon right"><h6 style={{ fontSize: '28px' }}>Free</h6></div>
             <div className="card-img">
               <Image style={imageStyle} src="/assets/Dream-Room.jpg" alt="Picture of the author" width={400} height={300} />
             </div>
