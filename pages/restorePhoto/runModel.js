@@ -26,24 +26,24 @@ function RestorePhoto() {
 
     const router = useRouter();
     const [loadindSession, setLoadindSession] = useState(false);
-    const fetchUserPlan = async () => {
-        try {
-            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-            }
-            const data = await response.json();
-            setUserPlan(data.plan)
-            setUserPlanStatus(true)
-        } catch (error) {
-            console.error('Error fetching plan data:', error);
-        }
-    };
+    // const fetchUserPlan = async () => {
+    //     try {
+    //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch plan data');
+    //         }
+    //         const data = await response.json();
+    //         setUserPlan(data.plan)
+    //         setUserPlanStatus(true)
+    //     } catch (error) {
+    //         console.error('Error fetching plan data:', error);
+    //     }
+    // };
 
     useEffect(() => {
         if (status === "loading") {
         } else if (!session) router.push("/login");
-        else fetchUserPlan();
+        // else fetchUserPlan();
     }, [session, status, router]);
 
 
@@ -76,34 +76,34 @@ function RestorePhoto() {
                     const data = await response.json();
                     webhookDBResponse = data;
                     if (data.webhookData.output[0]) {
-                        // Update user plan and history as needed here
-                        if (userPlan) {
+                        // // Update user plan and history as needed here
+                        // if (userPlan) {
 
-                            const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                            const newCreditpoints = await response.json();
-                            context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
+                        //     // const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+                        //     // const newCreditpoints = await response.json();
+                        //     // context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
 
-                            if (!response.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    userId: session.user.id,
-                                    model: data.webhookData.model,
-                                    status: data.webhookData.status,
-                                    createdAt: data.webhookData.created_at,
-                                    replicateId: data.webhookData.id
-                                }),
+                        //     if (!response.ok) {
+                        //         throw new Error('Failed to fetch plan data');
+                        //     }
+                        const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                userId: session.user.id,
+                                model: data.webhookData.model,
+                                status: data.webhookData.status,
+                                createdAt: data.webhookData.created_at,
+                                replicateId: data.webhookData.id
+                            }),
 
-                            });
-                            if (!history.ok) {
-                                throw new Error('Failed to fetch plan data');
-                            }
-                        }
+                        });
+                        //     if (!history.ok) {
+                        //         throw new Error('Failed to fetch plan data');
+                        //     }
+                        // }
                         setRestoredPhoto(data.webhookData.output[0]);
                     }
                 } else {
@@ -129,9 +129,9 @@ function RestorePhoto() {
     }, [fileUrl]);
 
 
-    if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-        return router.push('/price')
-    }
+    // if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
+    //     return router.push('/price')
+    // }
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
@@ -167,26 +167,27 @@ function RestorePhoto() {
                     }}
                 />
             </Head>
-            {userPlanStatus ? <><div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
-                <main className="aiModels" style={{ display: "flex", justifyContent: "center" }} >
-                    <Container maxWidth="xl" >
-                        <Typography variant="h2" sx={{ paddingTop: "30px", fontSize: "3rem", fontWeight: "700", marginBottom: "5px", color: " #000", lineHeight: "50px", textAlign: "center", }}>
-                            Restore Photo
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: "500", marginBottom: "5px", color: " #0e0e0e", textAlign: "center", }}>
-                            Enhance your images like a pro!
-                        </Typography>
+            {/* {userPlanStatus ? <> */}
+            <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
+            <main className="aiModels" style={{ display: "flex", justifyContent: "center" }} >
+                <Container maxWidth="xl" >
+                    <Typography variant="h2" sx={{ paddingTop: "30px", fontSize: "3rem", fontWeight: "700", marginBottom: "5px", color: " #000", lineHeight: "50px", textAlign: "center", }}>
+                        Restore Photo
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: "500", marginBottom: "5px", color: " #0e0e0e", textAlign: "center", }}>
+                        Enhance your images like a pro!
+                    </Typography>
 
-                        {!fileUrl && <Box display='flex' justifyContent='center'>
-                            <Uploader handleImageUpload={handleImageUpload} />
-                        </Box>}
-                        <ImageComponent setError={setError} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} setFileUrl={setFileUrl} cropUploadedImage={cropUploadedImage} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} loading={loading} setLoading={setLoading} error={error} />
+                    {!fileUrl && <Box display='flex' justifyContent='center'>
+                        <Uploader handleImageUpload={handleImageUpload} />
+                    </Box>}
+                    <ImageComponent setError={setError} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} setFileUrl={setFileUrl} cropUploadedImage={cropUploadedImage} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} loading={loading} setLoading={setLoading} error={error} />
 
-                    </Container>
-                </main></> : <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-                <CircularProgress />
-            </Box>}
-        </>
+                </Container>
+            </main></>
+        // : <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
+        //     <CircularProgress />
+        // </Box> } </>
     );
 }
 

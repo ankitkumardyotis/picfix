@@ -15,13 +15,13 @@ export default async function handler(req, res) {
     return;
   }
 
-  const planData = await getUserPlan(session.user.id)
+  // const planData = await getUserPlan(session.user.id)
 
 
-  if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
-    res.status(402).json("Please Subscribe to a plan to use this feature.");
-    return;
-  }
+  // if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
+  //   res.status(402).json("Please Subscribe to a plan to use this feature.");
+  //   return;
+  // }
 
 
   try {

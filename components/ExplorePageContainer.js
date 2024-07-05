@@ -19,7 +19,7 @@ function ExplorePageContainer(props) {
     const context = useContext(AppContext);
     const { data: session } = useSession();
 
-    const { ref, inView,entry } = useInView({
+    const { ref, inView, entry } = useInView({
         triggerOnce: true,
         threshold: 0.1
     })
@@ -38,18 +38,18 @@ function ExplorePageContainer(props) {
     }, []);
 
 
-    const fetchUserPlan = async () => {
-        try {
-            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-            }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching plan data:', error);
-        }
-    };
+    // const fetchUserPlan = async () => {
+    //     try {
+    //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch plan data');
+    //         }
+    //         const data = await response.json();
+    //         return data;
+    //     } catch (error) {
+    //         console.error('Error fetching plan data:', error);
+    //     }
+    // };
 
     const handleRunModelButton = async () => {
 
@@ -57,17 +57,18 @@ function ExplorePageContainer(props) {
             localStorage.setItem("path", props.routePath)
             router.push('/login');
         } else {
+            router.push(props.routePath)
             // For free use of remove background 
-            if (props.routePath == '/backgroundRemoval/runModel') {
-                router.push('/backgroundRemoval/runModel')
-                return;
-            }
-            const { plan } = await fetchUserPlan();
-            if (plan && plan.remainingPoints > 0) {
-                router.push(props.routePath)
-            } else {
-                router.push('price')
-            }
+            // if (props.routePath == '/backgroundRemoval/runModel') {
+            //     router.push('/backgroundRemoval/runModel')
+            //     return;
+            // }
+            // const { plan } = await fetchUserPlan();
+            // if (plan && plan.remainingPoints > 0) {
+            //     router.push(props.routePath)
+            // } else {
+            //     router.push('price')
+            // }
         }
     }
 
@@ -80,50 +81,50 @@ function ExplorePageContainer(props) {
             {
                 entry && <Fade direction='up' triggerOnce={true}>
 
-            < Box sx={{ display: 'flex', gap: matches ? '2em' : '', justifyContent: 'space-evenly' }}   >
-                {/* Left Box */}
+                    < Box sx={{ display: 'flex', gap: matches ? '2em' : '', justifyContent: 'space-evenly' }}   >
+                        {/* Left Box */}
 
-                < Box sx={{ width: matches ? '50%' : '100%', display: 'flex', flexDirection: 'column', gap: matches ? '3em' : '1.5em', marginTop: '-.3em' }} >
-                    <Box>
-                        <Typography variant={matches ? 'h3' : 'h4'} sx={{ lineHeight: '1em' }}><b>  {props.heading} </b> </Typography>
-                    </Box>
-                    <Box >
-                        <Typography variant='p' sx={{ fontSize: matches ? '20px' : '16px' }} >{props.description}</Typography>
-                    </Box>
-                    {
-                        !matches &&
-                        <Box>
-                            <Box className={styles.animatedImageContainer} sx={{ alignSelf: 'end' }}>
-                                <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                        < Box sx={{ width: matches ? '50%' : '100%', display: 'flex', flexDirection: 'column', gap: matches ? '3em' : '1.5em', marginTop: '-.3em' }} >
+                            <Box>
+                                <Typography variant={matches ? 'h3' : 'h4'} sx={{ lineHeight: '1em' }}><b>  {props.heading} </b> </Typography>
                             </Box>
-                        </Box>
-                    }
-
-                    <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
-                        {/* <button>How it works</button> */}
-                        <button onClick={handleRunModelButton}>{props.buttonTwoText}
-                        </button>
-                    </Box>
-                </Box >
-
-                {/* Right Box */}
-
-                < Box sx={{ width: matches ? '50%' : '', }}>
-                    {
-                        matches &&
-                        <Box >
-                            <Box className={styles.animatedImageContainer} sx={{ paddingLeft: '50px' }}>
-                                <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                            <Box >
+                                <Typography variant='p' sx={{ fontSize: matches ? '20px' : '16px' }} >{props.description}</Typography>
                             </Box>
-                        </Box>
-                    }
-                </Box >
+                            {
+                                !matches &&
+                                <Box>
+                                    <Box className={styles.animatedImageContainer} sx={{ alignSelf: 'end' }}>
+                                        <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                                    </Box>
+                                </Box>
+                            }
 
-            </Box >
+                            <Box className={styles.explorePageButtons} sx={{ display: 'flex', flexDirection: matches ? 'row' : 'column-reverse', marginTop: matches ? '' : '1em' }} >
+                                {/* <button>How it works</button> */}
+                                <button onClick={handleRunModelButton}>{props.buttonTwoText}
+                                </button>
+                            </Box>
+                        </Box >
+
+                        {/* Right Box */}
+
+                        < Box sx={{ width: matches ? '50%' : '', }}>
+                            {
+                                matches &&
+                                <Box >
+                                    <Box className={styles.animatedImageContainer} sx={{ paddingLeft: '50px' }}>
+                                        <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                                    </Box>
+                                </Box>
+                            }
+                        </Box >
+
+                    </Box >
 
 
-            </Fade>
-        }
+                </Fade>
+            }
         </Container >
 
     )

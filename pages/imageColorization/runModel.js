@@ -58,7 +58,7 @@ function ImageColorization() {
       router.push("/login");
     } else {
       setLoadindSession(false);
-      fetchUserPlan();
+      // fetchUserPlan();
     }
   }, [session, status, router]);
 
@@ -87,14 +87,14 @@ function ImageColorization() {
           const data = await response.json();
           webhookDBResponse = data;
           if (data.webhookData.output[0]) {
-            if (userPlan) {
+            // if (userPlan) {
 
-              const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-              const newCreditpoints = await response.json();
-              context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
-              if (!response.ok) {
-                throw new Error('Failed to fetch plan data');
-              }
+            //   const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
+            //   const newCreditpoints = await response.json();
+            //   context.setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
+            //   if (!response.ok) {
+            //     throw new Error('Failed to fetch plan data');
+            //   }
               const history = await fetch('/api/dataFetchingDB/updateHistory', {
                 method: "POST",
                 headers: {
@@ -109,10 +109,10 @@ function ImageColorization() {
                 }),
 
               });
-              if (!history.ok) {
-                throw new Error('Failed to fetch plan data');
-              }
-            }
+            //   if (!history.ok) {
+            //     throw new Error('Failed to fetch plan data');
+            //   }
+            // }
             // setRestoredPhoto(data.webhookData.output[0]);
             setRestoredPhoto(toSwitchRestoreUrl);
             setimageColorization(data.webhookData.output[0][0].image);
@@ -197,9 +197,9 @@ function ImageColorization() {
   }, [fileUrl]);
 
 
-  if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
-    return router.push('/price')
-  }
+  // if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
+  //   return router.push('/price')
+  // }
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -236,7 +236,8 @@ function ImageColorization() {
           }}
         />
       </Head>
-      {userPlanStatus ? <>   <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
+      {/* {userPlanStatus ? <>    */}
+      <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
         <main className='aiModels' style={{ display: 'flex', justifyContent: 'center' }} id="ClickToUp">
           <Container maxWidth='xl' >
             <Typography variant="h2" sx={{ paddingTop: '30px', fontSize: '3rem', fontWeight: '700', marginBottom: '5px', color: ' #000', lineHeight: '50px', textAlign: 'center' }} >
@@ -251,10 +252,11 @@ function ImageColorization() {
             <ImageComponent setFileUrl={setFileUrl} setLoadCircularProgress={setLoadCircularProgress} loadCircularProgress={loadCircularProgress} loading={loading} setLoading={setLoading} error={error} setError={setError} fileUrl={fileUrl} restoredPhoto={restoredPhoto} setRestoredPhoto={setRestoredPhoto} imageColorization={imageColorization} restoreImageURLForVarient={restoreImageURLForVarient} imageColorizationOne={imageColorizationOne} imageColorizationTwo={imageColorizationTwo} imageColorizationThree={imageColorizationThree} imageColorizationFour={imageColorizationFour} />
           </Container >
         </main></>
-        : <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
-          <CircularProgress />
-        </Box>}
-    </>
+
+    //     : <Box sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1em', flexDirection: 'column' }}>
+    //       <CircularProgress />
+    //     </Box>}
+    // </>
   )
 }
 
