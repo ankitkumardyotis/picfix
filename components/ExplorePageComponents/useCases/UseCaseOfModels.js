@@ -46,7 +46,7 @@ function UseCaseOfModels({ useCaseData, titleAndDescriptionUseCase }) {
     };
 
     return (
-        <Container sx={{ mt: 8, minHeight: '110vh' }} ref={ref}>
+        <Container sx={{ mt: 8,mb:8, minHeight: '110vh' }} ref={ref}>
             <section>
                 <Container maxWidth="lg">
                     {inView && <Fade direction='up'>

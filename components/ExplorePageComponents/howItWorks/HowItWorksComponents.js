@@ -10,9 +10,9 @@ function HowItWorksComponent({steps,modelName}) {
     });
     return (
 
-        <Box sx={{ minHeight: '100vh' }} className="outerContent" pt={4} ref={ref}>
+        <Box sx={{ minHeight: '100vh' }} className="outerContent" pt={4} pb={4} ref={ref}>
 
-            <Container sx={{ mt: 4 }}>
+            <Container sx={{ mt: 4,mb:4 }}>
                 {inView && <Fade direction="up" triggerOnce='true'>
                     <Box textAlign="center" mb={4}>
                         <Typography variant="h1">How {modelName} works?</Typography>

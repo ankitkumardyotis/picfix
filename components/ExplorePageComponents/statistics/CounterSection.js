@@ -27,7 +27,7 @@ const CounterSection = () => {
             ref={ref}
         >
             {
-                inView && <Fade direction="right">
+                inView && <Fade direction="up">
                     <Container maxWidth="lg" >
                         <Typography variant="h3" fontWeight="bold" mb={6} align="center" gutterBottom>
                             Achievements
