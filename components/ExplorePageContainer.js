@@ -10,7 +10,8 @@ import { useContext } from 'react';
 import AppContext from './AppContext';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
-
+import { useInView } from 'react-intersection-observer';
+import { Fade } from 'react-awesome-reveal';
 function ExplorePageContainer(props) {
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
@@ -18,7 +19,10 @@ function ExplorePageContainer(props) {
     const context = useContext(AppContext);
     const { data: session } = useSession();
 
-
+    const { ref, inView,entry } = useInView({
+        triggerOnce: true,
+        threshold: 0.1
+    })
 
 
     const images = props.imagesPath
@@ -71,10 +75,14 @@ function ExplorePageContainer(props) {
 
     return (
         // Outer Box
-        <Container maxWidth='xl' sx={{ marginTop: matches ? '6em' : '5em', height: '100vh', paddingBottom: '10em', display: 'flex', alignItems: 'center' }}>
+        <Container maxWidth='xl' ref={ref} sx={{ marginTop: matches ? '6em' : '5em', height: '100vh', paddingBottom: '10em', display: 'flex', alignItems: 'center' }}>
             {/* Inner Box ⬇️*/}
-            < Box sx={{ display: 'flex', gap: matches ? '2em' : '', justifyContent: 'space-evenly' }} >
+            {
+                entry && <Fade direction='up' triggerOnce={true}>
+
+            < Box sx={{ display: 'flex', gap: matches ? '2em' : '', justifyContent: 'space-evenly' }}   >
                 {/* Left Box */}
+
                 < Box sx={{ width: matches ? '50%' : '100%', display: 'flex', flexDirection: 'column', gap: matches ? '3em' : '1.5em', marginTop: '-.3em' }} >
                     <Box>
                         <Typography variant={matches ? 'h3' : 'h4'} sx={{ lineHeight: '1em' }}><b>  {props.heading} </b> </Typography>
@@ -97,6 +105,7 @@ function ExplorePageContainer(props) {
                         </button>
                     </Box>
                 </Box >
+
                 {/* Right Box */}
 
                 < Box sx={{ width: matches ? '50%' : '', }}>
@@ -109,9 +118,12 @@ function ExplorePageContainer(props) {
                         </Box>
                     }
                 </Box >
+
             </Box >
 
 
+            </Fade>
+        }
         </Container >
 
     )

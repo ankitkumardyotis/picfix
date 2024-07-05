@@ -66,10 +66,10 @@ function Footer() {
                         Background Removal
                     </Typography>
                 </Box>
-                <Box sx={buttonSX} onClick={() => { router.push('/object-remover'), context.setFileUrl("") }} >
+                <Box sx={buttonSX} onClick={() => { router.push('/removeObject'), context.setFileUrl("") }} >
 
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Trendy Look
+                        Remove Objects
                     </Typography>
                 </Box>
                 <Box sx={buttonSX} onClick={() => { router.push('/aiHomeMakeover'), context.setFileUrl("") }} >
