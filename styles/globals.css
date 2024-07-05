@@ -182,7 +182,7 @@
   width: 32%;
   min-height: 25rem;
   /* padding-bottom: 10px; */
-  /* background-color: aqua; */
+  background-color: #fff;
   border-radius: 5px;
   cursor: pointer;
 }
@@ -542,3 +542,4 @@ svg {
     }
   }
 }
+

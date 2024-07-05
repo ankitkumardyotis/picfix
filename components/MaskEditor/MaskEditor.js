@@ -171,21 +171,6 @@ const MaskEditor = ({
           </div>
         </>
       )}
-      {/* {
-        restorePhoto && <>
-          <img src={restorePhoto} alt="hubhb" style={{ width: '10rem', height: '10rem' }} />
-        </>
-      } */}
-      {/* {imageSrc &&
-        <div style={{ display: 'flex', gap: '1em' }}>
-          <button className={styles.downloadButton} onClick={handleUploadNewImages}>
-            Re-Upload image
-          </button>
-          <button className={styles.downloadButton} onClick={handleRemoveObject}>
-            Remove Object
-          </button>
-        </div>
-      } */}
     </div>
   );
 };
