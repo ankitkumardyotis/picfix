@@ -39,9 +39,9 @@ export default function AccountMenu() {
         setAnchorEl(null);
 
     };
-    // React.useEffect(() => {
-    //     // fetchUserPlan()
-    // }, [session])
+    React.useEffect(() => {
+        fetchUserPlan()
+    }, [session])
     React.useEffect(() => {
 
     }, [plan])
@@ -50,19 +50,19 @@ export default function AccountMenu() {
 
 
 
-    // const fetchUserPlan = async () => {
-    //     try {
-    //         const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
-    //         if (!response.ok) {
-    //             throw new Error('Failed to fetch plan data');
-    //         }
-    //         const { plan } = await response.json();
-    //         setPlan(plan)
-    //         context.setCreditPoints(plan.remainingPoints)
-    //     } catch (error) {
-    //         console.error('Error fetching plan data:', error);
-    //     }
-    // };
+    const fetchUserPlan = async () => {
+        try {
+            const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch plan data');
+            }
+            const { plan } = await response.json();
+            setPlan(plan)
+            context.setCreditPoints(plan.remainingPoints)
+        } catch (error) {
+            console.error('Error fetching plan data:', error);
+        }
+    };
   
     return (
         <React.Fragment>
