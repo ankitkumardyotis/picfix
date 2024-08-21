@@ -27,9 +27,9 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
         </div>
     )
     if (!matches) return (
-        <div style={{ height: '100vh' }}>
-            <div style={{ padding: " .9rem 1.5rem", minHeight: '100vh', marginTop: '3.3em', fontFamily: 'sans-serif', }}>
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1em' }}>
+        <div style={{ minHeight: '100vh' }}>
+            <div style={{ minHeight: '100vh', marginTop: '3.3em', fontFamily: 'sans-serif',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center' }}>
+                <div style={{ width: '90%', display: 'flex', flexDirection: 'column', gap: '1em' }}>
                     <div style={{ flex: 1, color: 'black', height: '25%', display: 'flex', flexDirection: 'row', gap: '1em' }}>
                         <div>
                             <Image width={70} height={70} style={{ borderRadius: "50%", border: "1px solid teal" }} src={session?.user.image ? session?.user.image : userPic} />
@@ -49,17 +49,16 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             <p>Renews At:- {userPlan && renewAt}</p>
                         </div>
                     </div>
-                    {/* <div style={{ flex: 1, height: '30%', backgroundColor: '#ececec',borderRadius:'10px'  }}>
-
-        </div> */}
                 </div>
-                {userHistory && <>    <div style={{ paddingLeft: '1rem', textAlign: 'start', marginTop: "3em", marginBottom: '1em' }}>
-                    <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
-                </div>
-                    <div className='creditUsageContainer' style={{ borderRadius: '5px' }}>
-                        <MuiTable userHistory={userHistory} createdAt={createdAt} />
-                    </div>
-                </>
+                {userHistory.length > 0 &&
+                    <>
+                        <div style={{ textAlign: 'start', marginTop: "3em" }}>
+                            <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
+                        </div>
+                        <div className="usageHistory" style={{ textAlign: 'start', marginTop: "1em", marginBottom: '2rem',width:'90%' }}>
+                            <MuiTable userHistory={userHistory} createdAt={createdAt} />
+                        </div>
+                    </>
                 }
             </div>
             <TabNavigation />

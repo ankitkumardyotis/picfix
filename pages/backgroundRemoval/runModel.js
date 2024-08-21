@@ -27,9 +27,6 @@ export default function RemoveBackground() {
         }
     }, [matches]);
 
-
-
-
     useEffect(() => {
         const script = document.createElement('script');
         script.src = '/assets/index-E_M5nW8h.js'; // Update the path to the script
@@ -133,7 +130,7 @@ export default function RemoveBackground() {
             <Head>
                 <meta charset="UTF-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Transformers.js - Background Removal</title>
+                <title> Picfix.ai- Background Removal</title>
             </Head>
 
             {/* Body content */}
@@ -148,18 +145,24 @@ export default function RemoveBackground() {
                         </Typography>
                     </Container >
                 </main >
-                <div id="container" className='uploader-custom-border' style={{ width: !matches && '30%', height: '20rem', display: uploadedImage ? 'none' : 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <label id="upload-button" htmlFor="upload">
-                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="#000"
-                                d="M3.5 24.3a3 3 0 0 1-1.9-.8c-.5-.5-.8-1.2-.8-1.9V2.9c0-.7.3-1.3.8-1.9.6-.5 1.2-.7 2-.7h18.6c.7 0 1.3.2 1.9.7.5.6.7 1.2.7 2v18.6c0 .7-.2 1.4-.7 1.9a3 3 0 0 1-2 .8H3.6Zm0-2.7h18.7V2.9H3.5v18.7Zm2.7-2.7h13.3c.3 0 .5 0 .6-.3v-.7l-3.7-5a.6.6 0 0 0-.6-.2c-.2 0-.4 0-.5.3l-3.5 4.6-2.4-3.3a.6.6 0 0 0-.6-.3c-.2 0-.4.1-.5.3l-2.7 3.6c-.1.2-.2.4 0 .7.1.2.3.3.6.3Z">
-                            </path>
-                        </svg>
-                        Click to upload image
-                        {/* <label id="example">(or try example)</label> */}
+                <div id="container" className='uploader-custom-border' style={{ height: '20rem', display: uploadedImage ? 'none' : 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <label id="upload-button" htmlFor="upload" style={{
+                        display: "inline-block",
+                        padding: '20px',
+                        backgroundColor: '#000',
+                        color: 'white',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        transition: 'background-Color 0.3s ease',
+                        hover: {
+                            backgroundColor: "teal"
+                        }
+                    }} >
+
+                        Upload Image
                     </label>
                 </div>
-                <label id="status" style={{ display: status != 'Loading model...' && 'none' }}></label>
+                <label id="status" style={{ display: status != 'Loading model...' && 'none' }} ></label>
                 <input id="upload" type="file" accept="image/*" onChange={(e) => {
                     setUploadedImage(URL.createObjectURL(e.target.files[0]))
                     setOriginalImageHieght(e.target.files[0].offsetHeight)
@@ -184,7 +187,7 @@ export default function RemoveBackground() {
 
 
 
-                {status != 'Ready' && status != 'Loading model...' && !toggleClick && <div ref={confetiRef} className='imageContainer box-container' style={{ position: "relative", overflow: 'hidden' }}>
+                {status != 'Ready' && status != 'Loading model...'  && <div ref={confetiRef} className='imageContainer box-container' style={{ position: "relative", overflow: 'hidden' }}>
 
                     {status === 'Done!' && <ReactConfetti
                         maxHeight={originalImageHeight}
@@ -197,9 +200,10 @@ export default function RemoveBackground() {
                     />}
 
 
+                    
                     {!toggleClick && <> <div style={{ flex: '1' }}>
                         {uploadedImage !== '' && <div>
-                            <img style={{ width: '100%', borderRadius: '5px' }} src={uploadedImage} alt='Background removal image' />
+                            <img style={{ width: '100%', borderRadius:'5px' }} src={uploadedImage} alt='Background removal image' />
                         </div>}
                     </div>
                         <div className="bgremovedImage" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -209,7 +213,7 @@ export default function RemoveBackground() {
                     </>}
                 </div>}
                 {
-                    toggleClick && <Box
+                    toggleClick && status == 'Done!' && <Box
                         maxWidth="sm"
                         sx={{
                             margin: "1em",
@@ -235,11 +239,6 @@ export default function RemoveBackground() {
         </div >
     )
 }
-
-
-
-
-
 
 
 

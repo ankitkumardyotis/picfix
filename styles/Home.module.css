@@ -1,225 +1,225 @@
 .landingPage {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow-x: hidden;
+}
+.landingPageContent {
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-start; */
+  /* justify-content: center; */
+  gap: 25px;
+  /* margin-top: -30px; */
+  width: 60vw;
+  padding: 0px 1.5em;
+}
+.gradientColor {
+  width: fit-content;
+  min-width: 200px;
+  height: 55px;
+  padding: 2px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: #000;
+  color: #000;
+  font-family: "roboto", sans-serif;
+  background: linear-gradient(59deg, rgb(4, 116, 108), rgb(196, 142, 49));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gradientColor > h1 {
+  font-size: 3em;
+  font-weight: 600;
+  line-height: 50px;
+  font-family: "roboto", sans-serif;
+}
+.landingPageContent > h1 {
+  font-size: 3em;
+  font-weight: 600;
+  /* padding-top: 40px; */
+  margin-bottom: -10px;
+  line-height: 50px;
+  font-family: "roboto", sans-serif;
+}
+
+.landingPageContent > p {
+  color: #000;
+  font-size: 20px;
+  font-family: "roboto", sans-serif;
+}
+.landingPageImage {
+  width: 100%;
+  height: 100%;
+}
+.landingPageImage > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carouselOne {
+  background-image: url(/assets/banner-new.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+}
+.compareSliderContainer {
+  display: flex;
+  width: 50vw;
+  height: 100vh;
+  padding-right: 30px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.animatedImageContainer {
+  /* margin-top: 11px; */
+  width: 96%;
+  border-radius: 10px;
+
+  animation: animatedImageContainer 5s ease-in-out infinite;
+}
+.animatedImageContainer > img {
+  width: 96%;
+  height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+    0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06),
+    0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+    0 100px 80px rgba(0, 0, 0, 0.12);
+}
+
+.landingPageContent > button {
+  background-color: #000;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  border: none;
+  color: rgb(100, 214, 207);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  width: fit-content;
+}
+.landingPageContent > button:hover {
+  background-color: rgb(100, 214, 207);
+  color: #000;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+.info > h1 {
+  font-size: 2em;
+  font-weight: 600;
+  font-family: "roboto", sans-serif;
+}
+.blankSpace {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 5vh;
+}
+@media (max-width: 769px) {
+  .landingPage {
     width: 100%;
-    overflow-x: hidden;
+    background: linear-gradient(
+      59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%
+    );
+    padding-bottom: 3em;
   }
-  .landingPageContent {
-    display: flex;
-    flex-direction: column;
-    /* align-items: flex-start; */
-    /* justify-content: center; */
-    gap: 25px;
-    /* margin-top: -30px; */
-    width: 60vw;
-    padding: 0px 1.5em;
-  }
-  .gradientColor {
-    width: fit-content;
-    min-width: 200px;
-    height: 55px;
-    padding: 2px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    background-color: #000;
-    color: #000;
-    font-family: "roboto", sans-serif;
-    background: linear-gradient(59deg, rgb(4, 116, 108), rgb(196, 142, 49));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .gradientColor > h1 {
-    font-size: 3em;
-    font-weight: 600;
-    line-height: 50px;
-    font-family: "roboto", sans-serif;
-  }
-  .landingPageContent > h1 {
-    font-size: 3em;
-    font-weight: 600;
-    /* padding-top: 40px; */
-    margin-bottom: -10px;
-    line-height: 50px;
-    font-family: "roboto", sans-serif;
-  }
-  
-  .landingPageContent > p {
-    color: #000;
-    font-size: 20px;
-    font-family: "roboto", sans-serif;
-  }
-  .landingPageImage {
-    width: 100%;
-    height: 100%;
-  }
-  .landingPageImage > img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+
   .carouselOne {
-    background-image: url(/assets/banner-new.jpg);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
+    background-image: none;
     display: flex;
   }
   .compareSliderContainer {
     display: flex;
-    width: 50vw;
-    height: 100vh;
-    padding-right: 30px;
-    flex-direction: row;
-    align-items: center;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    /* align-items: center; */
     justify-content: flex-end;
   }
-  
-  .animatedImageContainer {
-    /* margin-top: 11px; */
-    width: 96%;
-    border-radius: 10px;
-  
-    animation: animatedImageContainer 5s ease-in-out infinite;
+  .landingPageContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 2em;
+    width: 100%;
+    padding: 0px 1em;
+  }
+  .landingPageContent > h1 {
+    font-size: 1.9em;
+    font-weight: 600;
+    line-height: 35px;
+    font-family: "roboto", sans-serif;
+  }
+  .landingPageContent > p {
+    color: #000;
+    text-align: justify;
+    font-size: 15px;
+    font-family: "roboto", sans-serif;
+    margin-bottom: 15px;
+  }
+  .landingPageContent > button {
+    background-color: #000;
+    border: 1px solid #000;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    border: none;
+    color: rgb(100, 214, 207);
+    transition: all 0.3s ease-in-out;
+    margin-top: 1em;
+    width: 100%;
   }
   .animatedImageContainer > img {
-    width: 96%;
-    height: 100%;
+    width: 105%;
     border-radius: 10px;
     box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034),
       0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06),
       0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086),
       0 100px 80px rgba(0, 0, 0, 0.12);
   }
+
+
+}
+
+/* Explore Page Css i.e. Second Hero Section */
+.explorePageButtons {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  height: 2.7em;
+}
+.explorePageButtons > button {
+  background-color: #000;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px 20px;
+  min-width: 13rem;
+  width: auto;
+  font-size: 1.2rem;
+  font-weight: 400;
+  border: none;
+  color: rgb(100, 214, 207);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
   
-  .landingPageContent > button {
-    background-color: #000;
-    border: 1px solid #000;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    font-weight: 400;
-    border: none;
-    color: rgb(100, 214, 207);
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    width: fit-content;
-  }
-  .landingPageContent > button:hover {
-    background-color: rgb(100, 214, 207);
-    color: #000;
-  }
-  
-  .info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 20px;
-  }
-  .info > h1 {
-    font-size: 2em;
-    font-weight: 600;
-    font-family: "roboto", sans-serif;
-  }
-  .blankSpace {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 5vh;
-  }
-  @media (max-width: 769px) {
-    .landingPage {
-      width: 100%;
-      background: linear-gradient(
-        59deg,
-        rgba(100, 214, 207, 1) 0%,
-        rgba(242, 212, 159, 1) 100%
-      );
-      padding-bottom: 3em;
-    }
-  
-    .carouselOne {
-      background-image: none;
-      display: flex;
-    }
-    .compareSliderContainer {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      flex-direction: column;
-      /* align-items: center; */
-      justify-content: flex-end;
-    }
-    .landingPageContent {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 2em;
-      width: 100%;
-      padding: 0px 1em;
-    }
-    .landingPageContent > h1 {
-      font-size: 1.9em;
-      font-weight: 600;
-      line-height: 35px;
-      font-family: "roboto", sans-serif;
-    }
-    .landingPageContent > p {
-      color: #000;
-      text-align: justify;
-      font-size: 15px;
-      font-family: "roboto", sans-serif;
-      margin-bottom: 15px;
-    }
-    .landingPageContent > button {
-      background-color: #000;
-      border: 1px solid #000;
-      border-radius: 5px;
-      font-size: 1.2rem;
-      font-weight: 400;
-      border: none;
-      color: rgb(100, 214, 207);
-      transition: all 0.3s ease-in-out;
-      margin-top: 1em;
-      width: 100%;
-    }
-    .animatedImageContainer > img {
-      width: 105%;
-      border-radius: 10px;
-      box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034),
-        0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06),
-        0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086),
-        0 100px 80px rgba(0, 0, 0, 0.12);
-    }
-  
-  
-  }
-  
-  /* Explore Page Css i.e. Second Hero Section */
-  .explorePageButtons {
-    display: flex;
-    gap: 30px;
-    width: 100%;
-    height: 2.7em;
-  }
-  .explorePageButtons > button {
-    background-color: #000;
-    border: 1px solid #000;
-    border-radius: 5px;
-    padding: 10px 20px;
-    min-width: 13rem;
-    width: auto;
-    font-size: 1.2rem;
-    font-weight: 400;
-    border: none;
-    color: rgb(100, 214, 207);
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    
-  }
-  .explorePageButtons > button:hover {
-    background-color: rgb(100, 214, 207);
-    color: #000;
-   }
-   
+}
+.explorePageButtons > button:hover {
+  background-color: rgb(100, 214, 207);
+  color: #000;
+ }
+ 

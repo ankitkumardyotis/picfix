@@ -1,24 +1,22 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styles from './MaskEditor.module.css';
 import Uploader from '../uploadContainerbase64/Uploader';
-
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
+import { Button, IconButton, Tooltip } from '@mui/material';
+import ReplayIcon from '@mui/icons-material/Replay';
 const MaskEditor = ({
   canvasRef,
   maskRef,
   handleRemoveObject,
   isDrawing, setIsDrawing, fileUrl,
-  imageSrc, setImageSrc,isShowUploader,
+  imageSrc, setImageSrc, isShowUploader,
   brushSize, setBrushSize, restorePhoto, setRestoredPhoto, maskedImageUrl, setMaskedImageUrl,
   handleUploadNewImages
 }) => {
-  // const [brushSize, setBrushSize] = useState(10);
-  // const [isDrawing, setIsDrawing] = useState(false);
-  // const [imageSrc, setImageSrc] = useState(null);
-  // const [restorePhoto, setRestoredPhoto] = useState('');
-  // const [maskedImageUrl, setMaskedImageUrl] = useState('');
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
-  // const canvasRef = useRef(null);
-  // const maskRef = useRef(null);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
   useEffect(() => {
     if (imageSrc) {
@@ -51,6 +49,10 @@ const MaskEditor = ({
         maskContext.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
 
         setImageDimensions({ width: img.width, height: img.height }); // Store original dimensions
+
+        // Clear stacks when a new image is uploaded
+        setUndoStack([]);
+        setRedoStack([]);
       };
     }
   }, [imageSrc]);
@@ -66,25 +68,60 @@ const MaskEditor = ({
     }
   };
 
+  const saveState = () => {
+    const canvas = canvasRef.current;
+    const maskCanvas = maskRef.current;
+
+    setUndoStack(prev => [...prev, {
+      canvasData: canvas.toDataURL(),
+      maskData: maskCanvas.toDataURL()
+    }]);
+
+    setRedoStack([]); // Clear redo stack whenever a new action is performed
+  };
+
   const startDrawing = ({ nativeEvent }) => {
+    saveState();  // Save state before any drawing starts
+
     const { offsetX, offsetY } = nativeEvent;
     setIsDrawing(true);
+    if (isMobile()) disableScroll(); // Only disable scroll on mobile devices
     draw(offsetX, offsetY, true);
+  };
+
+  const startTouchDrawing = (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    const offsetX = touch.clientX - rect.left;
+    const offsetY = touch.clientY - rect.top;
+    startDrawing({ nativeEvent: { offsetX, offsetY } });
+  };
+
+  const moveDrawing = ({ nativeEvent }) => {
+    const { offsetX, offsetY } = nativeEvent;
+    if (isDrawing) {
+      draw(offsetX, offsetY);
+    }
+  };
+
+  const moveTouchDrawing = (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    const offsetX = touch.clientX - rect.left;
+    const offsetY = touch.clientY - rect.top;
+    moveDrawing({ nativeEvent: { offsetX, offsetY } });
   };
 
   const endDrawing = () => {
     setIsDrawing(false);
+    if (isMobile()) enableScroll(); // Only enable scroll on mobile devices
     const context = canvasRef.current.getContext('2d');
     context.beginPath();
     const maskContext = maskRef.current.getContext('2d');
     maskContext.beginPath();
   };
-
-
-  // const handleUploadNewImages = () => {
-  //   setImageSrc(null)
-  //   setIsDrawing(false)
-  // }
 
   const draw = (x, y, isStart = false) => {
     if (!isDrawing) return;
@@ -123,45 +160,120 @@ const MaskEditor = ({
     maskContext.moveTo(scaledX, scaledY);
   };
 
-  const handleMouseMove = ({ nativeEvent }) => {
-    const { offsetX, offsetY } = nativeEvent;
-    if (isDrawing) {
-      draw(offsetX, offsetY);
+  // Undo functionality
+  const undo = () => {
+    if (undoStack.length > 0) {
+      const lastState = undoStack.pop();
+      setRedoStack(prev => [...prev, {
+        canvasData: canvasRef.current.toDataURL(),
+        maskData: maskRef.current.toDataURL()
+      }]);
+
+      const canvas = canvasRef.current;
+      const maskCanvas = maskRef.current;
+      const context = canvas.getContext('2d');
+      const maskContext = maskCanvas.getContext('2d');
+
+      const img = new Image();
+      img.src = lastState.canvasData;
+      img.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0);
+      };
+
+      const maskImg = new Image();
+      maskImg.src = lastState.maskData;
+      maskImg.onload = () => {
+        maskContext.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        maskContext.drawImage(maskImg, 0, 0);
+      };
     }
-    const cursorCanvas = canvasRef.current;
-    cursorCanvas.style.cursor = `url('data:image/svg+xml;base64,${btoa(`
-      <svg height="${brushSize}" width="${brushSize}" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="${brushSize / 2}" cy="${brushSize / 2}" r="${brushSize / 2}" fill="darkgreen" />
-      </svg>
-    `)}') ${brushSize / 2} ${brushSize / 2}, auto`;
   };
 
+  // Redo functionality
+  const redo = () => {
+    if (redoStack.length > 0) {
+      const nextState = redoStack.pop();
+      setUndoStack(prev => [...prev, {
+        canvasData: canvasRef.current.toDataURL(),
+        maskData: maskRef.current.toDataURL()
+      }]);
+
+      const canvas = canvasRef.current;
+      const maskCanvas = maskRef.current;
+      const context = canvas.getContext('2d');
+      const maskContext = maskCanvas.getContext('2d');
+
+      const img = new Image();
+      img.src = nextState.canvasData;
+      img.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0);
+      };
+
+      const maskImg = new Image();
+      maskImg.src = nextState.maskData;
+      maskImg.onload = () => {
+        maskContext.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        maskContext.drawImage(maskImg, 0, 0);
+      };
+    }
+  };
+
+  // Disable scrolling on touch devices
+  const disableScroll = () => {
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Enable scrolling on touch devices
+  const enableScroll = () => {
+    document.body.style.overflow = 'auto';
+  };
+
+  // Function to check if the device is mobile
+  const isMobile = () => {
+    return window.innerWidth <= 768; // Consider a width of 768px or less as mobile
+  };
 
   return (
     <div className={styles.maskContainer}>
-      {/* {!imageSrc && isShowUploader && <Uploader handleImageUpload={handleImageUpload} />} */}
       {imageSrc && !restorePhoto && (
         <>
-          <div className={styles.controlsTool}>
-            <label htmlFor="brushSize">Brush Size: </label>
-            <input
-              type="range"
-              id="brushSize"
-              min="1"
-              max="50"
-              value={brushSize}
-              onChange={(e) => setBrushSize(e.target.value)}
-            />
+          <div className={styles.controlsTool} >
+            <div>
+              <label htmlFor="brushSize">Brush Size: </label>
+              <input
+                type="range"
+                id="brushSize"
+                min="1"
+                max="50"
+                value={brushSize}
+                onChange={(e) => setBrushSize(e.target.value)}
+              />
+            </div>
+            <Tooltip title="Undo">
+              <IconButton onClick={undo} disabled={undoStack.length === 0}><ReplayIcon /></IconButton>
+            </Tooltip>
+            <Tooltip title="Redo">
+              <IconButton onClick={redo} disabled={redoStack.length === 0}><ReplayIcon sx={{ transform: "rotateY(180deg)" }} /></IconButton>
+            </Tooltip>
           </div>
           <div className={styles.canvasContainer}>
             <canvas
               ref={canvasRef}
               onMouseDown={startDrawing}
               onMouseUp={endDrawing}
-              onMouseMove={handleMouseMove}
+              onMouseMove={moveDrawing}
               onMouseLeave={endDrawing}
+              onTouchStart={startTouchDrawing}
+              onTouchMove={moveTouchDrawing}
+              onTouchEnd={endDrawing}
               style={{
-                cursor: 'crosshair',
+                cursor: `url('data:image/svg+xml;base64,${btoa(`
+                  <svg height="${brushSize}" width="${brushSize}" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="${brushSize / 2}" cy="${brushSize / 2}" r="${brushSize / 2}" fill="darkgreen" />
+                  </svg>
+                `)}') ${brushSize / 2} ${brushSize / 2}, auto`,
                 display: imageSrc ? 'block' : 'none',
                 width: '100%',
                 height: 'auto',
