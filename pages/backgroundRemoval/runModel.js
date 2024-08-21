@@ -187,7 +187,7 @@ export default function RemoveBackground() {
 
 
 
-                {status != 'Ready' && status != 'Loading model...'  && <div ref={confetiRef} className='imageContainer box-container' style={{ position: "relative", overflow: 'hidden' }}>
+                {status != 'Ready' && status != 'Loading model...' && <div ref={confetiRef} className={!toggleClick && 'imageContainer box-container'} style={{ position: "relative", overflow: 'hidden' }}>
 
                     {status === 'Done!' && <ReactConfetti
                         maxHeight={originalImageHeight}
@@ -198,12 +198,9 @@ export default function RemoveBackground() {
                         gravity={0.3}
                         initialVelocityY={15}
                     />}
-
-
-                    
                     {!toggleClick && <> <div style={{ flex: '1' }}>
                         {uploadedImage !== '' && <div>
-                            <img style={{ width: '100%', borderRadius:'5px' }} src={uploadedImage} alt='Background removal image' />
+                            <img style={{ width: '100%', borderRadius: '5px' }} src={uploadedImage} alt='Background removal image' />
                         </div>}
                     </div>
                         <div className="bgremovedImage" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
