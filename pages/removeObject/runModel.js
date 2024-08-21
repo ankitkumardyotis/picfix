@@ -86,20 +86,20 @@ export default function Home() {
             //   if (!response.ok) {
             //     throw new Error('Failed to fetch plan data');
             //   }
-              const history = await fetch('/api/dataFetchingDB/updateHistory', {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  userId: session.user.id,
-                  model: data.webhookData.model,
-                  status: data.webhookData.status,
-                  createdAt: data.webhookData.created_at,
-                  replicateId: data.webhookData.id
-                }),
+            const history = await fetch('/api/dataFetchingDB/updateHistory', {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userId: session.user.id,
+                model: data.webhookData.model,
+                status: data.webhookData.status,
+                createdAt: data.webhookData.created_at,
+                replicateId: data.webhookData.id
+              }),
 
-              });
+            });
             //   if (!history.ok) {
             //     throw new Error('Failed to fetch plan data');
             //   }

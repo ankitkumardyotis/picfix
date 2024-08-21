@@ -1,8 +1,25 @@
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
+
 import React from 'react'
 
 function Uploader({ handleImageUpload }) {
+    const theme = useTheme();
+    const matches = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
-        <div style={styles.uploadContainer}>
+        <div style={{
+            width: matches ? '30rem' : "20rem",
+            border: "2px dashed black",
+            textAlign: 'center',
+            borderRadius: '5px',
+            height:matches? '20rem':"15rem",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            gap: '10px'
+        }}>
             <label htmlFor="imageUpload" style={styles.uploadLabel}>
                 <input
                     id="imageUpload"
@@ -21,18 +38,6 @@ export default Uploader
 
 
 const styles = {
-    uploadContainer: {
-        textAlign: 'center',
-        width: '30rem',
-        border: '2px dotted black',
-        borderRadius: '5px',
-        height: '20rem',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        gap: '10px'
-    },
     uploadLabel: {
         display: "inline-block",
         padding: '20px',

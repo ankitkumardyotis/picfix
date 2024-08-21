@@ -22,10 +22,13 @@ import AppContext from './AppContext';
 import { Logout, PriceCheck } from '@mui/icons-material';
 import { signOut, useSession } from 'next-auth/react';
 import LoginIcon from '@mui/icons-material/Login';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
 
 export default function AccountMenu() {
     // logout
+
     const context = useContext(AppContext);
     const { data: session } = useSession();
     const router = useRouter();
@@ -47,6 +50,8 @@ export default function AccountMenu() {
     }, [plan])
 
 
+    const theme = useTheme();
+    const matches = useMediaQuery(theme.breakpoints.up('md'));
 
 
 
@@ -63,7 +68,7 @@ export default function AccountMenu() {
             console.error('Error fetching plan data:', error);
         }
     };
-  
+
     return (
         <React.Fragment>
             <div onClick={handleClick} style={{ cursor: "pointer", position: 'relative' }}>
@@ -169,7 +174,7 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     Image Colorization
                 </MenuItem>
-                <MenuItem onClick={() => {
+                {matches && <MenuItem onClick={() => {
                     context.setFileUrl('')
                     router.push('/backgroundRemoval')
                     localStorage.setItem('path', '/backgroundRemoval')
@@ -178,7 +183,7 @@ export default function AccountMenu() {
                         <TransformIcon fontSize="small" />
                     </ListItemIcon>
                     Background Removal
-                </MenuItem>
+                </MenuItem>}
                 <MenuItem onClick={() => {
                     context.setFileUrl('')
                     router.push('/removeObject')

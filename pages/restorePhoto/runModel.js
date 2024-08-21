@@ -71,9 +71,12 @@ function RestorePhoto() {
             let webhookDBResponse;
 
             while (!webhookDBResponse) {
+
+
                 const response = await fetch(`/api/replicatePredictionWebhook/getImageFromDB?replicateId=${replicateImageId}`);
                 if (response.status === 200) {
                     const data = await response.json();
+                    console.log("response", data)
                     webhookDBResponse = data;
                     if (data.webhookData.output[0]) {
                         // // Update user plan and history as needed here

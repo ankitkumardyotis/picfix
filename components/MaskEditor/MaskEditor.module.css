@@ -8,15 +8,17 @@
   /* background-color: #4caf50; */
   position: relative;
   border-radius: 8px;
+
 }
 
 .controlsTool {
+  /* background-color: aqua; */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
   top: -30px;
-  right: 10px;
+  /* right: 10px; */
   position: absolute;
   /* border: 1px dashed black; */
   border-radius: 5px;

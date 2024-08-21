@@ -1,6 +1,5 @@
 import { Box, Button, CircularProgress, Container, Input, TextField, Typography } from "@mui/material";
 import ToggleButtonContainer from "@/components/toggleButtonContainer";
-import UploaderComponent from "@/components/uploaderComponentForDesignRoom";
 import OriginalImage from "@/components/originalImageForTrendyLook";
 import React, { useContext, useRef, useEffect, useState, useMemo } from "react";
 import AppContext from "@/components/AppContext";
@@ -8,26 +7,15 @@ import { ReactCompareSlider, ReactCompareSliderImage, } from "react-compare-slid
 import Image from "next/image";
 import axios from "axios";
 import Confetti from "react-confetti";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import Head from "next/head";
-import SelectDropdown from "@/components/SelectDropdown";
 import ReactCompareImage from "react-compare-image";
-import { UploadDropzone } from 'react-uploader';
-// import { Uploader } from "uploader";
 import { useWindowSize } from "react-use";
 import { useRouter } from 'next/router';
 import CircularWithValueLabel from "@/components/CircularProgressWithLabel";
 import { useSession } from "next-auth/react";
 import Uploader from "@/components/uploadContainerbase64/Uploader";
-
-
-const uploader = Uploader({
-    apiKey: !!process.env.NEXT_PUBLIC_UPLOAD_API_KEY
-        ? process.env.NEXT_PUBLIC_UPLOAD_API_KEY
-        : "free",
-});
+import { useTheme } from '@mui/material/styles';
 
 
 
@@ -285,23 +273,20 @@ function DesignRoom() {
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
-
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}',{
-          page_path: window.location.pathname,
-
-        });
-      `,
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}',{
+                        page_path: window.location.pathname,
+                        });
+                    `,
                     }}
                 />
             </Head>
             <div style={{ paddingBottom: '1px' }} id="ClickToUp"> </div>
             <main
                 className="aiModels"
-                style={{ display: "flex", justifyContent: "center" }}
-            >
+                style={{ display: "flex", justifyContent: "center" }}>
                 <Container maxWidth="xl">
                     <Typography variant="h2" sx={{ paddingTop: "30px", fontSize: matches ? "3rem" : '3rem', fontWeight: "700", marginBottom: "5px", color: " #000", lineHeight: "50px", textAlign: "center", }}>
                         AI Home Makeover
@@ -309,8 +294,6 @@ function DesignRoom() {
                     <Typography variant="h6" sx={{ fontWeight: "500", marginBottom: "5px", color: " #0e0e0e", textAlign: "center", }}>
                         Design your home with our technology
                     </Typography>
-
-
                     <div className="flex-container flex-column">
                         <div className="flex-container">
                             {fileUrl && (
@@ -325,21 +308,7 @@ function DesignRoom() {
                             )}
                             {!fileUrl ? (
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="uploader-custom-border" >
-                                        {/* <UploaderComponent requireValuePrompt={requireValuePrompt} fileUrl={fileUrl} setFileUrl={setFileUrl} /> */}
-                                        {/* <UploadDropzone
-                                            uploader={uploader}
-                                            options={uploaderOptions}
-                                            onUpdate={files => {
-                                                if (files.length > 0) {
-                                                    setFileUrl(files.map(x => x.fileUrl).join("\n"));
-                                                }
-                                            }}
-                                            // onComplete={files => alert(files.map(x => x.fileUrl).join("\n"))
-                                            // }
-                                            height="45vh"
-                                            border="5px"
-                                        /> */}
+                                    <div className="" >
                                         <Box display='flex' justifyContent='center'>
                                             <Uploader handleImageUpload={handleImageUpload} />
                                         </Box>

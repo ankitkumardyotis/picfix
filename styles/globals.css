@@ -3,7 +3,6 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "roboto", sans-serif;
-  /* font-display: swap; */
 }
 .outerContent {
   background: linear-gradient(
@@ -28,7 +27,7 @@
     url("/fonts/Roboto-Regular.woff") format("woff");
   /* font-weight: 400; */
   /* font-style: normal; */
-  font-display: swap;
+  /* font-display: swap; */
 }
 
 .navbar {
@@ -493,7 +492,7 @@ svg {
 }
 
 .ribbon {
-  --f: 0.5em; /* control the folded part */
+  --f: 0.5em; /*control the folded part*/
   position: absolute;
   top: 0;
   color: #fff;
@@ -546,7 +545,7 @@ svg {
 .ribbonHeading {
   font-family: "Nixie One", cursive;
   font-size: 20px;
-  width: 35%;
+  display: inline;
   position: relative;
   background: #93dfb8;
   color: #000;

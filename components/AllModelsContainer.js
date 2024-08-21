@@ -5,13 +5,15 @@ import { useContext } from 'react';
 import AppContext from './AppContext';
 import { useInView } from 'react-intersection-observer';
 import { Fade } from 'react-awesome-reveal';
-import { Zoom } from '@mui/material';
+import { useMediaQuery, Zoom } from '@mui/material';
+import { useTheme } from '@emotion/react';
 
 export default function AllModelsContainer() {
   const context = useContext(AppContext);
   const router = useRouter();
   const [checked, setChecked] = React.useState(false);
-
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -63,9 +65,9 @@ export default function AllModelsContainer() {
         </h2>
       </div> */}
       <div style={{ textAlign: 'center', marginTop: '2em' }}>
-        <h2 class="ribbonHeading">
-          <span class="ribbonHeading-content">  All Model's  are free for limited time</span>
-        </h2>
+        <p style={{ fontSize: !matches && "1rem", marginBottom: !matches && "2rem" }} class="ribbonHeading">
+          <span class="ribbonHeading-content" >  All Model's  are free for limited time</span>
+        </p>
       </div>
 
       <div className='allCardContainer flex-container'>
@@ -104,7 +106,7 @@ export default function AllModelsContainer() {
             </div>
           </div>
         </Zoom>}
-        {inView && <Zoom in={checked} style={{ transitionDelay: checked ? '200ms' : '0ms' }}>
+        {inView && matches && <Zoom in={checked} style={{ transitionDelay: checked ? '200ms' : '0ms' }}>
           <div className="card" style={{ position: 'relative' }} onClick={handleRemoveBG}>
             {/* <div className="ribbon">Free</div> */}
             <div class="ribbon right"><h6 style={{ fontSize: '28px' }}>Free</h6></div>
