@@ -9,6 +9,9 @@ import Image from 'next/image'
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import AppContext from '@/components/AppContext'
+import axios from "axios";
+import Cookies from "js-cookie";
+
 function Home() {
     const { data: session, status } = useSession()
     const context = useContext(AppContext)
@@ -50,6 +53,20 @@ function Home() {
             color: 'white',
         }
     }
+
+    const handleJWTGenerate = async () => {
+        const response = await axios.get("/api/jwt/getAccessToken");
+
+        const { accessToken, refreshToken } = response.data;
+
+        Cookies.set("access-token", accessToken, { secure: true });
+        Cookies.set("refresh-token", refreshToken, { secure: true });
+    };
+
+    useEffect(() => {
+        if (session) handleJWTGenerate();
+    }, [session]);
+
     return (
         <div style={{ width: '100vw', minHeight: '100vh', background: 'linear-gradient(59deg,#64d6cf,#f2d49f)', display: 'flex', justifyContent: 'center', alignItems: 'center', }} >
             {status != 'loading' ?
