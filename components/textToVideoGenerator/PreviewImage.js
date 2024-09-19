@@ -32,7 +32,7 @@ function PreviewImage({
     setPointerImage(null);
     try {
       const response = await nodeService.get(
-        `http://localhost:5000/api/${userId}/${projectId}/getPointerImage/${dataPointerId}`,
+        `/api/${userId}/${projectId}/getPointerImage/${dataPointerId}`,
       );
 
       if (response.status === 200) {

@@ -1,11 +1,12 @@
 import {
   Box,
+  Card,
   IconButton,
   ListItemButton,
   Tooltip,
   Typography,
 } from "@mui/material";
-import FolderIcon from "@mui/icons-material/Folder";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -26,35 +27,39 @@ function ProjectWidget({
   return (
     <Box
       sx={{
-        width: "100px",
-        height: "100px",
+        width: "150px",
+        height: "150px",
         position: "relative",
       }}
       onMouseOver={() => setIsWidgetHovered(true)}
       onMouseOut={() => setIsWidgetHovered(false)}
       onClick={handleOpenExistingProject}
     >
-      <ListItemButton
+      <Card
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           height: "100%",
-          borderRadius: ".5em",
-          border: "1px solid #1565c0",
-          boxShadow:
-            "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
+          padding: 0,
         }}
       >
-        <FolderIcon htmlColor="#1565c0" fontSize="large" />
-      </ListItemButton>
-      <Tooltip title={projectName} arrow zoom followCursor>
-        <Typography textAlign="center" mt={1}>
-          {projectName.length > 6
-            ? `${projectName.substring(0, 6)}...`
-            : projectName}
-        </Typography>
-      </Tooltip>
+        <ListItemButton
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            borderRadius: "inherit",
+          }}
+        >
+          <FolderOutlinedIcon htmlColor="#1565c0" fontSize="large" />
+        </ListItemButton>
+        <Tooltip title={projectName} arrow zoom followCursor>
+          <Typography textAlign="center">
+            {projectName.length > 6
+              ? `${projectName.substring(0, 6)}...`
+              : projectName}
+          </Typography>
+        </Tooltip>
+      </Card>
       <IconButton
         size="small"
         color="error"
