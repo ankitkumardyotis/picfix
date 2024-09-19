@@ -41,13 +41,10 @@ function ImageSearchTab({
 
     try {
       setIsLoadingImages(true);
-      const response = await nodeService.post(
-        "http://localhost:5000/api/imageSearch",
-        {
-          query: imageQuery,
-          pageNo,
-        },
-      );
+      const response = await nodeService.post("/api/imageSearch", {
+        query: imageQuery,
+        pageNo,
+      });
 
       if (response.status === 201) {
         const { message, imageSearchResults } = response.data;
