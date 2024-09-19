@@ -149,3 +149,9 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
+
+model CustomJWT {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String
+  jwtRefreshToken String
+}

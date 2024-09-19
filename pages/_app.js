@@ -7,6 +7,8 @@ import AppContext from '@/components/AppContext';
 import Footer from '@/components/Footer';
 import Script from "next/script";
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { SnackbarProvider } from "notistack";
+
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
@@ -21,14 +23,14 @@ export default function App({
 
 
   const theme = createTheme({
-    palette: {
-      primary: {
-        main: '#6200ea',
-      },
-      secondary: {
-        main: '#03a9f4',
-      },
-    },
+    // palette: {
+    //   primary: {
+    //     main: '#6200ea',
+    //   },
+    //   secondary: {
+    //     main: '#03a9f4',
+    //   },
+    // },
     typography: {
       fontFamily: 'Roboto, sans-serif',
       h1: {
@@ -42,7 +44,7 @@ export default function App({
       },
       body1: {
         fontSize: '1rem',
-        color: '#6b7280',
+        // color: '#6b7280',
       },
     },
     components: {
@@ -60,19 +62,21 @@ export default function App({
   return (
     <>
       <SessionProvider session={session}>
-        <ThemeProvider theme={theme}>
-          <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
-            <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
-            {useMemo(() => <Component {...pageProps} />, [fileUrl,
-              path,
-              open,
-              removeImageFromTransformerJs,
-              pageProps,
-              timerForRunModel])}
-            <Footer />
-          </AppContext.Provider>
-        </ThemeProvider>
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+        <SnackbarProvider>
+          <ThemeProvider theme={theme}>
+            <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
+              <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+              {useMemo(() => <Component {...pageProps} />, [fileUrl,
+                path,
+                open,
+                removeImageFromTransformerJs,
+                pageProps,
+                timerForRunModel])}
+              <Footer />
+            </AppContext.Provider>
+          </ThemeProvider>
+          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+          </SnackbarProvider>
       </SessionProvider >
 
     </>
