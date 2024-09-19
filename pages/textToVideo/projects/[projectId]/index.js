@@ -212,7 +212,7 @@ export default function Page() {
       reader.onloadend = async () => {
         try {
           const response = await nodeService.post(
-            `http://localhost:5000/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
+            `/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
             {
               imageFileURL: reader.result,
             },
@@ -245,7 +245,7 @@ export default function Page() {
     handleStartLoading();
     try {
       const response = await nodeService.post(
-        `http://localhost:5000/api/${userId}/${projectId}/uploadImage/${dataPointerId}`,
+        `/api/${userId}/${projectId}/uploadImage/${dataPointerId}`,
         {
           imageFileURL: selectedImageUrl,
         },
