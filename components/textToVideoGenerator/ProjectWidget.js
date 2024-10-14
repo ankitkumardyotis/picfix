@@ -44,21 +44,22 @@ function ProjectWidget({
         <ListItemButton
           sx={{
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
             height: "100%",
             borderRadius: "inherit",
           }}
         >
           <FolderOutlinedIcon htmlColor="#1565c0" fontSize="large" />
+          <Tooltip title={projectName} arrow zoom followCursor sx={{ marginTop: "1rem" }}>
+            <Typography textAlign="center">
+              {projectName.length > 6
+                ? `${projectName.substring(0, 6)}...`
+                : projectName}
+            </Typography>
+          </Tooltip>
         </ListItemButton>
-        <Tooltip title={projectName} arrow zoom followCursor>
-          <Typography textAlign="center">
-            {projectName.length > 6
-              ? `${projectName.substring(0, 6)}...`
-              : projectName}
-          </Typography>
-        </Tooltip>
       </Card>
       <IconButton
         size="small"

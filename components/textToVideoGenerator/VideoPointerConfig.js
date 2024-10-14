@@ -84,12 +84,13 @@ function VideoPointerConfig({
         const response = await nodeService.get(
           `/api/${userId}/${projectId}/getPointerAudio/${targetDataPointerId}`,
           {
-            responseType: "blob",
+            responseType: "arraybuffer",
           },
         );
 
         if (response.status === 200) {
-          const url = URL.createObjectURL(response.data);
+          const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+          const url = URL.createObjectURL(audioBlob);
           const audioObject = new Audio(url);
           audioObject.play();
           setDataPointerAudio(audioObject);

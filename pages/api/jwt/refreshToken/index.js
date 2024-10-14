@@ -48,7 +48,7 @@ export default async function handler(req, res) {
         .status(403)
         .json({ message: "Access to the requested resource is forbidden" });
     const newAccessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: `${2 * 60 * 60}s`,
+      expiresIn: `${60 * 60 * 24 * 7}s`,
     });
 
     res.status(200).json({ accessToken: newAccessToken });
