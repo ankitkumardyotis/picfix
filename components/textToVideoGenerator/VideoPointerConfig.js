@@ -126,6 +126,7 @@ function VideoPointerConfig({
   const handleAddImagePopupOpen = () => setAddImagePopupOpen(true);
   const handleAddImagePopupClose = () => setAddImagePopupOpen(false);
 
+
   return (
     <Box
       display="flex"
