@@ -16,7 +16,7 @@ export default async function GET(req, res) {
   }
 
   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET_KEY, {
-    expiresIn: `${2 * 60 * 60}s`,
+    expiresIn: `${60 * 60 * 24 * 7}s`,
   });
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY);
 

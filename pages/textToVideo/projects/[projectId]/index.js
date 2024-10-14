@@ -20,6 +20,7 @@ import {
   FormControlLabel,
   RadioGroup,
   Radio,
+  CircularProgress,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useRouter } from "next/router";
@@ -34,7 +35,7 @@ export default function Page() {
   const router = useRouter();
   const { projectId } = router.query;
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user.id;
 
   const [projectName, setProjectName] = useState("");
@@ -51,6 +52,8 @@ export default function Page() {
     audios: false,
     images: false,
   });
+  const [userPlan, setUserPlan] = useState("");
+  const [userPlanStatus, setUserPlanStatus] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState();
   const matches = useMediaQuery("(max-width:700px)");
   const { enqueueSnackbar } = useSnackbar();
@@ -313,12 +316,13 @@ export default function Page() {
       const response = await nodeService.get(
         `/api/${userId}/generatevideo/${projectId}`,
         {
-          responseType: "blob",
+          responseType: "arraybuffer",
         },
       );
 
       if (response.status === 200) {
-        const videoBlob = new Blob([response.data], { type: "video/mp4" });
+        const videoArrayBuffer = response.data;
+        const videoBlob = new Blob([videoArrayBuffer], { type: "video/mp4" });
         const videoUrl = URL.createObjectURL(videoBlob);
         setGeneratedVideo(videoUrl);
         enqueueSnackbar("Video generated successfully!", {
@@ -524,12 +528,13 @@ export default function Page() {
           const response = await nodeService.get(
             `/api/${userId}/getProjectVideo/${projectId}`,
             {
-              responseType: "blob",
+              responseType: 'arraybuffer',
             },
           );
 
           if (response.status === 200) {
-            const videoBlob = new Blob([response.data], { type: "video/mp4" });
+            const videoArrayBuffer = response.data;
+            const videoBlob = new Blob([videoArrayBuffer], { type: "video/mp4" });
             const videoUrl = URL.createObjectURL(videoBlob);
             setGeneratedVideo(videoUrl);
             enqueueSnackbar("Video fetched successfully!", {
@@ -594,6 +599,20 @@ export default function Page() {
           : dataPointer,
       ),
     );
+  };
+
+  const fetchUserPlan = async () => {
+    try {
+      const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch plan data");
+      }
+      const data = await response.json();
+      setUserPlan(data.plan);
+      setUserPlanStatus(true);
+    } catch (error) {
+      console.error("Error fetching plan data:", error);
+    }
   };
 
   useEffect(() => {
@@ -769,7 +788,21 @@ export default function Page() {
     };
   }, [router.query, session?.user.id]);
 
-  return (
+  useEffect(() => {
+    if (status === "loading") {
+    } else if (!session) router.push("/login");
+    else fetchUserPlan();
+  }, [session, status, router]);
+
+  if (
+    userPlan?.remainingPoints === 0 ||
+    userPlan?.remainingPoints < 0 ||
+    userPlan === null
+  ) {
+    return router.push("/price");
+  }
+
+  return userPlanStatus ? (
     <Box my={8} minHeight="90vh" width="80%" mx="auto">
       <Typography
         variant="h5"
@@ -1084,6 +1117,19 @@ export default function Page() {
           <div class="custom-loader-text-to-video"></div>
         </Box>
       </Backdrop>
+    </Box>
+  ) : (
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "1em",
+        flexDirection: "column",
+      }}
+    >
+      <CircularProgress />
     </Box>
   );
 }

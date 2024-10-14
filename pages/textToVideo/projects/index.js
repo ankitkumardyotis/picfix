@@ -1,5 +1,6 @@
 import {
   Box,
+  Card,
   CircularProgress,
   List,
   ListItemButton,
@@ -188,35 +189,40 @@ function Projects() {
           "linear-gradient(59deg, rgba(100, 214, 207, 1) 0%, rgba(242, 212, 159, 1) 100%);",
       }}
     >
-      <Typography
-        variant="h2"
-        textAlign="center"
-        sx={{
-          fontSize: "3rem",
-          fontWeight: "700",
-        }}
-      >
-        Text to Video generation
-      </Typography>
-      <Typography
-        variant="h6"
-        sx={{
-          fontWeight: "500",
-          color: " #0e0e0e",
-        }}
-      >
-        Words come alive
-      </Typography>
+      <Card sx={{ backgroundColor: "#e5e7eb", width: "80%" }}>
+        <Typography
+          variant="h2"
+          textAlign="center"
+          sx={{
+            fontSize: "2.5rem",
+            fontWeight: "700",
+          }}
+        >
+          Text to Video generation
+        </Typography>
+        <Typography
+          mt={2}
+          textAlign="right"
+          variant="h6"
+          sx={{
+            fontWeight: "500",
+            color: " #0e0e0e",
+          }}
+        >
+          -Transform your words into captivating videos
+        </Typography>
+      </Card>
       <List
         component="div"
         sx={{
           width: "80%",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
           justifyItems: "center",
           alignItems: "center",
-          gap: "3em",
-          marginTop: "2rem",
+          columnGap: "2em",
+          rowGap: "2rem",
+          marginTop: "3rem",
         }}
       >
         <Box
