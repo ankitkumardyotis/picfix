@@ -7,6 +7,7 @@ import {
   Tabs,
   Tab,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import ImageGenerationTab from "./ImageGenerationTab";
 import ImageUploaderTab from "./ImageUploaderTab";
@@ -32,6 +33,7 @@ function ImagePopupTabs({
 }) {
   const [tabValue, setTabValue] = useState(0);
   const [isPreviewImagePopupOpen, setIsPreviewImagePopupOpen] = useState(false);
+  const smBp = useMediaQuery("(min-width: 500px)");
 
   const handleTabValueChange = (event, newTabValue) => {
     setTabValue(newTabValue);
@@ -45,16 +47,22 @@ function ImagePopupTabs({
       open={addImagePopupOpen}
       onClose={handleAddImagePopupClose}
       fullWidth
+      fullScreen={!smBp}
     >
       <DialogTitle textAlign="center">
         Configure image
-        <Tabs value={tabValue} onChange={handleTabValueChange} centered>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabValueChange}
+          centered
+          orientation={smBp || "vertical"}
+        >
           <Tab label="Generate image" />
           <Tab label="Upload image" />
           <Tab label="Unsplash" />
         </Tabs>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ display: "flex", flexDirection: "column" }}>
         <CustomTabPanel value={tabValue} index={0}>
           <ImageGenerationTab
             dataPointerId={dataPointerId}

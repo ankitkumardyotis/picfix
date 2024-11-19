@@ -22,10 +22,10 @@ function ImageUploaderTab({
     <>
       <Box
         border="2px dashed #ccc"
-        borderRadius=".5em"
-        width="80%"
+        borderRadius=".7rem"
+        width="100%"
         height="300px"
-        mx="auto"
+        flexGrow={1}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -36,8 +36,8 @@ function ImageUploaderTab({
           onChange={(e) => handleUploadNewImage(e, dataPointerId)}
           sx={{
             backgroundColor: "#000",
-            borderRadius: ".3em",
-            padding: "1.2em",
+            borderRadius: ".3rem",
+            p: 2,
             "&:hover": {
               backgroundColor: "#000",
             },
@@ -51,9 +51,8 @@ function ImageUploaderTab({
         variant="contained"
         color="success"
         sx={{
-          marginTop: "1em",
-          display: "block",
-          marginInline: "auto",
+          mt: 2,
+          mx: "auto",
         }}
         onClick={handlePreviewImagePopupOpen}
       >

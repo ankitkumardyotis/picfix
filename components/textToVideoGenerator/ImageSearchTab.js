@@ -112,7 +112,7 @@ function ImageSearchTab({
         );
       } else {
         renderImages = (
-          <ImageList cols={3} sx={{ width: "100%", height: "350px" }}>
+          <ImageList cols={3} sx={{ width: "100%", height: "300px" }}>
             {images.map((image, index) =>
               index === images.length - 1 ? (
                 <Box key={index} width="100%" height="100%" ref={ref}>
@@ -211,26 +211,32 @@ function ImageSearchTab({
       <Paper
         component="form"
         sx={{
-          padding: ".3rem .6rem",
+          px: 2,
+          py: 1,
+          mx: "auto",
           display: "flex",
-          alignItems: "center",
-          width: "80%",
-          marginInline: "auto",
+          width: "90%",
         }}
         onSubmit={handleSearchImages}
       >
         <InputBase
-          sx={{ marginLeft: ".4rem", flex: 1 }}
+          sx={{ ml: 0, flexGrow: 1 }}
           placeholder="Search Images"
           value={imageQuery}
           onChange={(e) => setImageQuery(e.target.value)}
           autoFocus
         />
-        <IconButton sx={{ padding: ".4rem" }} onClick={handleSearchImages}>
+        <IconButton sx={{ p: 0 }} onClick={handleSearchImages}>
           <SearchIcon />
         </IconButton>
       </Paper>
-      <Box marginTop="1rem" display="flex" justifyContent="center">
+      <Box
+        mt={2}
+        flexGrow={1}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
         {useMemo(
           () => renderImages,
           [images, isLoadingImages, pageNo, selectedImageUrl],
@@ -239,7 +245,7 @@ function ImageSearchTab({
       {isLoadingImages && pageNo > 1 && (
         <LinearProgress sx={{ width: "100%" }} />
       )}
-      <Box marginTop="1rem" display="flex" justifyContent="end">
+      <Box mt={2} display="flex" justifyContent="end">
         <Button
           variant="contained"
           color="success"
@@ -252,7 +258,7 @@ function ImageSearchTab({
             variant="contained"
             sx={{
               backgroundColor: "#000",
-              marginLeft: "1em",
+              ml: 2,
               "&: hover": {
                 backgroundColor: "#000",
               },

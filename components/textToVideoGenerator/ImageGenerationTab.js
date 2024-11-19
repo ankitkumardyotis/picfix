@@ -13,23 +13,22 @@ function ImageGenerationTab({
   const [prompt, setPrompt] = useState(dataPointerText);
 
   return (
-    <Box component="div" width="100%" mx="auto">
+    <>
       <Textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        aria-label="prompt textarea"
         autoFocus
         maxRows={10}
         minRows={10}
         placeholder="Enter your custom prompt!"
-        sx={{ width: "100%", margin: ".2em 0em 2em 0em" }}
+        sx={{ width: "100%", mt: 1, mb: 2, letterSpacing: 0.8, flexGrow: 1}}
       />
       <Box display="flex" justifyContent="end">
         <Button
           variant="contained"
           color="success"
           sx={{
-            marginRight: "1em",
+            mr: 2
           }}
           onClick={handlePreviewImagePopupOpen}
         >
@@ -50,7 +49,7 @@ function ImageGenerationTab({
             : "Generate image"}
         </Button>
       </Box>
-    </Box>
+    </>
   );
 }
 

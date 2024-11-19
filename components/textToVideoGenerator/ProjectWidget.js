@@ -1,12 +1,11 @@
 import {
   Box,
-  Card,
   IconButton,
   ListItemButton,
   Tooltip,
   Typography,
 } from "@mui/material";
-import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
+import MovieIcon from '@mui/icons-material/Movie';
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -27,40 +26,36 @@ function ProjectWidget({
   return (
     <Box
       sx={{
-        width: "150px",
-        height: "150px",
+        width: "100px",
+        height: "100px",
         position: "relative",
       }}
       onMouseOver={() => setIsWidgetHovered(true)}
       onMouseOut={() => setIsWidgetHovered(false)}
       onClick={handleOpenExistingProject}
     >
-      <Card
+      <ListItemButton
         sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
           height: "100%",
-          padding: 0,
+          borderRadius: ".5em",
+          border: "1px solid #1565c0",
+          boxShadow:
+            "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
         }}
       >
-        <ListItemButton
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column",
-            height: "100%",
-            borderRadius: "inherit",
-          }}
-        >
-          <FolderOutlinedIcon htmlColor="#1565c0" fontSize="large" />
-          <Tooltip title={projectName} arrow zoom followCursor sx={{ marginTop: "1rem" }}>
-            <Typography textAlign="center">
-              {projectName.length > 6
-                ? `${projectName.substring(0, 6)}...`
-                : projectName}
-            </Typography>
-          </Tooltip>
-        </ListItemButton>
-      </Card>
+        <MovieIcon htmlColor="#1565c0" fontSize="large" />
+        <Tooltip title={projectName} arrow zoom followCursor>
+          <Typography textAlign="center" mt={1}>
+            {projectName.length > 6
+              ? `${projectName.substring(0, 6)}...`
+              : projectName}
+          </Typography>
+        </Tooltip>
+      </ListItemButton>
       <IconButton
         size="small"
         color="error"

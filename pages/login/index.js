@@ -59,8 +59,8 @@ function Home() {
 
         const { accessToken, refreshToken } = response.data;
 
-        Cookies.set("access-token", accessToken, { secure: true });
-        Cookies.set("refresh-token", refreshToken, { secure: true });
+        Cookies.set("access-token", accessToken, { secure: true, expires: 7 });
+        Cookies.set("refresh-token", refreshToken, { secure: true, expires: 7 });
     };
 
     useEffect(() => {
