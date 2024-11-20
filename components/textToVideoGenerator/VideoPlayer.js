@@ -1,0 +1,296 @@
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Box,
+  IconButton,
+  Slider,
+  Menu,
+  MenuItem,
+  Button,
+  Paper,
+  useMediaQuery,
+  useTheme,
+  Popover,
+  Tooltip,
+} from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import DownloadIcon from "@mui/icons-material/Download";
+import SettingsIcon from "@mui/icons-material/Settings";
+
+function VideoPlayer({ generatedVideo, videoName }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [volumeAnchorEl, setVolumeAnchorEl] = useState(null);
+  const videoRef = useRef();
+  const playerRef = useRef();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateProgress = () => {
+      setProgress((video.currentTime / video.duration) * 100);
+    };
+
+    const handlePlayPause = () => {
+      setIsPlaying(!video.paused);
+    };
+
+    video.addEventListener("timeupdate", updateProgress);
+    video.addEventListener("play", handlePlayPause);
+    video.addEventListener("pause", handlePlayPause);
+
+    return () => {
+      video.removeEventListener("timeupdate", updateProgress);
+      video.removeEventListener("play", handlePlayPause);
+      video.removeEventListener("pause", handlePlayPause);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleVolumeChange = (event, newValue) => {
+    const newVolume = newValue;
+    setVolume(newVolume / 100);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume / 100;
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!playerRef.current) return;
+
+    if (!isFullscreen) {
+      if (playerRef.current.requestFullscreen) {
+        playerRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const handleSeek = (event, newValue) => {
+    const newTime = (newValue / 100) * (videoRef.current?.duration || 0);
+    if (videoRef.current) {
+      videoRef.current.currentTime = newTime;
+    }
+    setProgress(newValue);
+  };
+
+  const handleDownload = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    fetch(video.src)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = `${videoName}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch((error) => console.error("Download failed:", error));
+  };
+
+  const handleSettingsClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setAnchorEl(null);
+  };
+
+  const changePlaybackSpeed = (speed) => {
+    setPlaybackSpeed(speed);
+    handleSettingsClose();
+  };
+
+  const handleVolumeClick = (event) => {
+    setVolumeAnchorEl(event.currentTarget);
+  };
+
+  const handleVolumeClose = () => {
+    setVolumeAnchorEl(null);
+  };
+
+  return (
+    <Paper
+      elevation={3}
+      ref={playerRef}
+      sx={{
+        position: "relative",
+        maxWidth: "1000px",
+        mx: "auto",
+      }}
+    >
+      <Box position="relative" onClick={togglePlay}>
+        <video
+          ref={videoRef}
+          width="100%"
+          src={generatedVideo}
+          onClick={(e) => e.stopPropagation()}
+        >
+          Your browser does not support the video tag.
+        </video>
+        {!isPlaying && (
+          <Tooltip title="Play video" arrow>
+            <Box
+              position="absolute"
+              top="50%"
+              left="50%"
+              bgcolor="rgba(0, 0, 0, 0.5)"
+              borderRadius="50%"
+              p={2}
+              sx={{
+                transform: "translate(-50%, -50%)",
+                cursor: "pointer",
+              }}
+            >
+              <PlayArrowIcon sx={{ fontSize: 60, color: "white" }} />
+            </Box>
+          </Tooltip>
+        )}
+      </Box>
+      <Box
+        position="absolute"
+        bottom={0}
+        left={0}
+        right={0}
+        bgcolor="rgba(0, 0, 0, 0.6)"
+        p={isMobile ? 0.5 : 1}
+      >
+        <Slider
+          value={progress}
+          onChange={handleSeek}
+          sx={{ mb: 0.5 }}
+          size="small"
+        />
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box display="flex" alignItems="center">
+            <IconButton onClick={togglePlay} color="primary" size="small">
+              {isPlaying ? (
+                <PauseIcon fontSize="small" />
+              ) : (
+                <PlayArrowIcon fontSize="small" />
+              )}
+            </IconButton>
+            <IconButton
+              onClick={isMobile ? handleVolumeClick : toggleMute}
+              color="primary"
+              size="small"
+            >
+              {isMuted ? (
+                <VolumeOffIcon fontSize="small" />
+              ) : (
+                <VolumeUpIcon fontSize="small" />
+              )}
+            </IconButton>
+            {!isMobile && (
+              <Slider
+                value={volume * 100}
+                onChange={handleVolumeChange}
+                sx={{ width: 60, ml: 1 }}
+                size="small"
+              />
+            )}
+          </Box>
+          <Box display="flex" alignItems="center">
+            <IconButton onClick={handleDownload} color="primary" size="small">
+              <DownloadIcon fontSize="small" />
+            </IconButton>
+            <Button
+              onClick={handleSettingsClick}
+              startIcon={<SettingsIcon fontSize="small" />}
+              color="primary"
+              sx={{ fontSize: "0.75rem", py: 0.5, px: 1 }}
+            >
+              {playbackSpeed}x
+            </Button>
+            <IconButton onClick={toggleFullscreen} color="primary" size="small">
+              {isFullscreen ? (
+                <FullscreenExitIcon fontSize="small" />
+              ) : (
+                <FullscreenIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleSettingsClose}
+      >
+        <MenuItem onClick={() => changePlaybackSpeed(0.5)}>0.5x Speed</MenuItem>
+        <MenuItem onClick={() => changePlaybackSpeed(1)}>1x Speed</MenuItem>
+        <MenuItem onClick={() => changePlaybackSpeed(1.5)}>1.5x Speed</MenuItem>
+        <MenuItem onClick={() => changePlaybackSpeed(2)}>2x Speed</MenuItem>
+      </Menu>
+      <Popover
+        open={Boolean(volumeAnchorEl)}
+        anchorEl={volumeAnchorEl}
+        onClose={handleVolumeClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
+        <Box p={1} height={100}>
+          <Slider
+            value={volume * 100}
+            onChange={handleVolumeChange}
+            orientation="vertical"
+            sx={{ height: "100%" }}
+          />
+        </Box>
+      </Popover>
+    </Paper>
+  );
+}
+
+export default VideoPlayer;

@@ -12,7 +12,10 @@ const refreshAuthToken = async () => {
         Authorization: `Bearer ${Cookies.get("refresh-token")}`,
       },
     });
-    Cookies.set("access-token", response.data.accessToken, { secure: true });
+    Cookies.set("access-token", response.data.accessToken, {
+      secure: true,
+      expires: 7,
+    });
     return response.data.accessToken;
   } catch (error) {
     throw error;

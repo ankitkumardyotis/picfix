@@ -4,8 +4,9 @@ import {
   Box,
   IconButton,
   Tooltip,
-  CircularProgress,
   useMediaQuery,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -23,6 +24,7 @@ import ImagePopupTabs from "./ImagePopupTabs";
 function VideoPointerConfig({
   index,
   dataPointer,
+  handleSelectPointerChange,
   handleUpdateDataPointers,
   handleAppendDataPointer,
   handleDeleteDataPointer,
@@ -36,13 +38,9 @@ function VideoPointerConfig({
     dataPointer.dataPointer,
   );
   const [isContainerHovered, setIsContainerHovered] = useState(false);
-  const [isNewDataPointerAppending, setIsNewDataPointerAppending] =
-    useState(false);
   const [isDataPointerEditing, setIsDataPointerEditing] = useState(
     dataPointer.dataPointer.length === 0,
   );
-  const [isDataPointerSaving, setIsDataPointerSaving] = useState(false);
-  const [isDataPointerDeleting, setIsDataPointerDeleting] = useState(false);
   const [
     openSavePointerConfirmationDialogBox,
     setOpenSavePointerConfirmationDialogBox,
@@ -54,14 +52,19 @@ function VideoPointerConfig({
   const [dataPointerAudio, setDataPointerAudio] = useState();
   const [initialDataPointerText, setInitialDataPointerText] = useState();
   const [addImagePopupOpen, setAddImagePopupOpen] = useState(false);
+  const mdBp = useMediaQuery("(min-width: 768px)");
   const { enqueueSnackbar } = useSnackbar();
-  const matches = useMediaQuery("(max-width:700px)");
 
   const router = useRouter();
   const { projectId } = router.query;
 
   const { data: session } = useSession();
   const userId = session?.user.id;
+
+  const handleDataPointerEdit = () => {
+    setIsDataPointerEditing(true);
+    setInitialDataPointerText(targetDataPointer);
+  };
 
   const getDataPointerAudio = async (targetDataPointerId) => {
     handleStartLoading();
@@ -89,7 +92,7 @@ function VideoPointerConfig({
         );
 
         if (response.status === 200) {
-          const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+          const audioBlob = new Blob([response.data], { type: "audio/mpeg" });
           const url = URL.createObjectURL(audioBlob);
           const audioObject = new Audio(url);
           audioObject.play();
@@ -126,51 +129,30 @@ function VideoPointerConfig({
   const handleAddImagePopupOpen = () => setAddImagePopupOpen(true);
   const handleAddImagePopupClose = () => setAddImagePopupOpen(false);
 
+  const handleContainerHovered = () => setIsContainerHovered(true);
+  const handleContainerNotHovered = () => setIsContainerHovered(false);
 
   return (
-    <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="flex-start"
-      width="100%"
-    >
-      <Box mt={1}>
-        {isDataPointerEditing ? (
-          <Tooltip title="Save text" arrow>
-            <IconButton
-              onClick={handleSavePointerConfirmationDialogBoxOpen}
-              disabled={
-                isNewDataPointerAppending ||
-                isDataPointerSaving ||
-                isDataPointerDeleting
-              }
-              color="primary"
-            >
-              {isDataPointerSaving ? (
-                <CircularProgress size={17} />
-              ) : (
-                <SaveIcon />
-              )}
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Tooltip title="Edit text" arrow>
-            <IconButton
-              onClick={() => {
-                setIsDataPointerEditing(true);
-                setInitialDataPointerText(targetDataPointer);
-              }}
-              disabled={
-                isNewDataPointerAppending ||
-                isDataPointerSaving ||
-                isDataPointerDeleting
-              }
-              color="primary"
-            >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        )}
+    <>
+      <FormControlLabel
+        sx={{ m: 0, mt: mdBp ? 2 : 1, flexGrow: 1 }}
+        control={<Checkbox sx={{ m: 0, p: 0 }} />}
+        onChange={() => handleSelectPointerChange(index)}
+        checked={dataPointer.generateMedia}
+      />
+      <Box mt={mdBp ? 1 : 0} flexGrow={1} textAlign="left">
+        <Tooltip title={isDataPointerEditing ? "Save text" : "Edit text"} arrow>
+          <IconButton
+            onClick={() => {
+              if (isDataPointerEditing)
+                handleSavePointerConfirmationDialogBoxOpen();
+              else handleDataPointerEdit();
+            }}
+            color="primary"
+          >
+            {isDataPointerEditing ? <SaveIcon /> : <EditIcon />}
+          </IconButton>
+        </Tooltip>
         <ConfirmationDialogBox
           openConfirmationDialogBox={openSavePointerConfirmationDialogBox}
           handleConfirmationDialogBoxClose={
@@ -179,13 +161,11 @@ function VideoPointerConfig({
           confirmationText="Do you really want to save changes?"
           handler={async () => {
             handleSavePointerConfirmationDialogBoxClose();
-            setIsDataPointerSaving(true);
             await handleUpdateDataPointers(
               targetDataPointer,
               dataPointer.id,
               index,
             );
-            setIsDataPointerSaving(false);
             if (targetDataPointer !== initialDataPointerText)
               setDataPointerAudio(null);
             setIsDataPointerEditing(false);
@@ -193,24 +173,18 @@ function VideoPointerConfig({
         />
       </Box>
       <Box
-        p={1}
+        p={mdBp ? 1 : 0}
         position="relative"
-        borderRadius=".6em"
-        width={matches ? "100%" : "85%"}
+        borderRadius={2}
+        flexGrow={40}
         sx={{
           transition: "background-color 200ms 200ms",
           "&: hover": {
             backgroundColor: !isDataPointerEditing && "rgba(0,0,0,.05)",
           },
         }}
-        onMouseOver={async () => {
-          await new Promise((resolve) => setTimeout(() => resolve(), 200));
-          setIsContainerHovered(true);
-        }}
-        onMouseOut={async () => {
-          await new Promise((resolve) => setTimeout(() => resolve(), 200));
-          setIsContainerHovered(false);
-        }}
+        onMouseOver={handleContainerHovered}
+        onMouseOut={handleContainerNotHovered}
       >
         <TextField
           sx={{
@@ -221,42 +195,35 @@ function VideoPointerConfig({
           id={`audio-text-${index + 1}`}
           label={`Audio text ${index + 1}`}
           value={targetDataPointer}
-          helperText="You can set your own audio text and generate image accordingly."
+          helperText={
+            mdBp
+              ? "You can set your own audio text and generate image accordingly."
+              : ""
+          }
           onChange={(e) => setTargetDataPointer(e.target.value)}
           placeholder={`Audio text ${index + 1}`}
           required
           size="small"
         />
         <Box
-          component="div"
           display="flex"
           position="absolute"
-          top="-2.6em"
-          left={matches ? "5em" : 0}
-          sx={{
-            color: "#FFF",
-            opacity: isContainerHovered || isDataPointerEditing ? 1 : 0,
-          }}
+          top={-42}
+          left={0}
+          visibility={
+            mdBp
+              ? isContainerHovered || isDataPointerEditing
+                ? "visible"
+                : "hidden"
+              : "visible"
+          }
         >
-          <Tooltip title="Append new input" arrow>
+          <Tooltip title="Append new video input" arrow>
             <IconButton
-              onClick={async () => {
-                setIsNewDataPointerAppending(true);
-                await handleAppendDataPointer(index);
-                setIsNewDataPointerAppending(false);
-              }}
-              disabled={
-                isNewDataPointerAppending ||
-                isDataPointerSaving ||
-                isDataPointerDeleting
-              }
+              onClick={() => handleAppendDataPointer(index)}
               color="primary"
             >
-              {isNewDataPointerAppending ? (
-                <CircularProgress size={17} />
-              ) : (
-                <AddIcon />
-              )}
+              <AddIcon />
             </IconButton>
           </Tooltip>
           <ConfirmationDialogBox
@@ -266,9 +233,7 @@ function VideoPointerConfig({
             }
             confirmationText="Do you really want to delete this video input?"
             handler={async () => {
-              setIsDataPointerDeleting(true);
               await handleDeleteDataPointer(dataPointer.id);
-              setIsDataPointerDeleting(false);
               if (dataPointerAudio) {
                 dataPointerAudio.pause();
                 dataPointerAudio.currentTime = 0;
@@ -279,25 +244,21 @@ function VideoPointerConfig({
           <Tooltip title="Delete input" arrow>
             <IconButton
               onClick={handleDeletePointerConfirmationDialogBoxOpen}
-              disabled={
-                isNewDataPointerAppending ||
-                isDataPointerSaving ||
-                isDataPointerDeleting
-              }
               color="error"
             >
-              {isDataPointerDeleting ? (
-                <CircularProgress color="error" size={17} />
-              ) : (
-                <DeleteIcon />
-              )}
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>
       </Box>
       <Box
+        textAlign="right"
         mt={1}
-        visibility={targetDataPointer.length > 0 ? "visible" : "hidden"}
+        flexGrow={1}
+        visibility={dataPointer.dataPointer.length > 0 ? "visible" : "hidden"}
+        position={mdBp ? "static" : "absolute"}
+        right={42}
+        top={-50}
       >
         <Tooltip
           title={
@@ -309,13 +270,8 @@ function VideoPointerConfig({
         >
           <IconButton
             onClick={() => getDataPointerAudio(dataPointer.id)}
-            disabled={
-              isNewDataPointerAppending ||
-              isDataPointerSaving ||
-              isDataPointerDeleting
-            }
             color="primary"
-            size={matches ? "small" : "medium"}
+            size="medium"
             sx={{
               position: "relative",
               backgroundColor: "#dee2e6",
@@ -344,17 +300,17 @@ function VideoPointerConfig({
         </Tooltip>
       </Box>
       <Box
+        textAlign="right"
         mt={1}
-        visibility={targetDataPointer.length > 0 ? "visible" : "hidden"}
+        flexGrow={1}
+        visibility={dataPointer.dataPointer.length > 0 ? "visible" : "hidden"}
+        position={mdBp ? "static" : "absolute"}
+        right={0}
+        top={-50}
       >
         <Tooltip title="Upload new image" arrow>
           <IconButton
-            disabled={
-              isNewDataPointerAppending ||
-              isDataPointerSaving ||
-              isDataPointerDeleting
-            }
-            size={matches ? "small" : "medium"}
+            size="medium"
             onClick={handleAddImagePopupOpen}
             color="info"
             sx={{
@@ -396,7 +352,7 @@ function VideoPointerConfig({
           handleUploadSearchedImage={handleUploadSearchedImage}
         />
       </Box>
-    </Box>
+    </>
   );
 }
 

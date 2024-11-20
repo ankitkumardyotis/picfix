@@ -30,6 +30,8 @@ import { useSnackbar } from "notistack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerConfig";
 import { socket } from "@/socket";
+import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
+import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 
 export default function Page() {
   const router = useRouter();
@@ -55,9 +57,21 @@ export default function Page() {
   const [userPlan, setUserPlan] = useState("");
   const [userPlanStatus, setUserPlanStatus] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState();
-  const matches = useMediaQuery("(max-width:700px)");
+  const [scrolledToTop, setScrolledToTop] = useState(false);
+  const [isGenerateBtnHidden, setIsGenerateBtnHidden] = useState(false);
+  const [scrolledToBottom, setScrolledToBottom] = useState(true);
+  const [isSelectBarHidden, setIsSelectBarHidden] = useState(false);
+  const [dataPointersGenerated, setDataPointersGenerated] = useState(false);
+  const [isVideoGenerated, setIsVideoGenerated] = useState(false);
+  const firstDividerRef = useRef(null);
+  const secondDividerRef = useRef(null);
+  const selectBarRef = useRef(null);
+  const generateBtnRef = useRef(null);
+  const xsBp = useMediaQuery("(min-width: 335px)");
+  const smBp = useMediaQuery("(min-width: 500px)");
+  const mdBp = useMediaQuery("(min-width: 768px)");
+
   const { enqueueSnackbar } = useSnackbar();
-  const downloadVideoBtnRef = useRef();
 
   const selectedPointers =
     dataPointers &&
@@ -141,6 +155,8 @@ export default function Page() {
       alert("Please enter the missing audio text field");
       return;
     }
+
+    handleStartLoading();
     try {
       const response = await nodeService.post(
         `/api/${userId}/${projectId}/update/${targetDataPointerId}`,
@@ -174,6 +190,7 @@ export default function Page() {
         variant: "error",
       });
     }
+    handleStopLoading();
   };
 
   const handleRegenerateImage = async (targetDataPointerId, prompt) => {
@@ -325,6 +342,7 @@ export default function Page() {
         const videoBlob = new Blob([videoArrayBuffer], { type: "video/mp4" });
         const videoUrl = URL.createObjectURL(videoBlob);
         setGeneratedVideo(videoUrl);
+        setIsVideoGenerated(true);
         enqueueSnackbar("Video generated successfully!", {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -361,15 +379,8 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleDownloadVideo = () => {
-    if (downloadVideoBtnRef.current) {
-      downloadVideoBtnRef.current.href = generatedVideo;
-      downloadVideoBtnRef.current.download = `${projectName}.mp4`;
-      downloadVideoBtnRef.current.click();
-    }
-  };
-
   const handleAppendDataPointer = async (index) => {
+    handleStartLoading();
     try {
       const response = await nodeService.post(
         `/api/${userId}/${projectId}/create`,
@@ -409,9 +420,11 @@ export default function Page() {
         variant: "error",
       });
     }
+    handleStopLoading();
   };
 
   const handleDeleteDataPointer = async (targetDataPointerId) => {
+    handleStartLoading();
     try {
       const response = await nodeService.delete(
         `/api/${userId}/${projectId}/delete/${targetDataPointerId}`,
@@ -439,6 +452,7 @@ export default function Page() {
         variant: "error",
       });
     }
+    handleStopLoading();
   };
 
   const handleDragEnd = async (result) => {
@@ -528,13 +542,15 @@ export default function Page() {
           const response = await nodeService.get(
             `/api/${userId}/getProjectVideo/${projectId}`,
             {
-              responseType: 'arraybuffer',
+              responseType: "arraybuffer",
             },
           );
 
           if (response.status === 200) {
             const videoArrayBuffer = response.data;
-            const videoBlob = new Blob([videoArrayBuffer], { type: "video/mp4" });
+            const videoBlob = new Blob([videoArrayBuffer], {
+              type: "video/mp4",
+            });
             const videoUrl = URL.createObjectURL(videoBlob);
             setGeneratedVideo(videoUrl);
             enqueueSnackbar("Video fetched successfully!", {
@@ -626,6 +642,7 @@ export default function Page() {
           pointers.map((pointer) => ({ ...pointer, generateMedia: false })),
         );
         handleStopSocketLoading();
+        setDataPointersGenerated(true);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -735,6 +752,7 @@ export default function Page() {
     };
 
     if (session?.user.id && projectId) {
+      socket.disconnect();
       socket.connect();
       socket.on("connect", getProjectData);
 
@@ -782,7 +800,9 @@ export default function Page() {
         socket.off("error-uploading-pointer-image", onErrorHandler);
         socket.off("error-generating-pointer-audio", onErrorHandler);
 
+        socket.off("connect", getProjectData);
         socket.on("disconnect", getProjectData);
+        socket.off("disconnect", getProjectData);
         socket.disconnect();
       }
     };
@@ -794,6 +814,82 @@ export default function Page() {
     else fetchUserPlan();
   }, [session, status, router]);
 
+  useEffect(() => {
+    if (window.innerWidth >= 320 && window.innerWidth <= 500)
+      setIsGenerateBtnHidden(true);
+
+    const handleScroll = () => {
+      if (selectBarRef.current) {
+        const { top } = selectBarRef.current.getBoundingClientRect();
+        if (top === 52) setScrolledToTop(true);
+        else setScrolledToTop(false);
+
+        if (
+          window.innerWidth >= 320 &&
+          window.innerWidth <= 500 &&
+          top >= window.innerHeight - 150
+        )
+          setIsGenerateBtnHidden(true);
+        else setIsGenerateBtnHidden(false);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [selectBarRef.current]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (generateBtnRef.current) {
+        const { bottom } = generateBtnRef.current.getBoundingClientRect();
+        if (
+          parseInt(bottom) === window.innerHeight ||
+          parseInt(bottom) + 1 === window.innerHeight
+        )
+          setScrolledToBottom(true);
+        else setScrolledToBottom(false);
+
+        if (parseInt(bottom) < 200) setIsSelectBarHidden(true);
+        else setIsSelectBarHidden(false);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [generateBtnRef.current]);
+
+  useEffect(() => {
+    if (dataPointersGenerated) {
+      const { top } = firstDividerRef.current.getBoundingClientRect();
+      window.scrollBy({
+        top: top - 60,
+        left: 0,
+        behavior: "smooth",
+      });
+      setDataPointersGenerated(false);
+    }
+  }, [dataPointersGenerated]);
+
+  useEffect(() => {
+    if (isVideoGenerated) {
+      const { top } = secondDividerRef.current.getBoundingClientRect();
+      window.scrollBy({
+        top: top - 100,
+        left: 0,
+        behavior: "smooth",
+      });
+      setIsVideoGenerated(false);
+    }
+  }, [isVideoGenerated]);
+
   if (
     userPlan?.remainingPoints === 0 ||
     userPlan?.remainingPoints < 0 ||
@@ -803,44 +899,86 @@ export default function Page() {
   }
 
   return userPlanStatus ? (
-    <Box my={8} minHeight="90vh" width="80%" mx="auto">
+    <Box
+      mx="auto"
+      my={8}
+      minHeight="100vh"
+      minWidth="320px"
+      maxWidth="1300px"
+      px={2}
+    >
       <Typography
         variant="h5"
         textAlign="center"
-        fontWeight={600}
+        fontWeight="bold"
         color="primary"
-        sx={{
-          marginBottom: ".3em",
-          letterSpacing: ".04em",
-          textTransform: "uppercase",
-        }}
+        mb={1}
+        letterSpacing={1}
+        textTransform="uppercase"
       >
         {projectName}
       </Typography>
       <Card
         raised
         sx={{
+          backgroundColor: smBp || "#74c69d",
+          p: 2,
+          mb: smBp ? 5 : 3,
           display: "flex",
           flexDirection: "column",
-          padding: "1em",
-          marginInline: "auto",
-          marginBottom: "2.5em",
+          height: smBp || "calc(100vh - 120px)",
         }}
       >
-        <FormLabel color="info" sx={{ marginBottom: "1em" }}>
-          Text to video generation
-        </FormLabel>
         <Box
           display="flex"
-          flexDirection={matches ? "column" : "row"}
-          sx={{ marginBottom: "1em", position: "relative" }}
+          justifyContent={smBp ? "space-between" : "center"}
+          alignItems="center"
+          mb={1}
         >
+          {smBp && (
+            <FormControl>
+              <FormLabel>Text to video generation</FormLabel>
+            </FormControl>
+          )}
+          <FormControl
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FormLabel
+              sx={{
+                mr: 1,
+                whiteSpace: "nowrap",
+                color: smBp || "#000",
+                fontWeight: smBp || "bold",
+              }}
+            >
+              Audio type:
+            </FormLabel>
+            <RadioGroup
+              sx={{ flexWrap: "nowrap" }}
+              row
+              value={voiceType}
+              onChange={handleVoiceTypeChange}
+            >
+              <FormControlLabel value="male" control={<Radio />} label="Male" />
+              <FormControlLabel
+                value="female"
+                control={<Radio />}
+                label="Female"
+              />
+            </RadioGroup>
+          </FormControl>
+        </Box>
+        <Box display="flex" flexDirection={smBp ? "row" : "column"} mb={2}>
           <FormControl
             sx={{
               flexGrow: 1,
-              marginRight: "1em",
-              width: matches && "100%",
-              marginBottom: matches && "1em",
+              flexBasis: 0,
+              mr: smBp && 2,
+              mb: !smBp && 2,
             }}
             size="small"
           >
@@ -853,6 +991,7 @@ export default function Page() {
               value={audioLanguage}
               label="Audio language"
               onChange={handleAudioLanguageChange}
+              sx={{ backgroundColor: smBp || "#b7e4c7" }}
             >
               <MenuItem value="arabic">Arabic</MenuItem>
               <MenuItem value="chinese">Chinese</MenuItem>
@@ -881,6 +1020,7 @@ export default function Page() {
               value={pointersCount}
               label="Max no. of data pointers"
               onChange={handlePointersCountChange}
+              sx={{ backgroundColor: smBp || "#b7e4c7" }}
             >
               {Array.from({ length: 20 }, (_, i) => i + 1).map((_, i) => (
                 <MenuItem key={uuidv4()} value={`${i + 1}`}>
@@ -889,106 +1029,149 @@ export default function Page() {
               ))}
             </Select>
           </FormControl>
-          <FormControl
-            sx={{
-              position: "absolute",
-              top: "-3em",
-              right: "-1em",
-              display: "flex",
-              flexDirection: "row",
-            }}
-          >
-            <FormLabel
-              id="demo-controlled-radio-buttons-group"
-              sx={{ marginRight: ".5rem", marginTop: ".6rem" }}
-            >
-              Audio type:
-            </FormLabel>
-            <RadioGroup row value={voiceType} onChange={handleVoiceTypeChange}>
-              <FormControlLabel value="male" control={<Radio />} label="Male" />
-              <FormControlLabel
-                value="female"
-                control={<Radio />}
-                label="Female"
-              />
-            </RadioGroup>
-          </FormControl>
         </Box>
         <Textarea
           value={article}
           onChange={handleArticleChange}
-          aria-label="article textarea"
+          placeholder="Please enter the article!"
           maxRows={7}
           minRows={7}
-          placeholder="Please enter the article!"
-          sx={{ width: "100%", marginBottom: "1em" }}
+          sx={{
+            width: "100%",
+            mb: 2,
+            flexGrow: 1,
+            letterSpacing: 0.8,
+          }}
         />
         <Button
           onClick={handleGenerateDataPointers}
-          sx={{ alignSelf: "flex-end", textTransform: "none" }}
+          sx={{
+            textTransform: "none",
+            alignSelf: smBp && "flex-end",
+            backgroundColor: smBp || "#000",
+            "&:hover": {
+              backgroundColor: smBp || "#000",
+            },
+          }}
           variant="contained"
         >
           <Typography mr={1}>Execute</Typography>
           <AutoAwesomeIcon />
         </Button>
       </Card>
-      {dataPointers && (
-        <Divider sx={{ marginBottom: "2.5em" }} variant="middle">
-          Customize your video inputs
-        </Divider>
-      )}
-      {dataPointers && (
-        <Box position="relative">
-          <FormGroup
-            row
+      {dataPointers && dataPointers.length > 0 && (
+        <>
+          <Divider sx={{ mb: smBp ? 5 : 3 }} ref={firstDividerRef}>
+            <Typography variant="subtitle1" display="flex" alignItems="center">
+              <VideoSettingsIcon
+                fontSize="medium"
+                sx={{ mr: 1 }}
+                color="primary"
+              />
+              Customize your video inputs
+              <VideoSettingsIcon
+                fontSize="medium"
+                sx={{ ml: 1 }}
+                color="primary"
+              />
+            </Typography>
+          </Divider>
+          <Box
+            ref={selectBarRef}
             sx={{
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "2.5em",
+              boxShadow: scrolledToTop && "0 2px 5px rgba(0,0,0,0.2)",
+              p: scrolledToTop && 1,
+              mb: smBp ? 5 : 3,
+              mx: "auto",
               position: "sticky",
-              top: "3.2em",
-              backgroundColor: "#fff",
+              top: 52,
+              width: scrolledToTop ? (xsBp ? "300px" : "200px") : "100%",
+              backgroundColor: "#FFF",
+              backgroundImage:
+                scrolledToTop &&
+                "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
               zIndex: 1000,
-              paddingBlock: ".6em",
+              borderRadius: 2,
+              borderTopLeftRadius: scrolledToTop && 0,
+              borderTopRightRadius: scrolledToTop && 0,
+              visibility: isSelectBarHidden ? "hidden" : "visible",
             }}
           >
-            <FormControlLabel
-              label="Select all"
-              control={
-                <Checkbox
-                  checked={selectedPointers.length === dataPointers.length}
-                  indeterminate={
-                    selectedPointers.length === dataPointers.length
-                  }
-                  onChange={handleSelectAllPointersChange}
-                />
-              }
-            />
-            <Box
-              component="fieldset"
-              color="primary"
-              borderRadius={2}
-              pl={2}
-              pb={1}
-              borderColor="#42a5f5"
+            <FormGroup
+              row
+              sx={{
+                flexDirection: scrolledToTop
+                  ? xsBp
+                    ? "row"
+                    : "column"
+                  : smBp
+                  ? "row"
+                  : "column",
+                alignItems: scrolledToTop
+                  ? "center"
+                  : smBp
+                  ? "center"
+                  : "flex-start",
+              }}
             >
-              <legend style={{ marginLeft: ".5em", color: "#42a5f5" }}>
-                &nbsp;Generate&nbsp;
-              </legend>
               <FormControlLabel
-                checked={mediaTypes.audios}
-                onChange={() => handleMediaTypesChange("audios")}
-                control={<Checkbox />}
-                label="Audios"
+                label="Select all"
+                sx={{ m: 0, whiteSpace: "nowrap" }}
+                control={
+                  <Checkbox
+                    checked={selectedPointers.length === dataPointers.length}
+                    indeterminate={
+                      selectedPointers.length === dataPointers.length
+                    }
+                    onChange={handleSelectAllPointersChange}
+                    sx={{ m: 0, p: 0 }}
+                  />
+                }
               />
-              <FormControlLabel
-                checked={mediaTypes.images}
-                onChange={() => handleMediaTypesChange("images")}
-                control={<Checkbox />}
-                label="Images"
-              />
-            </Box>
-          </FormGroup>
+              <Box
+                component="fieldset"
+                borderRadius={2}
+                pl={2}
+                pb={1}
+                borderColor={scrolledToTop ? "#000" : "#42a5f5"}
+                mt={scrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
+                ml={scrolledToTop ? "auto" : smBp ? "auto" : "unset"}
+                whiteSpace="nowrap"
+              >
+                <legend
+                  style={{
+                    color: scrolledToTop ? "#000" : "#42a5f5",
+                  }}
+                >
+                  &nbsp;Generate&nbsp;
+                </legend>
+                <FormControlLabel
+                  checked={mediaTypes.audios}
+                  onChange={() => handleMediaTypesChange("audios")}
+                  control={
+                    scrolledToTop ? (
+                      <Checkbox sx={{ m: 0, p: 0 }} />
+                    ) : (
+                      <Checkbox />
+                    )
+                  }
+                  label="Audios"
+                />
+                <FormControlLabel
+                  checked={mediaTypes.images}
+                  onChange={() => handleMediaTypesChange("images")}
+                  control={
+                    scrolledToTop ? (
+                      <Checkbox sx={{ m: 0, p: 0 }} />
+                    ) : (
+                      <Checkbox />
+                    )
+                  }
+                  label="Images"
+                />
+              </Box>
+            </FormGroup>
+          </Box>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="droppable">
               {(provided) => (
@@ -1001,26 +1184,22 @@ export default function Page() {
                     >
                       {(provided) => (
                         <Box
-                          component="div"
-                          mx="auto"
+                          mt={mdBp ? 0 : 7}
+                          mb={5}
                           display="flex"
-                          justifyContent="space-evenly"
-                          marginBottom="2.5em"
-                          position={matches && "relative"}
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          position={mdBp ? "static" : "relative"}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                         >
-                          <Box mt={1}>
-                            <FormControlLabel
-                              control={<Checkbox />}
-                              onChange={() => handleSelectPointerChange(idx)}
-                              checked={dataPointer.generateMedia}
-                            />
-                          </Box>
                           <VideoPointerConfig
                             index={idx}
                             dataPointer={dataPointer}
+                            handleSelectPointerChange={
+                              handleSelectPointerChange
+                            }
                             handleStartLoading={handleStartLoading}
                             handleStopLoading={handleStopLoading}
                             handleUpdateDataPointers={handleUpdateDataPointers}
@@ -1042,64 +1221,81 @@ export default function Page() {
             </Droppable>
           </DragDropContext>
           <Box
-            component="div"
+            ref={generateBtnRef}
             sx={{
               display: "flex",
               justifyContent: "center",
-              marginBottom: "2.5em",
+              mb: smBp ? 5 : 3,
               position: "sticky",
-              bottom: "1em",
+              bottom: 0,
+              zIndex: 1000,
+              visibility: isGenerateBtnHidden ? "hidden" : "visible",
             }}
           >
-            {selectedPointers.length > 0 &&
-            (mediaTypes.audios || mediaTypes.images) ? (
-              <Button
-                sx={{ textTransform: "none" }}
-                variant="contained"
-                onClick={handleGenerateMedia}
-              >
-                <Typography mr={1}>Generate media</Typography>
-                <AutoAwesomeIcon />
-              </Button>
-            ) : (
-              <Button
-                sx={{ textTransform: "none" }}
-                variant="contained"
-                onClick={handleGenerateVideo}
-              >
-                <Typography mr={1}>Generate video</Typography>
-                <AutoAwesomeIcon />
-              </Button>
-            )}
-          </Box>
-        </Box>
-      )}
-      {generatedVideo && dataPointers && (
-        <>
-          <Divider sx={{ marginBottom: "2.5em" }} variant="middle">
-            Generated video
-          </Divider>
-          <Box
-            component="div"
-            mx="auto"
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            sx={{ width: "50vw" }}
-          >
-            <video controls style={{ width: "100%", marginBottom: "2.5em" }}>
-              <source src={generatedVideo} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <Button
-              sx={{ textTransform: "none" }}
-              variant="contained"
-              onClick={handleDownloadVideo}
+            <Box
+              sx={{
+                boxShadow: scrolledToBottom && "0 -2px 5px rgba(0,0,0,0.2)",
+                p: scrolledToBottom && 1,
+                backgroundImage:
+                  scrolledToBottom &&
+                  "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
+                borderRadius: scrolledToBottom && 2,
+                borderBottomLeftRadius: scrolledToBottom && 0,
+                borderBottomRightRadius: scrolledToBottom && 0,
+              }}
             >
-              <Typography>Download</Typography>
-              <a ref={downloadVideoBtnRef} style={{ display: "none" }}></a>
-            </Button>
+              <Button
+                sx={{
+                  textTransform: "none",
+                  backgroundColor: scrolledToBottom && "#000",
+                  "&:hover": {
+                    backgroundColor: scrolledToBottom && "#000",
+                  },
+                }}
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  if (
+                    selectedPointers.length > 0 &&
+                    (mediaTypes.audios || mediaTypes.images)
+                  )
+                    handleGenerateMedia();
+                  else handleGenerateVideo();
+                }}
+              >
+                <Typography mr={1}>
+                  {selectedPointers.length > 0 &&
+                  (mediaTypes.audios || mediaTypes.images)
+                    ? "Generate media"
+                    : "Generate video"}
+                </Typography>
+                <AutoAwesomeIcon />
+              </Button>
+            </Box>
           </Box>
+        </>
+      )}
+      {generatedVideo && (
+        <>
+          <Divider ref={secondDividerRef} sx={{ mb: smBp ? 5 : 3 }}>
+            <Typography variant="subtitle1" display="flex" alignItems="center">
+              <VideoSettingsIcon
+                fontSize="medium"
+                sx={{ mr: 1 }}
+                color="primary"
+              />
+              Generated video
+              <VideoSettingsIcon
+                fontSize="medium"
+                sx={{ ml: 1 }}
+                color="primary"
+              />
+            </Typography>
+          </Divider>
+          <VideoPlayer
+            generatedVideo={generatedVideo}
+            videoName={projectName}
+          />
         </>
       )}
       <Backdrop
@@ -1111,7 +1307,7 @@ export default function Page() {
         open={isLoading || isSocketLoading}
       >
         <Box display="flex" flexDirection="column" alignItems="center">
-          <Typography variant="h5" mb={8}>
+          <Typography variant={smBp ? "h5" : "h6"} mb={8} textAlign="center">
             {loadingText || socketLoadingText}
           </Typography>
           <div class="custom-loader-text-to-video"></div>
@@ -1121,12 +1317,9 @@ export default function Page() {
   ) : (
     <Box
       sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "1em",
-        flexDirection: "column",
+        minHeight: "100vh",
+        display: "grid",
+        placeContent: "center",
       }}
     >
       <CircularProgress />

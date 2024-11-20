@@ -5,6 +5,7 @@ import {
   DialogTitle,
   Button,
   TextField,
+  useMediaQuery,
 } from "@mui/material";
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
@@ -18,31 +19,33 @@ function NewProjectDialogBox({
   handleNewProjectDescriptionChange,
   handleAddNewProject,
 }) {
+  const smBp = useMediaQuery("(min-width: 500px)");
+
   return (
     <Dialog
       open={openNewProjectDialogBox}
       onClose={handleNewProjectDialogBoxClose}
+      fullScreen={!smBp}
     >
-      <DialogTitle sx={{ color: "#000" }} textAlign="center">
-        New Project
-      </DialogTitle>
-      <DialogContent>
+      <DialogTitle textAlign="center">New Project</DialogTitle>
+      <DialogContent
+        sx={{ display: smBp || "flex", flexDirection: smBp || "column" }}
+      >
         <TextField
           value={newProjectName}
           onChange={handleNewProjectNameChange}
           size="small"
           label="Project name"
           fullWidth
-          sx={{ marginBlock: ".4em 1em" }}
+          sx={{ my: 2 }}
         />
         <Textarea
           value={newProjectDescription}
           onChange={handleNewProjectDescriptionChange}
           maxRows={6}
           minRows={6}
-          maxLength={100}
           placeholder="Please enter the project description!"
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", flexGrow: 1, letterSpacing: 0.8 }}
         />
       </DialogContent>
       <DialogActions>
@@ -57,6 +60,13 @@ function NewProjectDialogBox({
           onClick={handleAddNewProject}
         >
           Create
+        </Button>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={handleNewProjectDialogBoxClose}
+        >
+          Close
         </Button>
       </DialogActions>
     </Dialog>

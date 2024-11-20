@@ -6,6 +6,7 @@ import {
   Button,
   DialogTitle,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -25,6 +26,7 @@ function PreviewImage({
   const userId = session?.user.id;
 
   const [pointerImage, setPointerImage] = useState();
+  const smBp = useMediaQuery("(min-width: 500px)");
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -80,6 +82,7 @@ function PreviewImage({
     <Dialog
       open={isPreviewImagePopupOpen}
       onClose={handlePreviewImagePopupClose}
+      fullScreen={!smBp}
     >
       <DialogTitle textAlign="center">Current Image</DialogTitle>
       <DialogContent
@@ -93,7 +96,7 @@ function PreviewImage({
             width={0}
             height={0}
             style={{
-              width: "75%",
+              width: "100%",
               height: "auto",
             }}
             priority

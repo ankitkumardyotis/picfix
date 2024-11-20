@@ -1,13 +1,13 @@
 import {
   Box,
-  Card,
+  Button,
   CircularProgress,
   List,
-  ListItemButton,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import { useEffect, useState } from "react";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProjectWidget from "@/components/textToVideoGenerator/ProjectWidget";
 import NewProjectDialogBox from "@/components/textToVideoGenerator/NewProjectDialogBox";
@@ -28,6 +28,8 @@ function Projects() {
   const [deletedProjectId, setDeletedProjectId] = useState();
   const [userPlan, setUserPlan] = useState("");
   const [userPlanStatus, setUserPlanStatus] = useState(false);
+  const projectsRef = useRef(null);
+  const mdBp = useMediaQuery("(min-width: 768px)");
   const { enqueueSnackbar } = useSnackbar();
 
   const router = useRouter();
@@ -71,6 +73,15 @@ function Projects() {
   const handleDeleteProjectConfirmationDialogBoxClose = () => {
     setDeletedProjectId(null);
     setOpenDeleteProjectConfirmationDialogBox(false);
+  };
+
+  const handleScrollToProjects = () => {
+    const { top } = projectsRef.current.getBoundingClientRect();
+    window.scrollBy({
+      top,
+      left: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleDeletedProjectId = (projectId) => setDeletedProjectId(projectId);
@@ -178,78 +189,260 @@ function Projects() {
 
   return userPlanStatus ? (
     <Box
-      paddingTop="5rem"
-      paddingBottom="4rem"
-      minHeight="100vh"
-      display="flex"
-      alignItems="center"
-      flexDirection="column"
+      minWidth="320px"
       sx={{
         background:
           "linear-gradient(59deg, rgba(100, 214, 207, 1) 0%, rgba(242, 212, 159, 1) 100%);",
       }}
     >
-      <Card sx={{ backgroundColor: "#e5e7eb", width: "80%" }}>
-        <Typography
-          variant="h2"
-          textAlign="center"
-          sx={{
-            fontSize: "2.5rem",
-            fontWeight: "700",
-          }}
-        >
-          Text to Video generation
-        </Typography>
-        <Typography
-          mt={2}
-          textAlign="right"
-          variant="h6"
-          sx={{
-            fontWeight: "500",
-            color: " #0e0e0e",
-          }}
-        >
-          -Transform your words into captivating videos
-        </Typography>
-      </Card>
-      <List
-        component="div"
-        sx={{
-          width: "80%",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-          justifyItems: "center",
-          alignItems: "center",
-          columnGap: "2em",
-          rowGap: "2rem",
-          marginTop: "3rem",
-        }}
+      <Box
+        minHeight="100vh"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
       >
-        <Box
+        <Typography
+          variant="h1"
+          textAlign="center"
+          fontSize={mdBp ? "4.5rem" : "3.2rem"}
+          fontWeight={700}
+        >
+          Let{" "}
+          <Box
+            component="span"
+            whiteSpace="nowrap"
+            sx={{
+              background:
+                "linear-gradient(to right, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            AI Generate
+          </Box>{" "}
+          Videos from Your Text
+        </Typography>
+        <Typography
+          my={mdBp ? 5 : 0}
+          textAlign="center"
+          variant="subtitle1"
+          fontSize={mdBp ? "1.6rem" : "1.3rem"}
+          fontWeight="500"
           sx={{
-            width: "100px",
-            height: "100px",
+            color: "#0e0e0e",
+            opacity: 0.5,
           }}
         >
-          <ListItemButton
+          Unleash your creativity with our AI video wizard - where your stories
+          <br />
+          come alive in stunning visuals, no expertise needed!
+        </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexDirection={mdBp ? "row" : "column"}
+        >
+          <Box
+            position="relative"
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              position: "relative",
-              borderRadius: ".5em",
-              border: "2px solid #0e0e0e",
-              boxShadow:
-                "0 1px 0 #0e0e0e, 0 2px 0 #0e0e0e, 0 3px 0 #0e0e0e, 0 4px 0 #0e0e0e, 0 5px 0 #0e0e0e, 0 3px 1px rgba(0,0,0,.1), 0 0 2.5px rgba(0,0,0,.1), 0 .5px 1.5px rgba(0,0,0,.3), 0 1.5px 2.5px rgba(0,0,0,.2), 0 2.5px 5px rgba(0,0,0,.25), 0 5px 5px rgba(0,0,0,.2), 0 10px 10px rgba(0,0,0,.15)",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                right: 0,
+                width: "0%",
+                height: "2px",
+                background:
+                  "linear-gradient(to right, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
+                transition: "width 400ms 200ms",
+              },
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                right: 0,
+                width: "2px",
+                height: "0%",
+                background:
+                  "linear-gradient(to bottom, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
+                transition: "height 400ms 200ms",
+              },
+              "&:hover": {
+                "&::before": {
+                  width: "50%",
+                },
+                "&::after": {
+                  height: "50%",
+                },
+              },
             }}
-            onClick={handleNewProjectDialogBoxOpen}
           >
-            <AddIcon htmlColor="#000" fontSize="large" />
-          </ListItemButton>
-          <Typography textAlign="center" mt={1} sx={{ color: "#000" }}>
-            New
-          </Typography>
+            <Box
+              p={2}
+              position="relative"
+              sx={{
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "0%",
+                  height: "2px",
+                  background:
+                    "linear-gradient(to right, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
+                  transition: "width 400ms 200ms",
+                },
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "2px",
+                  height: "0%",
+                  background:
+                    "linear-gradient(to bottom, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
+                  transition: "height 400ms 200ms",
+                },
+                "&:hover": {
+                  "&::before": {
+                    width: "50%",
+                  },
+                  "&::after": {
+                    height: "50%",
+                  },
+                },
+              }}
+            >
+              <Box
+                position="relative"
+                sx={{
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "0%",
+                    height: "2px",
+                    background:
+                      "linear-gradient(to right, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
+                    transition: "width 400ms 200ms",
+                  },
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "2px",
+                    height: "0%",
+                    background:
+                      "linear-gradient(to bottom, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
+                    transition: "height 400ms 200ms",
+                  },
+                  "&:hover": {
+                    "&::before": {
+                      width: "70%",
+                    },
+                    "&::after": {
+                      height: "70%",
+                    },
+                  },
+                }}
+              >
+                <Box
+                  p={2}
+                  position="relative"
+                  sx={{
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                      width: "0%",
+                      height: "2px",
+                      background:
+                        "linear-gradient(to right, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
+                      transition: "width 400ms 200ms",
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                      width: "2px",
+                      height: "0%",
+                      background:
+                        "linear-gradient(to bottom, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
+                      transition: "height 400ms 200ms",
+                    },
+                    "&:hover": {
+                      "&::before": {
+                        width: "70%",
+                      },
+                      "&::after": {
+                        height: "70%",
+                      },
+                    },
+                  }}
+                >
+                  <Button
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: mdBp ? 4 : 3,
+                      textTransform: "none",
+                      backgroundColor: "#000",
+                      "&:hover": {
+                        backgroundColor: "#000",
+                        boxShadow:
+                          "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
+                      },
+                    }}
+                    variant="contained"
+                    onClick={handleNewProjectDialogBoxOpen}
+                  >
+                    <Typography
+                      variant="h5"
+                      mr={1}
+                      whiteSpace="nowrap"
+                      fontSize={mdBp ? "1.5rem" : "1.3rem"}
+                    >
+                      Generate new AI video
+                    </Typography>
+                    <AutoAwesomeIcon />
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+          <Button
+            sx={{
+              px: 2,
+              py: 1,
+              ml: mdBp && 5,
+              borderRadius: mdBp ? 4 : 3,
+              textTransform: "none",
+              backgroundColor: "#000",
+              "&:hover": {
+                backgroundColor: "#000",
+                boxShadow:
+                  "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
+              },
+            }}
+            variant="contained"
+            onClick={handleScrollToProjects}
+          >
+            <Typography
+              variant="h5"
+              mr={1}
+              whiteSpace="nowrap"
+              fontSize={mdBp ? "1.5rem" : "1.3rem"}
+            >
+              Explore Existing Projects
+            </Typography>
+          </Button>
         </Box>
         <NewProjectDialogBox
           openNewProjectDialogBox={openNewProjectDialogBox}
@@ -260,37 +453,59 @@ function Projects() {
           handleNewProjectDescriptionChange={handleNewProjectDescriptionChange}
           handleAddNewProject={handleAddNewProject}
         />
-        {projectList &&
-          projectList.map((project, idx) => (
-            <ProjectWidget
-              key={idx}
-              projectId={project.id}
-              projectName={project.projectName}
-              handleDeletedProjectId={handleDeletedProjectId}
-              handleDeleteProjectConfirmationDialogBoxOpen={
-                handleDeleteProjectConfirmationDialogBoxOpen
+      </Box>
+      <Box
+        ref={projectsRef}
+        minHeight="100vh"
+        display="flex"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <Typography my={8} variant="h2" fontSize={mdBp ? "3rem" : "2rem"}>
+          Your Projects
+        </Typography>
+        {projectList && projectList.length > 0 && (
+          <List
+            component="div"
+            sx={{
+              width: "80%",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+              justifyItems: "center",
+              alignItems: "center",
+              rowGap: "3rem",
+              columnGap: "3rem",
+            }}
+          >
+            {projectList.map((project, idx) => (
+              <ProjectWidget
+                key={idx}
+                projectId={project.id}
+                projectName={project.projectName}
+                handleDeletedProjectId={handleDeletedProjectId}
+                handleDeleteProjectConfirmationDialogBoxOpen={
+                  handleDeleteProjectConfirmationDialogBoxOpen
+                }
+              />
+            ))}
+            <ConfirmationDialogBox
+              openConfirmationDialogBox={openDeleteProjectConfirmationDialogBox}
+              handleConfirmationDialogBoxClose={
+                handleDeleteProjectConfirmationDialogBoxClose
               }
+              confirmationText="Do you really want to delete the project?"
+              handler={handleDeleteProject}
             />
-          ))}
-        <ConfirmationDialogBox
-          openConfirmationDialogBox={openDeleteProjectConfirmationDialogBox}
-          handleConfirmationDialogBoxClose={
-            handleDeleteProjectConfirmationDialogBoxClose
-          }
-          confirmationText="Do you really want to delete the project?"
-          handler={handleDeleteProject}
-        />
-      </List>
+          </List>
+        )}
+      </Box>
     </Box>
   ) : (
     <Box
       sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "1em",
-        flexDirection: "column",
+        minHeight: "100vh",
+        display: "grid",
+        placeContent: "center",
       }}
     >
       <CircularProgress />
