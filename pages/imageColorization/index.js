@@ -9,6 +9,9 @@ import HowItWorksComponent from '@/components/ExplorePageComponents/howItWorks/H
 import UseCaseOfModels from '@/components/ExplorePageComponents/useCases/UseCaseOfModels';
 import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
+import FAQ from '@/components/faqComponent/Faq';
+import { imageColorizationFaqContent } from '@/data/FaqData';
+import Seo from '@/components/seo/Seo';
 
 
 function Colorization() {
@@ -21,7 +24,7 @@ function Colorization() {
     ]
 
     const heading = 'Add Vibrant Colors to Your Old Memories with AI.'
-    const modelName="Image Colorization"
+    const modelName = "Image Colorization"
     const description = 'Revive your old black and white memories with vibrant colors using our AI-powered colorization model. Transform old photographs into vivid representations of cherished moments, preserving the beauty and nostalgia of the past.'
     const routePath = '/imageColorization/runModel'
     const buttonTwoText = 'Try Image Colorization'
@@ -46,11 +49,11 @@ function Colorization() {
     ];
     const titleAndDescriptionUseCase = [
         {
-          title: "Infuse Your Old Memories with Vibrant Colors Using AI",
-          description: "Bring your black and white photos to life with our AI-powered colorization model. Turn old photographs into vibrant, colorful depictions of cherished moments, preserving the beauty and nostalgia of the past."
+            title: "Infuse Your Old Memories with Vibrant Colors Using AI",
+            description: "Bring your black and white photos to life with our AI-powered colorization model. Turn old photographs into vibrant, colorful depictions of cherished moments, preserving the beauty and nostalgia of the past."
         }
-      ];
-      
+    ];
+
 
     const useCaseData = [
         {
@@ -79,6 +82,12 @@ function Colorization() {
 
     return (
         <>
+            <Seo
+                title="AI Image Colorization - Restore Black and White Photos Online | Picfix.ai"
+                description="Bring your black-and-white photos back to life with Picfix.ai's AI Image Colorization tool. Upload old photos, and our AI will add natural, realistic colors in seconds."
+                url="https://www.picfix.ai/imageColorization"
+                keywords="AI image colorization, restore black and white photos, photo colorizer, old photo colorization,image colorization online, colorize black and white photos, colorize old photos,AI photo colorization,photo restoration,colorize photos with AI"
+            />
             <ExplorePageContainer imagesPath={imagesPath} heading={heading} description={description} buttonTwoText={buttonTwoText} routePath={routePath} />
             <HowItWorksComponent steps={steps} modelName={modelName} />
             <UseCaseOfModels useCaseData={useCaseData} titleAndDescriptionUseCase={titleAndDescriptionUseCase} />
@@ -94,7 +103,8 @@ function Colorization() {
                     </section>
                 </Container>
             </Box>
-            <CounterSection />
+            <FAQ faqContent={imageColorizationFaqContent} />
+            {/* <CounterSection /> */}
         </>
 
     )

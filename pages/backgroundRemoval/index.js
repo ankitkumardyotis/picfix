@@ -8,6 +8,8 @@ import HowItWorksComponent from '@/components/ExplorePageComponents/howItWorks/H
 import UseCaseOfModels from '@/components/ExplorePageComponents/useCases/UseCaseOfModels';
 import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
+import FAQ from '@/components/faqComponent/Faq';
+import { removeBackgroundFaqContent } from '@/data/FaqData';
 
 function BackGroundRemove() {
     const router = useRouter();
@@ -57,6 +59,7 @@ function BackGroundRemove() {
     ];
 
 
+
     const useCaseData = [
         // {
         //     id: 'graphic design',
@@ -84,6 +87,12 @@ function BackGroundRemove() {
 
     return (
         <>
+            <Seo
+                title="Remove Background from Image Online – Picfix.ai"
+                description="Remove the background from any image effortlessly using Picfix.ai's AI-powered background remover. Upload an image and get a clear, background in seconds."
+                url="https://www.picfix.ai/backgroundRemoval"
+                keywords="remove background from image, AI background remover, delete image background, background remover online, clear picture background, remove bg, image background remover, remove background online free."
+            />
             <ExplorePageContainer imagesPath={imagesPath} heading={heading} description={description} buttonTwoText={buttonTwoText} routePath={routePath} />
             <HowItWorksComponent steps={steps} modelName={modelName} />
             <UseCaseOfModels useCaseData={useCaseData} titleAndDescriptionUseCase={titleAndDescriptionUseCase} />
@@ -100,7 +109,8 @@ function BackGroundRemove() {
                     </section>
                 </Container>
             </Box>
-            <CounterSection />
+            <FAQ faqContent={removeBackgroundFaqContent} />
+            {/* <CounterSection /> */}
 
         </>
 
