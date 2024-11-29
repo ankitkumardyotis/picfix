@@ -1,24 +1,17 @@
-import CarouselSlider from '@/components/carouselSlider'
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { Box, Container, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { Box, Container, Typography } from '@mui/material'
 import React from 'react'
-import { useRouter } from 'next/router'
 import ExplorePageContainer from '@/components/ExplorePageContainer';
 import UseCaseOfModels from '@/components/ExplorePageComponents/useCases/UseCaseOfModels';
 import HowItWorksComponent from '@/components/ExplorePageComponents/howItWorks/HowItWorksComponents';
 import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
+import FAQ from "@/components/faqComponent/Faq";
+import { aiHomeMakeoverFaqContent } from "@/data/FaqData";
 
 function Room() {
 
-    const beforeImageOne = '/assets/before-room-1.jpg'
-    const afterImageOne = '/assets/after-room-1.png'
-    const beforeImageTwo = '/assets/before-room-2.jpg'
-    const afterImageTwo = '/assets/after-room-2.png'
 
-    // for mui responsive for uploader in mobile view
-    const theme = useTheme();
-    const matches = useMediaQuery(theme.breakpoints.up('md'));
 
     const imagesPath = [
         '/assets/Design Room AI Model 1600X900.jpg',
@@ -28,7 +21,7 @@ function Room() {
     ]
 
     const heading = 'AI Home Makeover Instantly Redesign your Interior and Exterior'
-    const modelName="AI Home Makeover"
+    const modelName = "AI Home Makeover"
     const description = 'Embrace the future of home design with our AI-powered solution. Effortlessly reimagine your interior and exterior spaces, experiencing an instant transformation that brings beauty and style to every corner of your home.'
     const routePath = '/aiHomeMakeover/runModel'
     const buttonTwoText = 'Try AI Home Makeover'
@@ -51,11 +44,11 @@ function Room() {
     ];
     const titleAndDescriptionUseCase = [
         {
-          title: "Experience Instant Interior and Exterior Redesign with AI",
-          description: "Effortlessly reimagine your interior and exterior spaces, enjoying an instant transformation that enhances the beauty and style of every corner of your home."
+            title: "Experience Instant Interior and Exterior Redesign with AI",
+            description: "Effortlessly reimagine your interior and exterior spaces, enjoying an instant transformation that enhances the beauty and style of every corner of your home."
         }
-      ];
-      
+    ];
+
 
     const useCaseData = [
         {
@@ -80,15 +73,21 @@ function Room() {
         //     image: 'https://via.placeholder.com/400x300?text=Real+Estate'
         // }
     ];
-    
 
-    const router = useRouter();
+
+
     return (
         <>
             <>
+                <Seo
+                    title="AI Home Makeover - Redesign Your Home with AI Interior Design | Picfix.ai"
+                    description="Transform your home with Picfix.ai's AI Home Makeover. Our AI-powered tool helps you redesign rooms, plan interiors, and create custom designs for every space in your home. Perfect for home design, room makeovers, and interior decoration ideas."
+                    url="https://www.picfix.ai/aiHomeMakeover"
+                    keywords="AI home makeover, AI home design, AI interior design, AI exterior design, AI home makeover tool, AI home makeover online, AI home makeover service, AI home makeover app, AI home makeover tool online, AI home makeover tool online free"
+                />
                 <ExplorePageContainer imagesPath={imagesPath} heading={heading} description={description} buttonTwoText={buttonTwoText} routePath={routePath} />
                 <HowItWorksComponent steps={steps} modelName={modelName} />
-                <UseCaseOfModels useCaseData={useCaseData} titleAndDescriptionUseCase={titleAndDescriptionUseCase}/>
+                <UseCaseOfModels useCaseData={useCaseData} titleAndDescriptionUseCase={titleAndDescriptionUseCase} />
                 <Box className="outerContent" pt={8} pb={4}>
                     <Container sx={{ minHeight: '110vh' }}>
                         <section>
@@ -97,12 +96,12 @@ function Room() {
                                     Explore more AI tools
                                 </Typography>
                                 <AllModelsContainer />
-
                             </Container>
                         </section>
                     </Container>
                 </Box>
-                <CounterSection />
+                <FAQ faqContent={aiHomeMakeoverFaqContent} />
+                {/* <CounterSection /> */}
             </>
         </>
 
