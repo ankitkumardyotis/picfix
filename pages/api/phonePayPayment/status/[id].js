@@ -20,7 +20,6 @@ export default async function POST(req, res) {
     res.status(401).json({ message: "You are not Authorised" })
     return;
   }
-  
   const merchantId = process.env.MERCHANT_ID;
   const st =
     `/pg/v1/status/${merchantId}/${id}` +

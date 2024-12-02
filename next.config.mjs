@@ -27,7 +27,7 @@ const nextConfig = {
   //   ];
   // },
   images: {
-    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com"],
+    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com", "via.placeholder.com"],
     remotePatterns: [
       {
         protocol: "https",
