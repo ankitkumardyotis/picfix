@@ -10,6 +10,7 @@ import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
 import FAQ from '@/components/faqComponent/Faq';
 import { removeBackgroundFaqContent } from '@/data/FaqData';
+import Seo from '@/components/seo/Seo';
 
 function BackGroundRemove() {
     const router = useRouter();

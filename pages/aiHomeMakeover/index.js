@@ -8,6 +8,7 @@ import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
 import FAQ from "@/components/faqComponent/Faq";
 import { aiHomeMakeoverFaqContent } from "@/data/FaqData";
+import Seo from "@/components/seo/Seo";
 
 function Room() {
 

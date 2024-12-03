@@ -10,6 +10,7 @@ import CounterSection from '@/components/ExplorePageComponents/statistics/Counte
 import AllModelsContainer from '@/components/AllModelsContainer';
 import FAQ from '@/components/faqComponent/Faq';
 import { removeObjectFaqContent } from '@/data/FaqData';
+import Seo from '@/components/seo/Seo';
 
 
 function Fashion() {
