@@ -27,7 +27,21 @@ const nextConfig = {
   //   ];
   // },
   images: {
-    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com"],
+    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com", "via.placeholder.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "upcdn.io",
+        port: "",
+        pathname: "/**"
+      }
+    ],
   },
 
   api: {

@@ -24,6 +24,11 @@ import { signOut, useSession } from 'next-auth/react';
 import LoginIcon from '@mui/icons-material/Login';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
+import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
+import Image from "next/image";
+import newBadge from "../assets/new-badge.gif";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 
 export default function AccountMenu() {
@@ -68,6 +73,14 @@ export default function AccountMenu() {
             console.error('Error fetching plan data:', error);
         }
     };
+
+    const handleJWTlogout = async () => {
+        const response = await axios.get("/api/jwt/logout");
+        if (response.status === 200) {
+            Cookies.remove("access-token");
+            Cookies.remove("refresh-token");
+        }
+    }
 
     return (
         <React.Fragment>
@@ -205,6 +218,23 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     AI Home Makeover
                 </MenuItem>
+                {/* <MenuItem
+                    onClick={() => {
+                        router.push("/textToVideo");
+                        localStorage.setItem("path", "/textToVideo");
+                        // context.setFileUrl('')
+                    }}
+                >
+                    <ListItemIcon>
+                        <OndemandVideoIcon fontSize="small" />
+                    </ListItemIcon>
+                    Text to video
+                    <Image
+                        style={{ position: "absolute", right: "40px" }}
+                        src={newBadge}
+                        width={35}
+                    />
+                </MenuItem> */}
                 <MenuItem onClick={() => {
                     context.setFileUrl('')
                     router.push('/price'),
@@ -215,6 +245,17 @@ export default function AccountMenu() {
                         <PriceCheck fontSize="small" />
                     </ListItemIcon>
                     Pricing
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    context.setFileUrl('')
+                    router.push('/blog'),
+                        localStorage.setItem('path', '/blog')
+                    // context.setFileUrl('')
+                }}>
+                    <ListItemIcon>
+                        <PriceCheck fontSize="small" />
+                    </ListItemIcon>
+                    Blog
                 </MenuItem>
                 {/* <MenuItem onClick={() => {
                     router.push('/AIModels/removeObject')
@@ -232,14 +273,25 @@ export default function AccountMenu() {
                         Login
                     </MenuItem>
                 </>}
-                {session && <> <Divider />
-                    <MenuItem onClick={() => { signOut('/'), router.push('/'), localStorage.clear() }} >
-                        <ListItemIcon>
-                            <Logout fontSize="small" />
-                        </ListItemIcon>
-                        Logout
-                    </MenuItem>
-                </>}
+                {session && (
+                    <>
+                        {" "}
+                        <Divider />
+                        <MenuItem
+                            onClick={async () => {
+                                await handleJWTlogout();
+                                signOut("/");
+                                router.push("/");
+                                localStorage.clear();
+                            }}
+                        >
+                            <ListItemIcon>
+                                <Logout fontSize="small" />
+                            </ListItemIcon>
+                            Logout
+                        </MenuItem>
+                    </>
+                )}
             </Menu>
 
         </React.Fragment>

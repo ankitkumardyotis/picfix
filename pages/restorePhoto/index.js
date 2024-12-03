@@ -1,17 +1,15 @@
-import CarouselSlider from '@/components/carouselSlider';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { Box, Button, Card, CardActions, CardContent, Chip, Container, Grid, Paper, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { Box, Container, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import ExplorePageContainer from '@/components/ExplorePageContainer';
 import HowItWorksComponent from '@/components/ExplorePageComponents/howItWorks/HowItWorksComponents';
 import UseCaseOfModels from '@/components/ExplorePageComponents/useCases/UseCaseOfModels';
 import AllModelsContainer from '@/components/AllModelsContainer';
 import CounterSection from '@/components/ExplorePageComponents/statistics/CounterSection';
-import { socialComparisonImage } from '../../public/assets/girl camparison with blur and deblur 1600 X 900.jpg'
+import Faq from "@/components/faqComponent/Faq";
+import { restorePhotoFaqContent } from "@/data/FaqData";
+import Seo from "@/components/seo/Seo";
 function Restore() {
-    const theme = useTheme();
-    const matches = useMediaQuery(theme.breakpoints.up('md'));
     const imagesPath = [
         '/assets/girl camparison with blur and deblur 1600 X 900.jpg',
         '/assets/old pic child  restore photo 1600X900.jpg',
@@ -30,7 +28,6 @@ function Restore() {
     ];
 
 
-    const router = useRouter();
     const steps = [
         {
             id: 1,
@@ -63,7 +60,7 @@ function Restore() {
             content: 'Improve product photos to attract more customers and boost sales. Enhance clarity and appeal to create a better shopping experience online.',
             button: 'Explore E-commerce',
             image: '/assets/Restore-photo-ecommerce-image.png'
-            
+
         },
         {
             id: 'socialmedia',
@@ -75,8 +72,16 @@ function Restore() {
         }
     ];
 
+
+
     return (
         <>
+            <Seo
+                title="Restore Photo – Enhance & Restore Your Photos | Picfix.ai"
+                description=" Enhance the quality of your low-resolution or old photos with picfix.ai's AI photo enhancer. Upload your images and restore their clarity and resolution online."
+                url="https://www.picfix.ai/restorePhoto"
+                keywords="ai photo enhancer, photo enhancer, photo enhancer ai, enhance picture, enhancer image, restore old photos, restore old pictures, photo ai, ai photos, image high resolution, picture enhancer online free, photo download, image enhancer free, enhance photo online, restore old images"
+            />
             <ExplorePageContainer imagesPath={imagesPath} heading={heading} description={description} buttonTwoText={buttonTwoText} routePath={routePath} />
             <HowItWorksComponent steps={steps} modelName={modelName} />
             <UseCaseOfModels useCaseData={useCaseData} titleAndDescriptionUseCase={titleAndDescriptionUseCase} />
@@ -93,7 +98,8 @@ function Restore() {
                     </section>
                 </Container>
             </Box>
-            <CounterSection />
+            <Faq faqContent={restorePhotoFaqContent} />
+            {/* <CounterSection /> */}
 
         </>
     );
