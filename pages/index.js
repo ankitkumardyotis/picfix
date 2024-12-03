@@ -10,8 +10,7 @@ export default function Home({ open, setOpen }) {
   const { data: session } = useSession()
   const router = useRouter();
 
-
-
+  
   return (
     <>
 
