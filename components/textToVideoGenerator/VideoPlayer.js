@@ -117,20 +117,13 @@ function VideoPlayer({ generatedVideo, videoName }) {
     const video = videoRef.current;
     if (!video) return;
 
-    fetch(video.src)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = `${videoName}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      })
-      .catch((error) => console.error("Download failed:", error));
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = video.src;
+    a.download = `${videoName}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleSettingsClick = (event) => {
