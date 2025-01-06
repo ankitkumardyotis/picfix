@@ -78,6 +78,12 @@ function Footer() {
                         AI Home Makeover
                     </Typography>
                 </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/textToVideo'), context.setFileUrl("") }} >
+
+                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Text to Video
+                    </Typography>
+                </Box>
 
             </Grid>
             <Grid item xs={6} md={6} lg={3} >

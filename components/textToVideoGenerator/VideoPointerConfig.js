@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TextField,
   Box,
@@ -12,7 +12,8 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
 import { useSnackbar } from "notistack";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
@@ -24,6 +25,7 @@ import ImagePopupTabs from "./ImagePopupTabs";
 function VideoPointerConfig({
   index,
   dataPointer,
+  currentDataPointerAudio,
   handleSelectPointerChange,
   handleUpdateDataPointers,
   handleAppendDataPointer,
@@ -33,6 +35,8 @@ function VideoPointerConfig({
   handleUploadSearchedImage,
   handleStartLoading,
   handleStopLoading,
+  handleCurrentDataPointerAudio,
+  handlePlayPauseDataPointer,
 }) {
   const [targetDataPointer, setTargetDataPointer] = useState(
     dataPointer.dataPointer,
@@ -49,7 +53,6 @@ function VideoPointerConfig({
     openDeletePointerConfirmationDialogBox,
     setOpenDeletePointerConfirmationDialogBox,
   ] = useState(false);
-  const [dataPointerAudio, setDataPointerAudio] = useState();
   const [initialDataPointerText, setInitialDataPointerText] = useState();
   const [addImagePopupOpen, setAddImagePopupOpen] = useState(false);
   const mdBp = useMediaQuery("(min-width: 768px)");
@@ -86,17 +89,16 @@ function VideoPointerConfig({
       } else {
         const response = await nodeService.get(
           `/api/${userId}/${projectId}/getPointerAudio/${targetDataPointerId}`,
-          {
-            responseType: "arraybuffer",
-          },
         );
 
         if (response.status === 200) {
-          const audioBlob = new Blob([response.data], { type: "audio/mpeg" });
-          const url = URL.createObjectURL(audioBlob);
-          const audioObject = new Audio(url);
-          audioObject.play();
-          setDataPointerAudio(audioObject);
+          if (currentDataPointerAudio) {
+            currentDataPointerAudio.pause();
+            currentDataPointerAudio.currentTime = 0;
+            handleCurrentDataPointerAudio(null);
+          }
+          handleCurrentDataPointerAudio(response.data.audioUrl);
+          handlePlayPauseDataPointer(targetDataPointerId);
           enqueueSnackbar("Audio loaded successfully!", {
             anchorOrigin: { horizontal: "right", vertical: "bottom" },
             autoHideDuration: 3000,
@@ -132,10 +134,36 @@ function VideoPointerConfig({
   const handleContainerHovered = () => setIsContainerHovered(true);
   const handleContainerNotHovered = () => setIsContainerHovered(false);
 
+  useEffect(() => {
+    if (dataPointer.isAudioPlaying && currentDataPointerAudio) {
+      currentDataPointerAudio.play();
+      currentDataPointerAudio.addEventListener("ended", () => {
+        handleCurrentDataPointerAudio(null);
+        handlePlayPauseDataPointer(null);
+      });
+    }
+
+    return () => {
+      if (dataPointer.isAudioPlaying && currentDataPointerAudio) {
+        currentDataPointerAudio.pause();
+        currentDataPointerAudio.currentTime = 0;
+        currentDataPointerAudio.removeEventListener("ended", () => {
+          handleCurrentDataPointerAudio(null);
+          handlePlayPauseDataPointer(null);
+        });
+      }
+    };
+  }, [dataPointer.isAudioPlaying]);
+
   return (
     <>
       <FormControlLabel
-        sx={{ m: 0, mt: mdBp ? 2 : 1, flexGrow: 1 }}
+        sx={{
+          m: 0,
+          mt: mdBp ? 2 : 1,
+          flexGrow: 1,
+          visibility: dataPointer.dataPointer.length > 0 ? "visible" : "hidden",
+        }}
         control={<Checkbox sx={{ m: 0, p: 0 }} />}
         onChange={() => handleSelectPointerChange(index)}
         checked={dataPointer.generateMedia}
@@ -167,7 +195,7 @@ function VideoPointerConfig({
               index,
             );
             if (targetDataPointer !== initialDataPointerText)
-              setDataPointerAudio(null);
+              handleCurrentDataPointerAudio(null);
             setIsDataPointerEditing(false);
           }}
         />
@@ -234,10 +262,10 @@ function VideoPointerConfig({
             confirmationText="Do you really want to delete this video input?"
             handler={async () => {
               await handleDeleteDataPointer(dataPointer.id);
-              if (dataPointerAudio) {
-                dataPointerAudio.pause();
-                dataPointerAudio.currentTime = 0;
-                setDataPointerAudio(null);
+              if (currentDataPointerAudio) {
+                currentDataPointerAudio.pause();
+                currentDataPointerAudio.currentTime = 0;
+                handleCurrentDataPointerAudio(null);
               }
             }}
           />
@@ -262,9 +290,7 @@ function VideoPointerConfig({
       >
         <Tooltip
           title={
-            dataPointer.audioName.length > 0 || dataPointerAudio
-              ? "Play audio"
-              : "Generate audio"
+            dataPointer.audioName.length > 0 ? "Play audio" : "Generate audio"
           }
           arrow
         >
@@ -283,8 +309,12 @@ function VideoPointerConfig({
               },
             }}
           >
-            <VolumeUpIcon fontSize="small" />
-            {!(dataPointerAudio || dataPointer.audioName.length > 0) && (
+            {dataPointer.isAudioPlaying ? (
+              <PauseIcon fontSize="small" />
+            ) : (
+              <PlayArrowIcon fontSize="small" />
+            )}
+            {!dataPointer.audioName.length > 0 && (
               <Box
                 width="10px"
                 height="10px"

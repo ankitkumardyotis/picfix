@@ -12,7 +12,6 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import imageNotFound from "../../assets/image-not-found.png";
 import { useSnackbar } from "notistack";
-import { socket } from "@/socket";
 import Image from "next/image";
 
 function PreviewImage({
@@ -38,9 +37,9 @@ function PreviewImage({
       );
 
       if (response.status === 200) {
-        const { message, pointerImageBase64 } = response.data;
+        const { message, pointerImageUrl } = response.data;
         console.log(message);
-        setPointerImage(`data:image/jpeg;base64,${pointerImageBase64}`);
+        setPointerImage(pointerImageUrl);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -62,21 +61,6 @@ function PreviewImage({
   useEffect(() => {
     if (isPreviewImagePopupOpen) getCurrentImage();
   }, [isPreviewImagePopupOpen, imageName]);
-
-  useEffect(() => {
-    const onGenerateImage = ({ targetPointerId, targetPointerImageBase64 }) => {
-      if (dataPointerId === targetPointerId)
-        setPointerImage(`data:image/jpeg;base64,${targetPointerImageBase64}`);
-    };
-
-    if (session?.user.id && projectId)
-      socket.on("generated-image", onGenerateImage);
-
-    return () => {
-      if (session?.user.id && projectId)
-        socket.off("generated-image", onGenerateImage);
-    };
-  }, [session?.user.id]);
 
   return (
     <Dialog
