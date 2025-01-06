@@ -85,10 +85,6 @@ export default function AllModelsContainer() {
       </div>
 
       <div className="allCardContainer flex-container">
-
-        <div class="ribbon right">
-          <h6 style={{ fontSize: "28px" }}>Free</h6>
-          </div>
         {inView && (
           <Zoom
             in={checked}
@@ -99,6 +95,9 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleTextToVideo}
             >
+              {/* <div class="ribbon right">
+                <h6 style={{ fontSize: "28px" }}>Free</h6>
+              </div> */}
               <div className="card-img">
                 <Image
                   style={imageStyle}
