@@ -1,4 +1,5 @@
 import {
+  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -28,7 +29,10 @@ function Projects() {
   const [deletedProjectId, setDeletedProjectId] = useState();
   const [userPlan, setUserPlan] = useState("");
   const [userPlanStatus, setUserPlanStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("");
   const projectsRef = useRef(null);
+  const smBp = useMediaQuery("(min-width: 500px)");
   const mdBp = useMediaQuery("(min-width: 768px)");
   const { enqueueSnackbar } = useSnackbar();
 
@@ -87,8 +91,8 @@ function Projects() {
   const handleDeletedProjectId = (projectId) => setDeletedProjectId(projectId);
 
   const handleAddNewProject = async () => {
-    if (newProjectName === "" || newProjectDescription === "") {
-      alert("Please fill the input fields");
+    if (newProjectName === "") {
+      alert("Project name cannot be empty!");
       return;
     }
 
@@ -97,6 +101,9 @@ function Projects() {
       projectDescription: newProjectDescription,
     };
 
+    handleNewProjectDialogBoxClose();
+    setLoadingText("Creating project...");
+    setIsLoading(true);
     try {
       const response = await nodeService.post(
         `/api/${userId}/create`,
@@ -110,7 +117,6 @@ function Projects() {
           newProjectList.unshift(newProject);
           return newProjectList;
         });
-        handleNewProjectDialogBoxClose();
         router.push(`/textToVideo/projects/${newProject.id}`);
         enqueueSnackbar(response.data.message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
@@ -119,7 +125,6 @@ function Projects() {
         });
       }
     } catch (error) {
-      handleNewProjectDialogBoxClose();
       console.error(error.message);
       console.error(error.response.data.message);
       enqueueSnackbar(error.response.data.message, {
@@ -128,9 +133,14 @@ function Projects() {
         variant: "error",
       });
     }
+    setIsLoading(false);
+    setLoadingText("");
   };
 
   const handleDeleteProject = async () => {
+    handleDeleteProjectConfirmationDialogBoxClose();
+    setLoadingText("Deleting project...");
+    setIsLoading(true);
     try {
       const response = await nodeService.delete(
         `/api/${userId}/delete/${deletedProjectId}`,
@@ -139,7 +149,6 @@ function Projects() {
         setProjectList((prevProjectList) =>
           prevProjectList.filter((project) => project.id !== deletedProjectId),
         );
-        handleDeleteProjectConfirmationDialogBoxClose();
         enqueueSnackbar(response.data.message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -149,16 +158,19 @@ function Projects() {
     } catch (error) {
       console.error(error.message);
       console.error(error.response.data.message);
-      handleDeleteProjectConfirmationDialogBoxClose();
       enqueueSnackbar(error.response.data.message, {
         anchorOrigin: { horizontal: "right", vertical: "bottom" },
         autoHideDuration: 3000,
         variant: "error",
       });
     }
+    setIsLoading(false);
+    setLoadingText("");
   };
 
   async function getAllProjects() {
+    setLoadingText("Loading...");
+    setIsLoading(true);
     try {
       const response = await nodeService.get(`/api/${userId}/projects`);
 
@@ -173,6 +185,8 @@ function Projects() {
       });
       setProjectList([]);
     }
+    setIsLoading(false);
+    setLoadingText("");
   }
 
   useEffect(() => {
@@ -252,7 +266,7 @@ function Projects() {
                 content: '""',
                 position: "absolute",
                 top: 0,
-                right: 0,
+                left: 0,
                 width: "0%",
                 height: "2px",
                 background:
@@ -263,7 +277,7 @@ function Projects() {
                 content: '""',
                 position: "absolute",
                 top: 0,
-                right: 0,
+                left: 0,
                 width: "2px",
                 height: "0%",
                 background:
@@ -272,10 +286,10 @@ function Projects() {
               },
               "&:hover": {
                 "&::before": {
-                  width: "50%",
+                  width: "100%",
                 },
                 "&::after": {
-                  height: "50%",
+                  height: "100%",
                 },
               },
             }}
@@ -288,7 +302,7 @@ function Projects() {
                   content: '""',
                   position: "absolute",
                   bottom: 0,
-                  left: 0,
+                  right: 0,
                   width: "0%",
                   height: "2px",
                   background:
@@ -299,7 +313,7 @@ function Projects() {
                   content: '""',
                   position: "absolute",
                   bottom: 0,
-                  left: 0,
+                  right: 0,
                   width: "2px",
                   height: "0%",
                   background:
@@ -308,141 +322,70 @@ function Projects() {
                 },
                 "&:hover": {
                   "&::before": {
-                    width: "50%",
+                    width: "100%",
                   },
                   "&::after": {
-                    height: "50%",
+                    height: "100%",
                   },
                 },
               }}
             >
-              <Box
-                position="relative"
+              <Button
                 sx={{
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "0%",
-                    height: "2px",
-                    background:
-                      "linear-gradient(to right, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
-                    transition: "width 400ms 200ms",
-                  },
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "2px",
-                    height: "0%",
-                    background:
-                      "linear-gradient(to bottom, hsl(280, 100%, 50%), hsl(325, 100%, 50%))",
-                    transition: "height 400ms 200ms",
-                  },
+                  px: 2,
+                  py: 1,
+                  borderRadius: mdBp ? 4 : 3,
+                  textTransform: "none",
+                  backgroundColor: "#000",
                   "&:hover": {
-                    "&::before": {
-                      width: "70%",
-                    },
-                    "&::after": {
-                      height: "70%",
-                    },
+                    backgroundColor: "#000",
+                    boxShadow:
+                      "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
                   },
                 }}
+                variant="contained"
+                onClick={handleNewProjectDialogBoxOpen}
               >
-                <Box
-                  p={2}
-                  position="relative"
-                  sx={{
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: "0%",
-                      height: "2px",
-                      background:
-                        "linear-gradient(to right, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
-                      transition: "width 400ms 200ms",
-                    },
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: "2px",
-                      height: "0%",
-                      background:
-                        "linear-gradient(to bottom, hsl(325, 100%, 50%), hsl(280, 100%, 50%))",
-                      transition: "height 400ms 200ms",
-                    },
-                    "&:hover": {
-                      "&::before": {
-                        width: "70%",
-                      },
-                      "&::after": {
-                        height: "70%",
-                      },
-                    },
-                  }}
+                <Typography
+                  variant="h5"
+                  mr={1}
+                  whiteSpace="nowrap"
+                  fontSize={mdBp ? "1.5rem" : "1.3rem"}
                 >
-                  <Button
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: mdBp ? 4 : 3,
-                      textTransform: "none",
-                      backgroundColor: "#000",
-                      "&:hover": {
-                        backgroundColor: "#000",
-                        boxShadow:
-                          "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
-                      },
-                    }}
-                    variant="contained"
-                    onClick={handleNewProjectDialogBoxOpen}
-                  >
-                    <Typography
-                      variant="h5"
-                      mr={1}
-                      whiteSpace="nowrap"
-                      fontSize={mdBp ? "1.5rem" : "1.3rem"}
-                    >
-                      Generate new AI video
-                    </Typography>
-                    <AutoAwesomeIcon />
-                  </Button>
-                </Box>
-              </Box>
+                  Generate new AI video
+                </Typography>
+                <AutoAwesomeIcon />
+              </Button>
             </Box>
           </Box>
-          <Button
-            sx={{
-              px: 2,
-              py: 1,
-              ml: mdBp && 5,
-              borderRadius: mdBp ? 4 : 3,
-              textTransform: "none",
-              backgroundColor: "#000",
-              "&:hover": {
+          {projectList && projectList.length > 0 && (
+            <Button
+              sx={{
+                px: 2,
+                py: 1,
+                ml: mdBp && 5,
+                borderRadius: mdBp ? 4 : 3,
+                textTransform: "none",
                 backgroundColor: "#000",
-                boxShadow:
-                  "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
-              },
-            }}
-            variant="contained"
-            onClick={handleScrollToProjects}
-          >
-            <Typography
-              variant="h5"
-              mr={1}
-              whiteSpace="nowrap"
-              fontSize={mdBp ? "1.5rem" : "1.3rem"}
+                "&:hover": {
+                  backgroundColor: "#000",
+                  boxShadow:
+                    "2px 2px 5px hsl(325, 100%, 50%), -2px -2px 5px hsl(280, 100%, 50%)",
+                },
+              }}
+              variant="contained"
+              onClick={handleScrollToProjects}
             >
-              Explore Existing Projects
-            </Typography>
-          </Button>
+              <Typography
+                variant="h5"
+                mr={1}
+                whiteSpace="nowrap"
+                fontSize={mdBp ? "1.5rem" : "1.3rem"}
+              >
+                Explore Existing Projects
+              </Typography>
+            </Button>
+          )}
         </Box>
         <NewProjectDialogBox
           openNewProjectDialogBox={openNewProjectDialogBox}
@@ -454,17 +397,17 @@ function Projects() {
           handleAddNewProject={handleAddNewProject}
         />
       </Box>
-      <Box
-        ref={projectsRef}
-        minHeight="100vh"
-        display="flex"
-        alignItems="center"
-        flexDirection="column"
-      >
-        <Typography my={8} variant="h2" fontSize={mdBp ? "3rem" : "2rem"}>
-          Your Projects
-        </Typography>
-        {projectList && projectList.length > 0 && (
+      {projectList && projectList.length > 0 && (
+        <Box
+          ref={projectsRef}
+          minHeight="100vh"
+          display="flex"
+          alignItems="center"
+          flexDirection="column"
+        >
+          <Typography my={8} variant="h2" fontSize={mdBp ? "3rem" : "2rem"}>
+            Your Projects
+          </Typography>
           <List
             component="div"
             sx={{
@@ -497,8 +440,23 @@ function Projects() {
               handler={handleDeleteProject}
             />
           </List>
-        )}
-      </Box>
+        </Box>
+      )}
+      <Backdrop
+        sx={{
+          color: "#dee2e6",
+          zIndex: 10000,
+          backgroundColor: "rgba(0,0,0,.75)",
+        }}
+        open={isLoading}
+      >
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <Typography variant={smBp ? "h5" : "h6"} mb={8} textAlign="center">
+            {loadingText}
+          </Typography>
+          <div class="custom-loader-text-to-video"></div>
+        </Box>
+      </Backdrop>
     </Box>
   ) : (
     <Box
