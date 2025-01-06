@@ -218,7 +218,7 @@ export default function AccountMenu() {
                     </ListItemIcon>
                     AI Home Makeover
                 </MenuItem>
-                {/* <MenuItem
+                <MenuItem
                     onClick={() => {
                         router.push("/textToVideo");
                         localStorage.setItem("path", "/textToVideo");
@@ -234,7 +234,7 @@ export default function AccountMenu() {
                         src={newBadge}
                         width={35}
                     />
-                </MenuItem> */}
+                </MenuItem>
                 <MenuItem onClick={() => {
                     context.setFileUrl('')
                     router.push('/price'),
