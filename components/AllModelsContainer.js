@@ -86,10 +86,10 @@ export default function AllModelsContainer() {
 
       <div className="allCardContainer flex-container">
 
-        {/* <div class="ribbon right">
+        <div class="ribbon right">
           <h6 style={{ fontSize: "28px" }}>Free</h6>
-          </div> */}
-        {/* {inView && (
+          </div>
+        {inView && (
           <Zoom
             in={checked}
             style={{ transitionDelay: checked ? "100ms" : "0ms" }}
@@ -119,7 +119,7 @@ export default function AllModelsContainer() {
               </div>
             </div>
           </Zoom>
-        )} */}
+        )}
 
         {inView && (
           <Zoom
