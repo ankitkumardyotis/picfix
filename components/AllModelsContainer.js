@@ -85,7 +85,11 @@ export default function AllModelsContainer() {
       </div>
 
       <div className="allCardContainer flex-container">
-        {inView && (
+
+        {/* <div class="ribbon right">
+          <h6 style={{ fontSize: "28px" }}>Free</h6>
+          </div> */}
+        {/* {inView && (
           <Zoom
             in={checked}
             style={{ transitionDelay: checked ? "100ms" : "0ms" }}
@@ -95,9 +99,6 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleTextToVideo}
             >
-              {/* <div class="ribbon right">
-                <h6 style={{ fontSize: "28px" }}>Free</h6>
-              </div> */}
               <div className="card-img">
                 <Image
                   style={imageStyle}
@@ -108,17 +109,18 @@ export default function AllModelsContainer() {
                 />
               </div>
               <div className="card-info">
-              <h2>Text to Video</h2>
+                <h2>Text to Video</h2>
                 <br />
                 <p>
-                Transform text into engaging videos instantly. Explore various
+                  Transform text into engaging videos instantly. Explore various
                   styles for dynamic and creative storytelling. Enhance your
                   content effortlessly with Text to Video!
                 </p>
               </div>
             </div>
           </Zoom>
-        )}
+        )} */}
+
         {inView && (
           <Zoom
             in={checked}
