@@ -20,6 +20,7 @@ import { useInView } from "react-intersection-observer";
 
 function ImageSearchTab({
   dataPointerId,
+  dataPointerImageName,
   handlePreviewImagePopupOpen,
   handleUploadSearchedImage,
 }) {
@@ -246,13 +247,15 @@ function ImageSearchTab({
         <LinearProgress sx={{ width: "100%" }} />
       )}
       <Box mt={2} display="flex" justifyContent="end">
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handlePreviewImagePopupOpen}
-        >
-          Preview image
-        </Button>
+        {dataPointerImageName.length > 0 && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handlePreviewImagePopupOpen}
+          >
+            Preview image
+          </Button>
+        )}
         {selectedImageUrl && (
           <Button
             variant="contained"
@@ -263,9 +266,10 @@ function ImageSearchTab({
                 backgroundColor: "#000",
               },
             }}
-            onClick={() =>
-              handleUploadSearchedImage(selectedImageUrl, dataPointerId)
-            }
+            onClick={async () => {
+              await handleUploadSearchedImage(selectedImageUrl, dataPointerId);
+              handlePreviewImagePopupOpen();
+            }}
           >
             Upload
           </Button>

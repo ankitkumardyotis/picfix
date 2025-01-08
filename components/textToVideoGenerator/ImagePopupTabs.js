@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogActions,
@@ -20,12 +20,12 @@ function CustomTabPanel({ children, value, index }) {
 }
 
 function ImagePopupTabs({
-  imageName,
   addImagePopupOpen,
   projectId,
   dataPointerId,
   dataPointerText,
   dataPointerImageName,
+  websocketInstance,
   handleAddImagePopupClose,
   handleRegenerateImage,
   handleUploadNewImage,
@@ -41,6 +41,26 @@ function ImagePopupTabs({
 
   const handlePreviewImagePopupOpen = () => setIsPreviewImagePopupOpen(true);
   const handlePreviewImagePopupClose = () => setIsPreviewImagePopupOpen(false);
+
+  useEffect(() => {
+    if (websocketInstance) {
+      const messageHandler = (event) => {
+        const data = JSON.parse(event.data);
+
+        const { type, targetPointerId } = data;
+        if (
+          type === "generated-pointer-image" &&
+          targetPointerId === dataPointerId
+        )
+          handlePreviewImagePopupOpen();
+      };
+      websocketInstance.addEventListener("message", messageHandler);
+
+      return () => {
+        websocketInstance.removeEventListener("message", messageHandler);
+      };
+    }
+  }, [websocketInstance]);
 
   return (
     <Dialog
@@ -75,6 +95,7 @@ function ImagePopupTabs({
         <CustomTabPanel value={tabValue} index={1}>
           <ImageUploaderTab
             dataPointerId={dataPointerId}
+            dataPointerImageName={dataPointerImageName}
             handlePreviewImagePopupOpen={handlePreviewImagePopupOpen}
             handleUploadNewImage={handleUploadNewImage}
           />
@@ -82,12 +103,13 @@ function ImagePopupTabs({
         <CustomTabPanel value={tabValue} index={2}>
           <ImageSearchTab
             dataPointerId={dataPointerId}
+            dataPointerImageName={dataPointerImageName}
             handlePreviewImagePopupOpen={handlePreviewImagePopupOpen}
             handleUploadSearchedImage={handleUploadSearchedImage}
           />
         </CustomTabPanel>
         <PreviewImage
-          imageName={imageName}
+          imageName={dataPointerImageName}
           isPreviewImagePopupOpen={isPreviewImagePopupOpen}
           handlePreviewImagePopupClose={handlePreviewImagePopupClose}
           projectId={projectId}
