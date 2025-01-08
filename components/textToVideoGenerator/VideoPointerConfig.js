@@ -26,6 +26,7 @@ function VideoPointerConfig({
   index,
   dataPointer,
   currentDataPointerAudio,
+  websocketInstance,
   handleSelectPointerChange,
   handleUpdateDataPointers,
   handleAppendDataPointer,
@@ -370,12 +371,12 @@ function VideoPointerConfig({
           </IconButton>
         </Tooltip>
         <ImagePopupTabs
-          imageName={dataPointer.imageName}
           addImagePopupOpen={addImagePopupOpen}
           projectId={projectId}
           dataPointerId={dataPointer.id}
           dataPointerText={dataPointer.keywords}
           dataPointerImageName={dataPointer.imageName}
+          websocketInstance={websocketInstance}
           handleAddImagePopupClose={handleAddImagePopupClose}
           handleRegenerateImage={handleRegenerateImage}
           handleUploadNewImage={handleUploadNewImage}

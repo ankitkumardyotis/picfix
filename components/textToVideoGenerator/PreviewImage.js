@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import imageNotFound from "../../assets/image-not-found.png";
 import { useSnackbar } from "notistack";
 import Image from "next/image";
 
@@ -47,7 +46,6 @@ function PreviewImage({
         });
       }
     } catch (error) {
-      setPointerImage(imageNotFound);
       console.error(error.message);
       console.error(error.response.data.message);
       enqueueSnackbar(error.response.data.message, {

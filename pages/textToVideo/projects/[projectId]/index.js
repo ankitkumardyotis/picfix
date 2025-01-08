@@ -65,6 +65,7 @@ export default function Page() {
   const [dataPointersGenerated, setDataPointersGenerated] = useState(false);
   const [isVideoGenerated, setIsVideoGenerated] = useState(false);
   const [currentDataPointerAudio, setCurrentDataPointerAudio] = useState();
+  const [websocketInstance, setWebsocketInstance] = useState();
   const firstDividerRef = useRef(null);
   const secondDividerRef = useRef(null);
   const selectBarRef = useRef(null);
@@ -234,42 +235,64 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleUploadNewImage = async (event, targetDataPointerId) => {
-    handleStartLoading();
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = async () => {
-        try {
-          const response = await nodeService.post(
-            `/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
-            {
-              imageFileURL: reader.result,
-            },
-          );
+  const handleUploadNewImage = (event, targetDataPointerId) => {
+    return new Promise((resolve) => {
+      handleStartLoading();
+      const file = event.target.files[0];
 
-          if (response.status === 201) {
-            const { message } = response.data;
-            console.log(message);
-            enqueueSnackbar(message, {
+      if (file.size > 4000000) {
+        handleStopLoading();
+        enqueueSnackbar("Image is too large", {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "error",
+        });
+        resolve();
+        return;
+      }
+
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+          try {
+            const response = await nodeService.post(
+              `/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
+              {
+                imageFileURL: reader.result,
+              },
+            );
+
+            if (response.status === 201) {
+              const { message, targetPointerImageName } = response.data;
+              console.log(message);
+              setDataPointers((prevDataPointers) =>
+                prevDataPointers.map((dataPointer) =>
+                  dataPointer.id === targetDataPointerId
+                    ? { ...dataPointer, imageName: targetPointerImageName }
+                    : dataPointer,
+                ),
+              );
+              enqueueSnackbar(message, {
+                anchorOrigin: { horizontal: "right", vertical: "bottom" },
+                autoHideDuration: 3000,
+                variant: "success",
+              });
+            }
+          } catch (error) {
+            console.error(error.message);
+            console.error(error.response.data.message);
+            enqueueSnackbar(error.response.data.message, {
               anchorOrigin: { horizontal: "right", vertical: "bottom" },
               autoHideDuration: 3000,
-              variant: "success",
+              variant: "error",
             });
           }
-        } catch (error) {
-          console.error(error.message);
-          console.error(error.response.data.message);
-          enqueueSnackbar(error.response.data.message, {
-            anchorOrigin: { horizontal: "right", vertical: "bottom" },
-            autoHideDuration: 3000,
-            variant: "error",
-          });
-        }
-        handleStopLoading();
-      };
-    }
+          handleStopLoading();
+          resolve();
+        };
+      }
+    });
   };
 
   const handleUploadSearchedImage = async (selectedImageUrl, dataPointerId) => {
@@ -283,8 +306,15 @@ export default function Page() {
       );
 
       if (response.status === 201) {
-        const { message } = response.data;
+        const { message, targetPointerImageName } = response.data;
         console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === dataPointerId
+              ? { ...dataPointer, imageName: targetPointerImageName }
+              : dataPointer,
+          ),
+        );
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -826,7 +856,7 @@ export default function Page() {
     } else {
       if (session?.user.id && projectId) {
         const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_API_URL);
-
+        setWebsocketInstance(ws);
         ws.onopen = () => {
           console.log("WebSocket connection established");
           const accessToken = Cookies.get("access-token");
@@ -850,24 +880,18 @@ export default function Page() {
               onStartGeneratingDataPointers({
                 targetProjectId: data.targetProjectId,
               });
-            else if (type === "generated-data-pointers") {
+            else if (type === "generated-data-pointers")
               onGenerateDataPointers({
                 targetProjectId: data.targetProjectId,
                 pointers: data.pointers,
                 message,
               });
-            } else if (
-              type === "generating-pointer-image" ||
-              type === "uploading-pointer-image"
-            )
+            else if (type === "generating-pointer-image")
               onStartCreatingImage({
                 targetProjectId: data.targetProjectId,
                 creationType: data.creationType,
               });
-            else if (
-              type === "generated-pointer-image" ||
-              type === "uploaded-pointer-image"
-            )
+            else if (type === "generated-pointer-image")
               onCreateImage({
                 targetProjectId: data.targetProjectId,
                 targetPointerId: data.targetPointerId,
@@ -1302,6 +1326,7 @@ export default function Page() {
                             index={idx}
                             dataPointer={dataPointer}
                             currentDataPointerAudio={currentDataPointerAudio}
+                            websocketInstance={websocketInstance}
                             handleSelectPointerChange={
                               handleSelectPointerChange
                             }
