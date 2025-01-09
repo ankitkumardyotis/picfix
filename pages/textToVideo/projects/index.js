@@ -192,6 +192,11 @@ function Projects() {
   }
 
   const handleJWTGenerate = async () => {
+    const prevAccessToken = Cookies.get("access-token");
+    const prevRefreshToken = Cookies.get("refresh-token");
+
+    if(prevAccessToken && prevRefreshToken) return;
+
     const response = await axios.get("/api/jwt/getAccessToken");
 
     const { accessToken, refreshToken } = response.data;
