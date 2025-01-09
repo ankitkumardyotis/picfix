@@ -16,6 +16,8 @@ import ConfirmationDialogBox from "@/components/textToVideoGenerator/Confirmatio
 import { useSession } from "next-auth/react";
 import nodeService from "@/services/nodeService";
 import { useSnackbar } from "notistack";
+import Cookies from "js-cookie";
+import axios from "axios";
 
 function Projects() {
   const [projectList, setProjectList] = useState(null);
@@ -189,9 +191,23 @@ function Projects() {
     setLoadingText("");
   }
 
+  const handleJWTGenerate = async () => {
+    const response = await axios.get("/api/jwt/getAccessToken");
+
+    const { accessToken, refreshToken } = response.data;
+
+    Cookies.set("access-token", accessToken, { secure: true, expires: 7 });
+    Cookies.set("refresh-token", refreshToken, { secure: true, expires: 7 });
+  };
+
+  const getAllData = async () => {
+    await handleJWTGenerate();
+    await getAllProjects();
+  };
+
   useEffect(() => {
-    if (session?.user.id) getAllProjects();
-  }, [session?.user.id]);
+    if (session) getAllData();
+  }, [session]);
 
   if (
     userPlan?.remainingPoints === 0 ||
