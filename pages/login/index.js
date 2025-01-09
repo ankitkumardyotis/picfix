@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { useSession, signIn, signOut } from "next-auth/react"
 import { Router, useRouter } from 'next/router'
 import { CircularProgress } from '@mui/material'
@@ -9,8 +9,6 @@ import Image from 'next/image'
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import AppContext from '@/components/AppContext'
-import axios from "axios";
-import Cookies from "js-cookie";
 
 function Home() {
     const { data: session, status } = useSession()
@@ -53,19 +51,6 @@ function Home() {
             color: 'white',
         }
     }
-
-    const handleJWTGenerate = async () => {
-        const response = await axios.get("/api/jwt/getAccessToken");
-
-        const { accessToken, refreshToken } = response.data;
-
-        Cookies.set("access-token", accessToken, { secure: true, expires: 7 });
-        Cookies.set("refresh-token", refreshToken, { secure: true, expires: 7 });
-    };
-
-    useEffect(() => {
-        if (session) handleJWTGenerate();
-    }, [session]);
 
     return (
         <div style={{ width: '100vw', minHeight: '100vh', background: 'linear-gradient(59deg,#64d6cf,#f2d49f)', display: 'flex', justifyContent: 'center', alignItems: 'center', }} >

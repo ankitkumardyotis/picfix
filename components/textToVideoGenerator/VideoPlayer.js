@@ -117,20 +117,13 @@ function VideoPlayer({ generatedVideo, videoName }) {
     const video = videoRef.current;
     if (!video) return;
 
-    fetch(video.src)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = `${videoName}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      })
-      .catch((error) => console.error("Download failed:", error));
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = video.src;
+    a.download = `${videoName}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleSettingsClick = (event) => {
@@ -162,14 +155,30 @@ function VideoPlayer({ generatedVideo, videoName }) {
         position: "relative",
         maxWidth: "1000px",
         mx: "auto",
+        height: isFullscreen ? "100vh" : "auto",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "black",
       }}
     >
-      <Box position="relative" onClick={togglePlay}>
+      <Box 
+        position="relative" 
+        onClick={togglePlay}
+        sx={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "grey",
+        }}
+      >
         <video
           ref={videoRef}
           width="100%"
+          height={isFullscreen ? "auto" : "100%"}
           src={generatedVideo}
           onClick={(e) => e.stopPropagation()}
+          style={{ objectFit: "contain" }}
         >
           Your browser does not support the video tag.
         </video>
@@ -257,16 +266,28 @@ function VideoPlayer({ generatedVideo, videoName }) {
           </Box>
         </Box>
       </Box>
-      <Menu
-        anchorEl={anchorEl}
+      <Popover
         open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
         onClose={handleSettingsClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        container={document.body}
+        sx={{ zIndex: 99999 }}
       >
-        <MenuItem onClick={() => changePlaybackSpeed(0.5)}>0.5x Speed</MenuItem>
-        <MenuItem onClick={() => changePlaybackSpeed(1)}>1x Speed</MenuItem>
-        <MenuItem onClick={() => changePlaybackSpeed(1.5)}>1.5x Speed</MenuItem>
-        <MenuItem onClick={() => changePlaybackSpeed(2)}>2x Speed</MenuItem>
-      </Menu>
+        <Box sx={{ py: 1 }}>
+          <MenuItem onClick={() => changePlaybackSpeed(0.5)}>0.5x Speed</MenuItem>
+          <MenuItem onClick={() => changePlaybackSpeed(1)}>1x Speed</MenuItem>
+          <MenuItem onClick={() => changePlaybackSpeed(1.5)}>1.5x Speed</MenuItem>
+          <MenuItem onClick={() => changePlaybackSpeed(2)}>2x Speed</MenuItem>
+        </Box>
+      </Popover>
       <Popover
         open={Boolean(volumeAnchorEl)}
         anchorEl={volumeAnchorEl}

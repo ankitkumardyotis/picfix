@@ -32,6 +32,7 @@ import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerCo
 import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
+import Cookies from "js-cookie";
 
 export default function Page() {
   const router = useRouter();
@@ -63,6 +64,8 @@ export default function Page() {
   const [isSelectBarHidden, setIsSelectBarHidden] = useState(false);
   const [dataPointersGenerated, setDataPointersGenerated] = useState(false);
   const [isVideoGenerated, setIsVideoGenerated] = useState(false);
+  const [currentDataPointerAudio, setCurrentDataPointerAudio] = useState();
+  const [websocketInstance, setWebsocketInstance] = useState();
   const firstDividerRef = useRef(null);
   const secondDividerRef = useRef(null);
   const selectBarRef = useRef(null);
@@ -171,7 +174,11 @@ export default function Page() {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer, idx) =>
             idx === index
-              ? { ...updatedPointer, generateMedia: false }
+              ? {
+                  ...updatedPointer,
+                  generateMedia: false,
+                  isAudioPlaying: false,
+                }
               : dataPointer,
           ),
         );
@@ -194,6 +201,11 @@ export default function Page() {
   };
 
   const handleRegenerateImage = async (targetDataPointerId, prompt) => {
+    if (prompt === "") {
+      alert("Custom prompt cannot be empty!");
+      return;
+    }
+
     handleStartLoading();
     try {
       const response = await nodeService.post(
@@ -223,42 +235,64 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleUploadNewImage = async (event, targetDataPointerId) => {
-    handleStartLoading();
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = async () => {
-        try {
-          const response = await nodeService.post(
-            `/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
-            {
-              imageFileURL: reader.result,
-            },
-          );
+  const handleUploadNewImage = (event, targetDataPointerId) => {
+    return new Promise((resolve) => {
+      handleStartLoading();
+      const file = event.target.files[0];
 
-          if (response.status === 201) {
-            const { message } = response.data;
-            console.log(message);
-            enqueueSnackbar(message, {
+      if (file.size > 4000000) {
+        handleStopLoading();
+        enqueueSnackbar("Image is too large", {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "error",
+        });
+        resolve();
+        return;
+      }
+
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+          try {
+            const response = await nodeService.post(
+              `/api/${userId}/${projectId}/uploadImage/${targetDataPointerId}`,
+              {
+                imageFileURL: reader.result,
+              },
+            );
+
+            if (response.status === 201) {
+              const { message, targetPointerImageName } = response.data;
+              console.log(message);
+              setDataPointers((prevDataPointers) =>
+                prevDataPointers.map((dataPointer) =>
+                  dataPointer.id === targetDataPointerId
+                    ? { ...dataPointer, imageName: targetPointerImageName }
+                    : dataPointer,
+                ),
+              );
+              enqueueSnackbar(message, {
+                anchorOrigin: { horizontal: "right", vertical: "bottom" },
+                autoHideDuration: 3000,
+                variant: "success",
+              });
+            }
+          } catch (error) {
+            console.error(error.message);
+            console.error(error.response.data.message);
+            enqueueSnackbar(error.response.data.message, {
               anchorOrigin: { horizontal: "right", vertical: "bottom" },
               autoHideDuration: 3000,
-              variant: "success",
+              variant: "error",
             });
           }
-        } catch (error) {
-          console.error(error.message);
-          console.error(error.response.data.message);
-          enqueueSnackbar(error.response.data.message, {
-            anchorOrigin: { horizontal: "right", vertical: "bottom" },
-            autoHideDuration: 3000,
-            variant: "error",
-          });
-        }
-        handleStopLoading();
-      };
-    }
+          handleStopLoading();
+          resolve();
+        };
+      }
+    });
   };
 
   const handleUploadSearchedImage = async (selectedImageUrl, dataPointerId) => {
@@ -272,8 +306,15 @@ export default function Page() {
       );
 
       if (response.status === 201) {
-        const { message } = response.data;
+        const { message, targetPointerImageName } = response.data;
         console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === dataPointerId
+              ? { ...dataPointer, imageName: targetPointerImageName }
+              : dataPointer,
+          ),
+        );
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -332,18 +373,13 @@ export default function Page() {
     try {
       const response = await nodeService.get(
         `/api/${userId}/generatevideo/${projectId}`,
-        {
-          responseType: "arraybuffer",
-        },
       );
 
       if (response.status === 200) {
-        const videoArrayBuffer = response.data;
-        const videoBlob = new Blob([videoArrayBuffer], { type: "video/mp4" });
-        const videoUrl = URL.createObjectURL(videoBlob);
+        const { videoUrl, message } = response.data;
         setGeneratedVideo(videoUrl);
         setIsVideoGenerated(true);
-        enqueueSnackbar("Video generated successfully!", {
+        enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
           variant: "success",
@@ -401,6 +437,8 @@ export default function Page() {
             keywords: newDataPointer.keywords,
             imageName: "",
             audioName: "",
+            generateMedia: false,
+            isAudioPlaying: false,
           });
 
           return newPointers;
@@ -529,6 +567,7 @@ export default function Page() {
             ? allOrderedPointers.map((orderedPointer) => ({
                 ...orderedPointer,
                 generateMedia: false,
+                isAudioPlaying: false,
               }))
             : null,
         );
@@ -541,19 +580,12 @@ export default function Page() {
         try {
           const response = await nodeService.get(
             `/api/${userId}/getProjectVideo/${projectId}`,
-            {
-              responseType: "arraybuffer",
-            },
           );
 
           if (response.status === 200) {
-            const videoArrayBuffer = response.data;
-            const videoBlob = new Blob([videoArrayBuffer], {
-              type: "video/mp4",
-            });
-            const videoUrl = URL.createObjectURL(videoBlob);
+            const { videoUrl, message } = response.data;
             setGeneratedVideo(videoUrl);
-            enqueueSnackbar("Video fetched successfully!", {
+            enqueueSnackbar(message, {
               anchorOrigin: { horizontal: "right", vertical: "bottom" },
               autoHideDuration: 3000,
               variant: "success",
@@ -617,6 +649,11 @@ export default function Page() {
     );
   };
 
+  const handleCurrentDataPointerAudio = (audioUrl) => {
+    const audioObject = audioUrl ? new Audio(audioUrl) : null;
+    setCurrentDataPointerAudio(audioObject);
+  };
+
   const fetchUserPlan = async () => {
     try {
       const response = await fetch(`/api/getPlan?userId=${session?.user.id}`);
@@ -631,6 +668,16 @@ export default function Page() {
     }
   };
 
+  const handlePlayPauseDataPointer = (targetDataPointerId) => {
+    setDataPointers((prevDataPointers) =>
+      prevDataPointers.map((dataPointer) =>
+        dataPointer.id === targetDataPointerId
+          ? { ...dataPointer, isAudioPlaying: !dataPointer.isAudioPlaying }
+          : { ...dataPointer, isAudioPlaying: false },
+      ),
+    );
+  };
+
   useEffect(() => {
     const onStartGeneratingDataPointers = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
@@ -639,7 +686,11 @@ export default function Page() {
     const onGenerateDataPointers = ({ targetProjectId, pointers, message }) => {
       if (targetProjectId === projectId) {
         setDataPointers(() =>
-          pointers.map((pointer) => ({ ...pointer, generateMedia: false })),
+          pointers.map((pointer) => ({
+            ...pointer,
+            generateMedia: false,
+            isAudioPlaying: false,
+          })),
         );
         handleStopSocketLoading();
         setDataPointersGenerated(true);
@@ -715,14 +766,16 @@ export default function Page() {
       targetProjectId,
       targetPointerId,
       targetPointerAudioName,
-      targetPointerAudioBuffer,
       message,
     }) => {
       if (targetProjectId === projectId) {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
-              ? { ...dataPointer, audioName: targetPointerAudioName }
+              ? {
+                  ...dataPointer,
+                  audioName: targetPointerAudioName,
+                }
               : dataPointer,
           ),
         );
@@ -732,13 +785,6 @@ export default function Page() {
           autoHideDuration: 3000,
           variant: "success",
         });
-        const generatedPointerAudioBlob = new Blob([targetPointerAudioBuffer], {
-          type: "audio/mp3",
-        });
-        const generatedPointerAudio = new Audio(
-          URL.createObjectURL(generatedPointerAudioBlob),
-        );
-        generatedPointerAudio.play();
       }
     };
 
@@ -751,61 +797,143 @@ export default function Page() {
       });
     };
 
-    if (session?.user.id && projectId) {
-      socket.disconnect();
-      socket.connect();
-      socket.on("connect", getProjectData);
-
-      socket.on("generating-data-pointers", onStartGeneratingDataPointers);
-      socket.on("generated-data-pointers", onGenerateDataPointers);
-
-      socket.on("generating-media", onStartGeneratingMedia);
-      socket.on("generated-media", onGenerateMedia);
-
-      socket.on("generating-pointer-image", onStartCreatingImage);
-      socket.on("generated-pointer-image", onCreateImage);
-
-      socket.on("uploading-pointer-image", onStartCreatingImage);
-      socket.on("uploaded-pointer-image", onCreateImage);
-
-      socket.on("generating-pointer-audio", onStartGeneratingAudio);
-      socket.on("generated-pointer-audio", onGenerateAudio);
-
-      socket.on("error-generating-data-pointers", onErrorHandler);
-      socket.on("error-generating-media", onErrorHandler);
-      socket.on("error-generating-pointer-image", onErrorHandler);
-      socket.on("error-uploading-pointer-image", onErrorHandler);
-      socket.on("error-generating-pointer-audio", onErrorHandler);
-    }
-    return () => {
+    if (process.env.NODE_ENV === "development") {
       if (session?.user.id && projectId) {
-        socket.off("generating-data-pointers", onStartGeneratingDataPointers);
-        socket.off("generated-data-pointers", onGenerateDataPointers);
-
-        socket.off("generating-media", onStartGeneratingMedia);
-        socket.off("generated-media", onGenerateMedia);
-
-        socket.off("generating-pointer-image", onStartCreatingImage);
-        socket.off("generated-pointer-image", onCreateImage);
-
-        socket.off("uploading-pointer-image", onStartCreatingImage);
-        socket.off("uploaded-pointer-image", onCreateImage);
-
-        socket.off("generating-pointer-audio", onStartGeneratingAudio);
-        socket.off("generated-pointer-audio", onGenerateAudio);
-
-        socket.off("error-generating-data-pointers", onErrorHandler);
-        socket.off("error-generating-media", onErrorHandler);
-        socket.off("error-generating-pointer-image", onErrorHandler);
-        socket.off("error-uploading-pointer-image", onErrorHandler);
-        socket.off("error-generating-pointer-audio", onErrorHandler);
-
-        socket.off("connect", getProjectData);
-        socket.on("disconnect", getProjectData);
-        socket.off("disconnect", getProjectData);
         socket.disconnect();
+        socket.connect();
+        socket.on("connect", getProjectData);
+
+        socket.on("generating-data-pointers", onStartGeneratingDataPointers);
+        socket.on("generated-data-pointers", onGenerateDataPointers);
+
+        socket.on("generating-media", onStartGeneratingMedia);
+        socket.on("generated-media", onGenerateMedia);
+
+        socket.on("generating-pointer-image", onStartCreatingImage);
+        socket.on("generated-pointer-image", onCreateImage);
+
+        socket.on("uploading-pointer-image", onStartCreatingImage);
+        socket.on("uploaded-pointer-image", onCreateImage);
+
+        socket.on("generating-pointer-audio", onStartGeneratingAudio);
+        socket.on("generated-pointer-audio", onGenerateAudio);
+
+        socket.on("error-generating-data-pointers", onErrorHandler);
+        socket.on("error-generating-media", onErrorHandler);
+        socket.on("error-generating-pointer-image", onErrorHandler);
+        socket.on("error-uploading-pointer-image", onErrorHandler);
+        socket.on("error-generating-pointer-audio", onErrorHandler);
       }
-    };
+      return () => {
+        if (session?.user.id && projectId) {
+          socket.off("generating-data-pointers", onStartGeneratingDataPointers);
+          socket.off("generated-data-pointers", onGenerateDataPointers);
+
+          socket.off("generating-media", onStartGeneratingMedia);
+          socket.off("generated-media", onGenerateMedia);
+
+          socket.off("generating-pointer-image", onStartCreatingImage);
+          socket.off("generated-pointer-image", onCreateImage);
+
+          socket.off("uploading-pointer-image", onStartCreatingImage);
+          socket.off("uploaded-pointer-image", onCreateImage);
+
+          socket.off("generating-pointer-audio", onStartGeneratingAudio);
+          socket.off("generated-pointer-audio", onGenerateAudio);
+
+          socket.off("error-generating-data-pointers", onErrorHandler);
+          socket.off("error-generating-media", onErrorHandler);
+          socket.off("error-generating-pointer-image", onErrorHandler);
+          socket.off("error-uploading-pointer-image", onErrorHandler);
+          socket.off("error-generating-pointer-audio", onErrorHandler);
+
+          socket.off("connect", getProjectData);
+          socket.on("disconnect", getProjectData);
+          socket.off("disconnect", getProjectData);
+          socket.disconnect();
+        }
+      };
+    } else {
+      if (session?.user.id && projectId) {
+        const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_API_URL);
+        setWebsocketInstance(ws);
+        ws.onopen = () => {
+          console.log("WebSocket connection established");
+          const accessToken = Cookies.get("access-token");
+          ws.send(
+            JSON.stringify({
+              type: "authenticate",
+              accessToken,
+              userId: session.user.id,
+            }),
+          );
+        };
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          const { type, statusCode, message } = data;
+          if (statusCode === 401 || statusCode === 403) router.push("/login");
+          else if (type === "authorized") getProjectData();
+          else {
+            if (type === "generating-data-pointers")
+              onStartGeneratingDataPointers({
+                targetProjectId: data.targetProjectId,
+              });
+            else if (type === "generated-data-pointers")
+              onGenerateDataPointers({
+                targetProjectId: data.targetProjectId,
+                pointers: data.pointers,
+                message,
+              });
+            else if (type === "generating-pointer-image")
+              onStartCreatingImage({
+                targetProjectId: data.targetProjectId,
+                creationType: data.creationType,
+              });
+            else if (type === "generated-pointer-image")
+              onCreateImage({
+                targetProjectId: data.targetProjectId,
+                targetPointerId: data.targetPointerId,
+                targetPointerImageName: data.targetPointerImageName,
+                message,
+              });
+            else if (type === "generating-pointer-audio")
+              onStartGeneratingAudio({ targetProjectId: data.targetProjectId });
+            else if (type === "generated-pointer-audio")
+              onGenerateAudio({
+                targetProjectId: data.targetProjectId,
+                targetPointerId: data.targetPointerId,
+                targetPointerAudioName: data.targetPointerAudioName,
+                targetPointerAudioUrl: data.targetPointerAudioUrl,
+                message,
+              });
+            else if (type === "generating-media")
+              onStartGeneratingMedia({ targetProjectId: data.targetProjectId });
+            else if (type === "generated-media")
+              onGenerateMedia({
+                targetProjectId: data.targetProjectId,
+                updatedPointers: data.updatedPointers,
+                message,
+              });
+            else if (
+              type === "error-generating-data-pointers" ||
+              type === "error-generating-pointer-image" ||
+              type === "error-uploading-pointer-image" ||
+              type === "error-generating-pointer-audio" ||
+              type === "error-generating-media"
+            )
+              onErrorHandler({ message });
+          }
+        };
+
+        ws.onclose = () => {
+          console.log("WebSocket connection closed");
+        };
+
+        return () => ws.close();
+      }
+    }
   }, [router.query, session?.user.id]);
 
   useEffect(() => {
@@ -1197,6 +1325,8 @@ export default function Page() {
                           <VideoPointerConfig
                             index={idx}
                             dataPointer={dataPointer}
+                            currentDataPointerAudio={currentDataPointerAudio}
+                            websocketInstance={websocketInstance}
                             handleSelectPointerChange={
                               handleSelectPointerChange
                             }
@@ -1209,6 +1339,12 @@ export default function Page() {
                             handleUploadNewImage={handleUploadNewImage}
                             handleUploadSearchedImage={
                               handleUploadSearchedImage
+                            }
+                            handleCurrentDataPointerAudio={
+                              handleCurrentDataPointerAudio
+                            }
+                            handlePlayPauseDataPointer={
+                              handlePlayPauseDataPointer
                             }
                           />
                         </Box>

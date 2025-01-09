@@ -21,19 +21,21 @@ function ImageGenerationTab({
         maxRows={10}
         minRows={10}
         placeholder="Enter your custom prompt!"
-        sx={{ width: "100%", mt: 1, mb: 2, letterSpacing: 0.8, flexGrow: 1}}
+        sx={{ width: "100%", mt: 1, mb: 2, letterSpacing: 0.8, flexGrow: 1 }}
       />
       <Box display="flex" justifyContent="end">
-        <Button
-          variant="contained"
-          color="success"
-          sx={{
-            mr: 2
-          }}
-          onClick={handlePreviewImagePopupOpen}
-        >
-          Preview image
-        </Button>
+        {dataPointerImageName.length > 0 && (
+          <Button
+            variant="contained"
+            color="success"
+            sx={{
+              mr: 2,
+            }}
+            onClick={handlePreviewImagePopupOpen}
+          >
+            Preview image
+          </Button>
+        )}
         <Button
           variant="contained"
           sx={{

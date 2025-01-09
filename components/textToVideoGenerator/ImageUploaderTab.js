@@ -15,6 +15,7 @@ const VisuallyHiddenInput = styled("input")({
 
 function ImageUploaderTab({
   dataPointerId,
+  dataPointerImageName,
   handlePreviewImagePopupOpen,
   handleUploadNewImage,
 }) {
@@ -33,7 +34,10 @@ function ImageUploaderTab({
         <Button
           component="label"
           variant="contained"
-          onChange={(e) => handleUploadNewImage(e, dataPointerId)}
+          onChange={async (e) => {
+            await handleUploadNewImage(e, dataPointerId);
+            handlePreviewImagePopupOpen();
+          }}
           sx={{
             backgroundColor: "#000",
             borderRadius: ".3rem",
@@ -47,17 +51,19 @@ function ImageUploaderTab({
           <VisuallyHiddenInput type="file" accept=".png, .jpg, .jpeg" />
         </Button>
       </Box>
-      <Button
-        variant="contained"
-        color="success"
-        sx={{
-          mt: 2,
-          mx: "auto",
-        }}
-        onClick={handlePreviewImagePopupOpen}
-      >
-        Preview image
-      </Button>
+      {dataPointerImageName.length > 0 && (
+        <Button
+          variant="contained"
+          color="success"
+          sx={{
+            mt: 2,
+            mx: "auto",
+          }}
+          onClick={handlePreviewImagePopupOpen}
+        >
+          Preview image
+        </Button>
+      )}
     </>
   );
 }
