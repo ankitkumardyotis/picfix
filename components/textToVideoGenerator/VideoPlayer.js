@@ -30,11 +30,21 @@ function VideoPlayer({ generatedVideo, videoName }) {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [anchorEl, setAnchorEl] = useState(null);
   const [volumeAnchorEl, setVolumeAnchorEl] = useState(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [hoverTime, setHoverTime] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState(null);
   const videoRef = useRef();
   const playerRef = useRef();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -42,20 +52,27 @@ function VideoPlayer({ generatedVideo, videoName }) {
 
     const updateProgress = () => {
       setProgress((video.currentTime / video.duration) * 100);
+      setCurrentTime(video.currentTime);
     };
 
     const handlePlayPause = () => {
       setIsPlaying(!video.paused);
     };
 
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+    };
+
     video.addEventListener("timeupdate", updateProgress);
     video.addEventListener("play", handlePlayPause);
     video.addEventListener("pause", handlePlayPause);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
       video.removeEventListener("timeupdate", updateProgress);
       video.removeEventListener("play", handlePlayPause);
       video.removeEventListener("pause", handlePlayPause);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, []);
 
@@ -147,6 +164,21 @@ function VideoPlayer({ generatedVideo, videoName }) {
     setVolumeAnchorEl(null);
   };
 
+  const handleSliderHover = (event) => {
+    const sliderRect = event.currentTarget.getBoundingClientRect();
+    const offsetX = event.clientX - sliderRect.left;
+    const percentage = (offsetX / sliderRect.width) * 100;
+    const time = (percentage / 100) * duration;
+    
+    setHoverTime(time);
+    setHoverPosition(offsetX);
+  };
+
+  const handleSliderLeave = () => {
+    setHoverTime(null);
+    setHoverPosition(null);
+  };
+
   return (
     <Paper
       elevation={3}
@@ -209,12 +241,45 @@ function VideoPlayer({ generatedVideo, videoName }) {
         bgcolor="rgba(0, 0, 0, 0.6)"
         p={isMobile ? 0.5 : 1}
       >
-        <Slider
-          value={progress}
-          onChange={handleSeek}
-          sx={{ mb: 0.5 }}
-          size="small"
-        />
+        <Box display="flex" alignItems="center" mb={0.5} position="relative">
+          <Slider
+            value={progress}
+            onChange={handleSeek}
+            size="small"
+            sx={{ mx: 2 }}
+            onMouseMove={handleSliderHover}
+            onMouseLeave={handleSliderLeave}
+          />
+          {hoverTime !== null && (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: `${hoverPosition}px`,
+                bottom: '100%',
+                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                mb: 1,
+                zIndex: 1,
+              }}
+            >
+              {formatTime(hoverTime)}
+            </Box>
+          )}
+          <Box
+            sx={{
+              color: 'primary.main',
+              fontSize: '0.75rem',
+              minWidth: 85,
+              textAlign: 'right',
+              mr: 1
+            }}
+          >
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </Box>
+        </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center">
             <IconButton onClick={togglePlay} color="primary" size="small">
