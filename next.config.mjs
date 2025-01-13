@@ -27,6 +27,7 @@ const nextConfig = {
   //   ];
   // },
   images: {
+    unoptimized: true,
     domains: [
       "upcdn.io",
       "replicate.delivery",
