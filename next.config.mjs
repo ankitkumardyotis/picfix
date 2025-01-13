@@ -27,13 +27,13 @@ const nextConfig = {
   //   ];
   // },
   images: {
-    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com", "via.placeholder.com"],
-
     domains: [
       "upcdn.io",
       "replicate.delivery",
       "lh3.googleusercontent.com",
+      "via.placeholder.com",
       "text-to-video-generation-service.b0287d60c39debfb14d7e3f036436719.r2.cloudflarestorage.com",
+      "picfix.ai",
     ],
 
     remotePatterns: [
