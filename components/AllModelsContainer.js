@@ -95,9 +95,9 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleTextToVideo}
             >
-              {/* <div class="ribbon right">
+              <div class="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
-              </div> */}
+              </div>
               <div className="card-img">
                 <Image
                   style={imageStyle}
