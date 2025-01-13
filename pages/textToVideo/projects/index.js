@@ -214,13 +214,13 @@ function Projects() {
     if (session) getAllData();
   }, [session]);
 
-  if (
-    userPlan?.remainingPoints === 0 ||
-    userPlan?.remainingPoints < 0 ||
-    userPlan === null
-  ) {
-    return router.push("/price");
-  }
+  // if (
+  //   userPlan?.remainingPoints === 0 ||
+  //   userPlan?.remainingPoints < 0 ||
+  //   userPlan === null
+  // ) {
+  //   return router.push("/price");
+  // }
 
   return userPlanStatus ? (
     <Box
