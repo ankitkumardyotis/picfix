@@ -1018,13 +1018,13 @@ export default function Page() {
     }
   }, [isVideoGenerated]);
 
-  if (
-    userPlan?.remainingPoints === 0 ||
-    userPlan?.remainingPoints < 0 ||
-    userPlan === null
-  ) {
-    return router.push("/price");
-  }
+  // if (
+  //   userPlan?.remainingPoints === 0 ||
+  //   userPlan?.remainingPoints < 0 ||
+  //   userPlan === null
+  // ) {
+  //   return router.push("/price");
+  // }
 
   return userPlanStatus ? (
     <Box
