@@ -21,6 +21,9 @@ import {
   RadioGroup,
   Radio,
   CircularProgress,
+  Stepper,
+  Step,
+  StepLabel,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useRouter } from "next/router";
@@ -34,6 +37,8 @@ import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
 
+const steps = ["Generate pointers", "Generate media", "Generate video"];
+
 export default function Page() {
   const router = useRouter();
   const { projectId } = router.query;
@@ -41,6 +46,7 @@ export default function Page() {
   const { data: session, status } = useSession();
   const userId = session?.user.id;
 
+  const [activeStep, setActiveStep] = useState(0);
   const [projectName, setProjectName] = useState("");
   const [article, setArticle] = useState("");
   const [audioLanguage, setAudioLanguage] = useState("english");
@@ -58,14 +64,17 @@ export default function Page() {
   const [userPlan, setUserPlan] = useState("");
   const [userPlanStatus, setUserPlanStatus] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState();
-  const [scrolledToTop, setScrolledToTop] = useState(false);
+  const [stepperBarScrolledToTop, setStepperBarScrolledToTop] = useState(false);
+  const [selectBarScrolledToTop, setSelectBarScrolledToTop] = useState(false);
   const [isGenerateBtnHidden, setIsGenerateBtnHidden] = useState(false);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
+  const [isStepperBarHidden, setIsStepperBarHidden] = useState(false);
   const [isSelectBarHidden, setIsSelectBarHidden] = useState(false);
   const [dataPointersGenerated, setDataPointersGenerated] = useState(false);
   const [isVideoGenerated, setIsVideoGenerated] = useState(false);
   const [currentDataPointerAudio, setCurrentDataPointerAudio] = useState();
   const [websocketInstance, setWebsocketInstance] = useState();
+  const stepperBarRef = useRef(null);
   const firstDividerRef = useRef(null);
   const secondDividerRef = useRef(null);
   const selectBarRef = useRef(null);
@@ -129,6 +138,7 @@ export default function Page() {
       if (dataPointersResponse.status === 201) {
         setDataPointers(null);
         setGeneratedVideo(null);
+        setActiveStep(0);
         const { message } = dataPointersResponse.data;
         console.log(message);
         enqueueSnackbar(message, {
@@ -379,6 +389,7 @@ export default function Page() {
         const { videoUrl, message } = response.data;
         setGeneratedVideo(videoUrl);
         setIsVideoGenerated(true);
+        setActiveStep(3);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -571,6 +582,7 @@ export default function Page() {
               }))
             : null,
         );
+        if (allOrderedPointers.length > 0) setActiveStep(1);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -585,6 +597,7 @@ export default function Page() {
           if (response.status === 200) {
             const { videoUrl, message } = response.data;
             setGeneratedVideo(videoUrl);
+            if (videoUrl.length > 0) setActiveStep(3);
             enqueueSnackbar(message, {
               anchorOrigin: { horizontal: "right", vertical: "bottom" },
               autoHideDuration: 3000,
@@ -678,6 +691,14 @@ export default function Page() {
     );
   };
 
+  const handleAllMediaAvailable = () => {
+    for (let i = 0; i < dataPointers.length; i++) {
+      const curr = dataPointers[i];
+      if (curr.imageName === "" || curr.audioName === "") return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     const onStartGeneratingDataPointers = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
@@ -693,6 +714,7 @@ export default function Page() {
           })),
         );
         handleStopSocketLoading();
+        setActiveStep(1);
         setDataPointersGenerated(true);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
@@ -797,7 +819,7 @@ export default function Page() {
       });
     };
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "") {
       if (session?.user.id && projectId) {
         socket.disconnect();
         socket.connect();
@@ -947,10 +969,27 @@ export default function Page() {
       setIsGenerateBtnHidden(true);
 
     const handleScroll = () => {
+      if (stepperBarRef.current) {
+        const { top } = stepperBarRef.current.getBoundingClientRect();
+        if (top === 52) setStepperBarScrolledToTop(true);
+        else setStepperBarScrolledToTop(false);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [stepperBarRef.current]);
+
+  useEffect(() => {
+    const handleScroll = () => {
       if (selectBarRef.current) {
         const { top } = selectBarRef.current.getBoundingClientRect();
-        if (top === 52) setScrolledToTop(true);
-        else setScrolledToTop(false);
+        if (top === 146) setSelectBarScrolledToTop(true);
+        else setSelectBarScrolledToTop(false);
 
         if (
           window.innerWidth >= 320 &&
@@ -981,8 +1020,13 @@ export default function Page() {
           setScrolledToBottom(true);
         else setScrolledToBottom(false);
 
-        if (parseInt(bottom) < 200) setIsSelectBarHidden(true);
-        else setIsSelectBarHidden(false);
+        if (parseInt(bottom) < 300) {
+          setIsStepperBarHidden(true);
+          setIsSelectBarHidden(true);
+        } else {
+          setIsStepperBarHidden(false);
+          setIsSelectBarHidden(false);
+        }
       }
     };
 
@@ -1018,6 +1062,11 @@ export default function Page() {
     }
   }, [isVideoGenerated]);
 
+  useEffect(() => {
+    if (dataPointers)
+      handleAllMediaAvailable() ? setActiveStep(2) : setActiveStep(1);
+  }, [dataPointers]);
+
   // if (
   //   userPlan?.remainingPoints === 0 ||
   //   userPlan?.remainingPoints < 0 ||
@@ -1035,6 +1084,48 @@ export default function Page() {
       maxWidth="1300px"
       px={2}
     >
+      <Box
+        ref={stepperBarRef}
+        sx={{
+          boxShadow:
+            stepperBarScrolledToTop &&
+            !selectBarScrolledToTop &&
+            "0 4px 5px rgba(0,0,0,0.2)",
+          py: stepperBarScrolledToTop && 1,
+          mb: smBp ? 5 : 3,
+          mx: "auto",
+          position: "sticky",
+          top: 52,
+          width: stepperBarScrolledToTop ? (xsBp ? "300px" : "250px") : "100%",
+          backgroundColor: "#FFF",
+          backgroundImage:
+            stepperBarScrolledToTop &&
+            "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
+          zIndex: 1000,
+          borderRadius: 2,
+          borderTopLeftRadius: stepperBarScrolledToTop && 0,
+          borderTopRightRadius: stepperBarScrolledToTop && 0,
+          borderBottomRightRadius: selectBarScrolledToTop && 0,
+          borderBottomLeftRadius: selectBarScrolledToTop && 0,
+          visibility: isStepperBarHidden ? "hidden" : "visible",
+        }}
+      >
+        <Stepper
+          activeStep={activeStep}
+          alternativeLabel
+          sx={{
+            "& .MuiStepConnector-line": {
+              borderColor: stepperBarScrolledToTop && "#000",
+            },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
       <Typography
         variant="h5"
         textAlign="center"
@@ -1054,7 +1145,7 @@ export default function Page() {
           mb: smBp ? 5 : 3,
           display: "flex",
           flexDirection: "column",
-          height: smBp || "calc(100vh - 120px)",
+          height: smBp || "calc(100vh - 230px)",
         }}
       >
         <Box
@@ -1207,35 +1298,39 @@ export default function Page() {
           <Box
             ref={selectBarRef}
             sx={{
-              boxShadow: scrolledToTop && "0 2px 5px rgba(0,0,0,0.2)",
-              p: scrolledToTop && 1,
+              boxShadow: selectBarScrolledToTop && "0 4px 5px rgba(0,0,0,0.2)",
+              p: selectBarScrolledToTop && 1,
               mb: smBp ? 5 : 3,
               mx: "auto",
               position: "sticky",
-              top: 52,
-              width: scrolledToTop ? (xsBp ? "300px" : "200px") : "100%",
+              top: 146,
+              width: selectBarScrolledToTop
+                ? xsBp
+                  ? "300px"
+                  : "200px"
+                : "100%",
               backgroundColor: "#FFF",
               backgroundImage:
-                scrolledToTop &&
+                selectBarScrolledToTop &&
                 "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
               zIndex: 1000,
               borderRadius: 2,
-              borderTopLeftRadius: scrolledToTop && 0,
-              borderTopRightRadius: scrolledToTop && 0,
+              borderTopLeftRadius: selectBarScrolledToTop && 0,
+              borderTopRightRadius: selectBarScrolledToTop && 0,
               visibility: isSelectBarHidden ? "hidden" : "visible",
             }}
           >
             <FormGroup
               row
               sx={{
-                flexDirection: scrolledToTop
+                flexDirection: selectBarScrolledToTop
                   ? xsBp
                     ? "row"
                     : "column"
                   : smBp
                   ? "row"
                   : "column",
-                alignItems: scrolledToTop
+                alignItems: selectBarScrolledToTop
                   ? "center"
                   : smBp
                   ? "center"
@@ -1261,14 +1356,14 @@ export default function Page() {
                 borderRadius={2}
                 pl={2}
                 pb={1}
-                borderColor={scrolledToTop ? "#000" : "#42a5f5"}
-                mt={scrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
-                ml={scrolledToTop ? "auto" : smBp ? "auto" : "unset"}
+                borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
+                mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
+                ml={selectBarScrolledToTop ? "auto" : smBp ? "auto" : "unset"}
                 whiteSpace="nowrap"
               >
                 <legend
                   style={{
-                    color: scrolledToTop ? "#000" : "#42a5f5",
+                    color: selectBarScrolledToTop ? "#000" : "#42a5f5",
                   }}
                 >
                   &nbsp;Generate&nbsp;
@@ -1277,7 +1372,7 @@ export default function Page() {
                   checked={mediaTypes.audios}
                   onChange={() => handleMediaTypesChange("audios")}
                   control={
-                    scrolledToTop ? (
+                    selectBarScrolledToTop ? (
                       <Checkbox sx={{ m: 0, p: 0 }} />
                     ) : (
                       <Checkbox />
@@ -1289,7 +1384,7 @@ export default function Page() {
                   checked={mediaTypes.images}
                   onChange={() => handleMediaTypesChange("images")}
                   control={
-                    scrolledToTop ? (
+                    selectBarScrolledToTop ? (
                       <Checkbox sx={{ m: 0, p: 0 }} />
                     ) : (
                       <Checkbox />
