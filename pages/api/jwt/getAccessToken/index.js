@@ -7,7 +7,6 @@ export default async function GET(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
   const { user } = session;
-
   if (!session) {
     res
       .status(401)

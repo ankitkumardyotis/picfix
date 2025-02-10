@@ -819,7 +819,7 @@ export default function Page() {
       });
     };
 
-    if (process.env.NODE_ENV === "") {
+    if (process.env.NODE_ENV === "development") {
       if (session?.user.id && projectId) {
         socket.disconnect();
         socket.connect();
