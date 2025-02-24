@@ -82,6 +82,28 @@ function VideoPlayer({ generatedVideo, videoName }) {
     }
   }, [playbackSpeed]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFullscreenNow = !!document.fullscreenElement;
+      setIsFullscreen(isFullscreenNow);
+      // Close menus when fullscreen state changes
+      setAnchorEl(null);
+      setVolumeAnchorEl(null);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -100,26 +122,42 @@ function VideoPlayer({ generatedVideo, videoName }) {
   };
 
   const handleVolumeChange = (event, newValue) => {
-    const newVolume = newValue;
-    setVolume(newVolume / 100);
+    const newVolume = newValue / 100;
+    setVolume(newVolume);
     if (videoRef.current) {
-      videoRef.current.volume = newVolume / 100;
+      videoRef.current.volume = newVolume;
+      setIsMuted(newVolume === 0);
     }
   };
 
   const toggleFullscreen = () => {
     if (!playerRef.current) return;
 
-    if (!isFullscreen) {
+    // Close any open menus before toggling fullscreen
+    setAnchorEl(null);
+    setVolumeAnchorEl(null);
+
+    if (!document.fullscreenElement) {
       if (playerRef.current.requestFullscreen) {
         playerRef.current.requestFullscreen();
+      } else if (playerRef.current.webkitRequestFullscreen) {
+        playerRef.current.webkitRequestFullscreen();
+      } else if (playerRef.current.mozRequestFullScreen) {
+        playerRef.current.mozRequestFullScreen();
+      } else if (playerRef.current.msRequestFullscreen) {
+        playerRef.current.msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
       }
     }
-    setIsFullscreen(!isFullscreen);
   };
 
   const handleSeek = (event, newValue) => {
@@ -179,6 +217,56 @@ function VideoPlayer({ generatedVideo, videoName }) {
     setHoverPosition(null);
   };
 
+  // Add keyboard event handlers
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Ignore if user is typing in an input field
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (videoRef.current) {
+            videoRef.current.currentTime = Math.max(videoRef.current.currentTime - 5, 0);
+          }
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (videoRef.current) {
+            videoRef.current.currentTime = Math.min(videoRef.current.currentTime + 5, videoRef.current.duration);
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          const newVolumeUp = Math.min(volume + 0.1, 1);
+          handleVolumeChange(null, newVolumeUp * 100);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          const newVolumeDown = Math.max(volume - 0.1, 0);
+          handleVolumeChange(null, newVolumeDown * 100);
+          break;
+        case 'KeyM':
+          toggleMute();
+          break;
+        case 'KeyF':
+          toggleFullscreen();
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [volume, togglePlay, toggleMute, toggleFullscreen]);
+
   return (
     <Paper
       elevation={3}
@@ -211,6 +299,10 @@ function VideoPlayer({ generatedVideo, videoName }) {
           src={generatedVideo}
           onClick={(e) => e.stopPropagation()}
           style={{ objectFit: "contain" }}
+          onError={(e) => {
+            console.error('Video playback error:', e);
+            // Handle error appropriately - maybe show an error message to user
+          }}
         >
           Your browser does not support the video tag.
         </video>
@@ -343,8 +435,14 @@ function VideoPlayer({ generatedVideo, videoName }) {
           vertical: 'bottom',
           horizontal: 'center',
         }}
-        container={document.body}
-        sx={{ zIndex: 99999 }}
+        container={isFullscreen ? playerRef.current : document.body}
+        sx={{ 
+          zIndex: 99999,
+          '& .MuiPopover-paper': {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+          }
+        }}
       >
         <Box sx={{ py: 1 }}>
           <MenuItem onClick={() => changePlaybackSpeed(0.5)}>0.5x Speed</MenuItem>
