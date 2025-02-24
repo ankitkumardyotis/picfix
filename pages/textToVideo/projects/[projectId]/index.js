@@ -37,7 +37,7 @@ import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
-import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
+// import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate pointers", "Generate media", "Generate video"];
 
@@ -91,8 +91,8 @@ export default function Page() {
     dataPointers &&
     dataPointers.filter((dataPointer) => dataPointer.generateMedia);
 
-  const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
-  const [selectedMusic, setSelectedMusic] = useState(null);
+  // const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
+  // const [selectedMusic, setSelectedMusic] = useState(null);
 
   const handleAudioLanguageChange = (event) =>
     setAudioLanguage(event.target.value);
@@ -1520,10 +1520,10 @@ export default function Page() {
                 </Typography>
                 <AutoAwesomeIcon />
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setIsMusicSelectorOpen(true)}>
+              {/* <Button variant="contained" color="primary" onClick={() => setIsMusicSelectorOpen(true)}>
                 <Typography>Add music</Typography>
                 <MusicNoteIcon />
-              </Button>
+              </Button> */}
             </Box>
           </Box>
         </>
@@ -1551,11 +1551,11 @@ export default function Page() {
           />
         </>
       )}
-      <MusicSelector
+      {/* <MusicSelector
         open={isMusicSelectorOpen}
         handleClose={() => setIsMusicSelectorOpen(false)}
         onMusicSelect={handleMusicSelect}
-      />
+      /> */}
       <Backdrop
         sx={{
           color: "#dee2e6",
