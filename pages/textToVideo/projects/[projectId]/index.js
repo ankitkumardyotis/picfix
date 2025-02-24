@@ -31,11 +31,13 @@ import { useSession } from "next-auth/react";
 import nodeService from "@/services/nodeService";
 import { useSnackbar } from "notistack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerConfig";
 import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
+import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate pointers", "Generate media", "Generate video"];
 
@@ -88,6 +90,9 @@ export default function Page() {
   const selectedPointers =
     dataPointers &&
     dataPointers.filter((dataPointer) => dataPointer.generateMedia);
+
+  const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState(null);
 
   const handleAudioLanguageChange = (event) =>
     setAudioLanguage(event.target.value);
@@ -697,6 +702,15 @@ export default function Page() {
       if (curr.imageName === "" || curr.audioName === "") return false;
     }
     return true;
+  };
+
+  const handleMusicSelect = (sound) => {
+    setSelectedMusic(sound);
+    enqueueSnackbar("Music selected successfully!", {
+      anchorOrigin: { horizontal: "right", vertical: "bottom" },
+      autoHideDuration: 3000,
+      variant: "success",
+    });
   };
 
   useEffect(() => {
@@ -1473,6 +1487,10 @@ export default function Page() {
                 borderRadius: scrolledToBottom && 2,
                 borderBottomLeftRadius: scrolledToBottom && 0,
                 borderBottomRightRadius: scrolledToBottom && 0,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
               }}
             >
               <Button
@@ -1502,6 +1520,10 @@ export default function Page() {
                 </Typography>
                 <AutoAwesomeIcon />
               </Button>
+              <Button variant="contained" color="primary" onClick={() => setIsMusicSelectorOpen(true)}>
+                <Typography>Add music</Typography>
+                <MusicNoteIcon />
+              </Button>
             </Box>
           </Box>
         </>
@@ -1529,6 +1551,11 @@ export default function Page() {
           />
         </>
       )}
+      <MusicSelector
+        open={isMusicSelectorOpen}
+        handleClose={() => setIsMusicSelectorOpen(false)}
+        onMusicSelect={handleMusicSelect}
+      />
       <Backdrop
         sx={{
           color: "#dee2e6",
