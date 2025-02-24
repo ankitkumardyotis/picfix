@@ -28,7 +28,7 @@ function Home() {
                 if (pathdata) {
                     router.push(pathdata)
                 } else {
-                    router.push('/dashboard')
+                    router.push('/')
                 }
             }
         }
