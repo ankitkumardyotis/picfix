@@ -14,6 +14,8 @@ import ImageUploaderTab from "./ImageUploaderTab";
 import CloseIcon from "@mui/icons-material/Close";
 import PreviewImage from "./PreviewImage";
 import ImageSearchTab from "./ImageSearchTab";
+import VideoSearchTab from "./VideoSearchTab";
+import PreviewVideo from "./PreviewVideo";
 
 function CustomTabPanel({ children, value, index }) {
   return value === index && children;
@@ -25,22 +27,26 @@ function ImagePopupTabs({
   dataPointerId,
   dataPointerText,
   dataPointerImageName,
+  dataPointerVideoUrl,
   websocketInstance,
   handleAddImagePopupClose,
   handleRegenerateImage,
   handleUploadNewImage,
   handleUploadSearchedImage,
+  handleUploadSearchedVideo,
 }) {
   const [tabValue, setTabValue] = useState(0);
   const [isPreviewImagePopupOpen, setIsPreviewImagePopupOpen] = useState(false);
+  const [isPreviewVideoPopupOpen, setIsPreviewVideoPopupOpen] = useState(false);
   const smBp = useMediaQuery("(min-width: 500px)");
 
-  const handleTabValueChange = (event, newTabValue) => {
-    setTabValue(newTabValue);
-  };
+  const handleTabValueChange = (event, newTabValue) => setTabValue(newTabValue);
 
   const handlePreviewImagePopupOpen = () => setIsPreviewImagePopupOpen(true);
   const handlePreviewImagePopupClose = () => setIsPreviewImagePopupOpen(false);
+
+  const handlePreviewVideoPopupOpen = () => setIsPreviewVideoPopupOpen(true);
+  const handlePreviewVideoPopupClose = () => setIsPreviewVideoPopupOpen(false);
 
   useEffect(() => {
     if (websocketInstance) {
@@ -80,6 +86,7 @@ function ImagePopupTabs({
           <Tab label="Generate image" />
           <Tab label="Upload image" />
           <Tab label="Unsplash" />
+          <Tab label="Storyblocks" />
         </Tabs>
       </DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column" }}>
@@ -108,10 +115,25 @@ function ImagePopupTabs({
             handleUploadSearchedImage={handleUploadSearchedImage}
           />
         </CustomTabPanel>
+        <CustomTabPanel value={tabValue} index={3}>
+          <VideoSearchTab
+            dataPointerId={dataPointerId}
+            dataPointerVideoUrl={dataPointerVideoUrl}
+            handlePreviewVideoPopupOpen={handlePreviewVideoPopupOpen}
+            handleUploadSearchedVideo={handleUploadSearchedVideo}
+          />
+        </CustomTabPanel>
         <PreviewImage
           imageName={dataPointerImageName}
           isPreviewImagePopupOpen={isPreviewImagePopupOpen}
           handlePreviewImagePopupClose={handlePreviewImagePopupClose}
+          projectId={projectId}
+          dataPointerId={dataPointerId}
+        />
+        <PreviewVideo
+          videoUrl={dataPointerVideoUrl}
+          isPreviewVideoPopupOpen={isPreviewVideoPopupOpen}
+          handlePreviewVideoPopupClose={handlePreviewVideoPopupClose}
           projectId={projectId}
           dataPointerId={dataPointerId}
         />

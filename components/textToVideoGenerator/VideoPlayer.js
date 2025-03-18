@@ -3,7 +3,6 @@ import {
   Box,
   IconButton,
   Slider,
-  Menu,
   MenuItem,
   Button,
   Paper,

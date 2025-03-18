@@ -284,7 +284,11 @@ export default function Page() {
               setDataPointers((prevDataPointers) =>
                 prevDataPointers.map((dataPointer) =>
                   dataPointer.id === targetDataPointerId
-                    ? { ...dataPointer, imageName: targetPointerImageName }
+                    ? {
+                        ...dataPointer,
+                        imageName: targetPointerImageName,
+                        videoUrl: "",
+                      }
                     : dataPointer,
                 ),
               );
@@ -326,7 +330,53 @@ export default function Page() {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === dataPointerId
-              ? { ...dataPointer, imageName: targetPointerImageName }
+              ? {
+                  ...dataPointer,
+                  imageName: targetPointerImageName,
+                  videoUrl: "",
+                }
+              : dataPointer,
+          ),
+        );
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+    handleStopLoading();
+  };
+
+  const handleUploadSearchedVideo = async (selectedVideoUrl, dataPointerId) => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.post(
+        `/api/${userId}/${projectId}/uploadVideo/${dataPointerId}`,
+        {
+          videoUrl: selectedVideoUrl,
+        },
+      );
+
+      if (response.status === 201) {
+        const { message, targetPointerVideoUrl } = response.data;
+        console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === dataPointerId
+              ? {
+                  ...dataPointer,
+                  imageName: "",
+                  videoUrl: targetPointerVideoUrl,
+                }
               : dataPointer,
           ),
         );
@@ -382,7 +432,9 @@ export default function Page() {
   };
 
   const handleGenerateVideo = async () => {
-    handleStartLoading("Hang tight! We are generating your video...");
+    process.env.NODE_ENV === ""
+      ? handleStartLoading("Hang tight! We are generating your video...")
+      : handleStartLoading();
     setGeneratedVideo(null);
 
     try {
@@ -391,15 +443,25 @@ export default function Page() {
       );
 
       if (response.status === 200) {
-        const { videoUrl, message } = response.data;
-        setGeneratedVideo(videoUrl);
-        setIsVideoGenerated(true);
-        setActiveStep(3);
-        enqueueSnackbar(message, {
-          anchorOrigin: { horizontal: "right", vertical: "bottom" },
-          autoHideDuration: 3000,
-          variant: "success",
-        });
+        if (process.env.NODE_ENV === "") {
+          const { videoUrl, message } = response.data;
+          setGeneratedVideo(videoUrl);
+          setIsVideoGenerated(true);
+          setActiveStep(3);
+          enqueueSnackbar(message, {
+            anchorOrigin: { horizontal: "right", vertical: "bottom" },
+            autoHideDuration: 3000,
+            variant: "success",
+          });
+        } else {
+          const { message } = response.data;
+          console.log(message);
+          enqueueSnackbar(message, {
+            anchorOrigin: { horizontal: "right", vertical: "bottom" },
+            autoHideDuration: 3000,
+            variant: "success",
+          });
+        }
       }
     } catch (error) {
       console.error(error.message);
@@ -428,6 +490,7 @@ export default function Page() {
           variant: "error",
         });
     }
+    // if(process.env.NODE_ENV === "")
     handleStopLoading();
   };
 
@@ -452,6 +515,7 @@ export default function Page() {
             dataPointer: newDataPointer.dataPointer,
             keywords: newDataPointer.keywords,
             imageName: "",
+            videoUrl: "",
             audioName: "",
             generateMedia: false,
             isAudioPlaying: false,
@@ -699,7 +763,11 @@ export default function Page() {
   const handleAllMediaAvailable = () => {
     for (let i = 0; i < dataPointers.length; i++) {
       const curr = dataPointers[i];
-      if (curr.imageName === "" || curr.audioName === "") return false;
+      if (
+        (curr.imageName === "" && curr.videoUrl === "") ||
+        curr.audioName === ""
+      )
+        return false;
     }
     return true;
   };
@@ -781,7 +849,11 @@ export default function Page() {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
-              ? { ...dataPointer, imageName: targetPointerImageName }
+              ? {
+                  ...dataPointer,
+                  imageName: targetPointerImageName,
+                  videoUrl: "",
+                }
               : dataPointer,
           ),
         );
@@ -821,6 +893,25 @@ export default function Page() {
           autoHideDuration: 3000,
           variant: "success",
         });
+      }
+    };
+
+    const onStartGeneratingVideo = ({ targetProjectId }) => {
+      if (targetProjectId === projectId)
+        handleStartSocketLoading("Generating video...");
+    };
+
+    const onGenerateVideo = ({ targetProjectId, videoUrl, message }) => {
+      if (targetProjectId === projectId) {
+        setGeneratedVideo(videoUrl);
+        setIsVideoGenerated(true);
+        setActiveStep(3);
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+        handleStopSocketLoading();
       }
     };
 
@@ -952,12 +1043,21 @@ export default function Page() {
                 updatedPointers: data.updatedPointers,
                 message,
               });
+            else if (type === "generating-video")
+              onStartGeneratingVideo({ targetProjectId: data.targetProjectId });
+            else if (type === "generated-video")
+              onGenerateVideo({
+                targetProjectId: data.targetProjectId,
+                videoUrl: data.videoUrl,
+                message,
+              });
             else if (
               type === "error-generating-data-pointers" ||
               type === "error-generating-pointer-image" ||
               type === "error-uploading-pointer-image" ||
               type === "error-generating-pointer-audio" ||
-              type === "error-generating-media"
+              type === "error-generating-media" ||
+              type === "error-generating-video"
             )
               onErrorHandler({ message });
           }
@@ -967,7 +1067,14 @@ export default function Page() {
           console.log("WebSocket connection closed");
         };
 
-        return () => ws.close();
+        const handleCloseConnection = () => ws.close();
+
+        window.addEventListener("beforeunload", handleCloseConnection);
+
+        return () => {
+          handleCloseConnection();
+          window.removeEventListener("beforeunload", handleCloseConnection);
+        };
       }
     }
   }, [router.query, session?.user.id]);
@@ -1448,6 +1555,9 @@ export default function Page() {
                             handleUploadNewImage={handleUploadNewImage}
                             handleUploadSearchedImage={
                               handleUploadSearchedImage
+                            }
+                            handleUploadSearchedVideo={
+                              handleUploadSearchedVideo
                             }
                             handleCurrentDataPointerAudio={
                               handleCurrentDataPointerAudio
