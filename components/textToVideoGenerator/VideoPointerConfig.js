@@ -34,6 +34,7 @@ function VideoPointerConfig({
   handleRegenerateImage,
   handleUploadNewImage,
   handleUploadSearchedImage,
+  handleUploadSearchedVideo,
   handleStartLoading,
   handleStopLoading,
   handleCurrentDataPointerAudio,
@@ -100,11 +101,6 @@ function VideoPointerConfig({
           }
           handleCurrentDataPointerAudio(response.data.audioUrl);
           handlePlayPauseDataPointer(targetDataPointerId);
-          enqueueSnackbar("Audio loaded successfully!", {
-            anchorOrigin: { horizontal: "right", vertical: "bottom" },
-            autoHideDuration: 3000,
-            variant: "success",
-          });
         }
       }
     } catch (error) {
@@ -356,7 +352,7 @@ function VideoPointerConfig({
             }}
           >
             <ImageIcon fontSize="small" />
-            {dataPointer.imageName.length === 0 && (
+            {dataPointer.imageName.length === 0 && dataPointer.videoUrl.length === 0 && (
               <Box
                 width="10px"
                 height="10px"
@@ -376,11 +372,13 @@ function VideoPointerConfig({
           dataPointerId={dataPointer.id}
           dataPointerText={dataPointer.keywords}
           dataPointerImageName={dataPointer.imageName}
+          dataPointerVideoUrl={dataPointer.videoUrl}
           websocketInstance={websocketInstance}
           handleAddImagePopupClose={handleAddImagePopupClose}
           handleRegenerateImage={handleRegenerateImage}
           handleUploadNewImage={handleUploadNewImage}
           handleUploadSearchedImage={handleUploadSearchedImage}
+          handleUploadSearchedVideo={handleUploadSearchedVideo}
         />
       </Box>
     </>
