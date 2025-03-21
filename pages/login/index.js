@@ -33,7 +33,6 @@ function Home() {
             }
         }
     } else {
-        // Fallback behavior if localStorage is not available
         console.log('localStorage is not available in this environment');
     }
 

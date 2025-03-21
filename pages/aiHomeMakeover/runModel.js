@@ -348,7 +348,7 @@ function DesignRoom() {
                                         {fileUrl && (
                                             <div id="uploadedImage" className="originalImage" style={{ position: 'relative' }}>
                                                 <OriginalImage setOriginalImageHieght={setOriginalImageHieght} setOriginalImageWidth={setOriginalImageWidth} setIsImageLoaded={setIsImageLoaded} fileUrl={fileUrl} setFileUrl={setFileUrl} />
-                                                {!matches && <span class="before-after-badge">Before</span>}
+                                                {!matches && <span className="before-after-badge">Before</span>}
                                             </div>
                                         )}
                                         <div className="restoredImageContainer" style={fileUrl &&
@@ -423,7 +423,7 @@ function DesignRoom() {
                                                     width={400}
                                                     height={200}
                                                 />
-                                                {restoredPhoto && !matches && <span class="before-after-badge">After</span>}
+                                                {restoredPhoto && !matches && <span className="before-after-badge">After</span>}
                                             </div>
                                         </div>
                                         {restoreImageCompleteLoaded && restoredPhoto && (
