@@ -156,7 +156,7 @@ function ImageComponent(props) {
                                             setOriginalImageWidth={setOriginalImageWidth}
                                             setIsImageLoaded={setIsImageLoaded}
                                         />
-                                        {!matches && <span class="before-after-badge">Before</span>}
+                                        {!matches && <span className="before-after-badge">Before</span>}
                                     </div>
                                 )}
                                 <div style={{ border: "2px solid black", height: { height }, opacity: "4%" }}></div>
@@ -228,7 +228,7 @@ function ImageComponent(props) {
                                             width={400}
                                             height={200}
                                         />
-                                        {props.restoredPhoto && !matches && <span class="before-after-badge">After</span>}
+                                        {props.restoredPhoto && !matches && <span className="before-after-badge">After</span>}
                                     </div>
                                 </div>
 

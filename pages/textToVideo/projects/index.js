@@ -475,7 +475,7 @@ function Projects() {
           <Typography variant={smBp ? "h5" : "h6"} mb={8} textAlign="center">
             {loadingText}
           </Typography>
-          <div class="custom-loader-text-to-video"></div>
+          <div className="custom-loader-text-to-video"></div>
         </Box>
       </Backdrop>
     </Box>

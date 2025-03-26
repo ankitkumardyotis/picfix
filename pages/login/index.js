@@ -28,12 +28,11 @@ function Home() {
                 if (pathdata) {
                     router.push(pathdata)
                 } else {
-                    router.push('/dashboard')
+                    router.push('/')
                 }
             }
         }
     } else {
-        // Fallback behavior if localStorage is not available
         console.log('localStorage is not available in this environment');
     }
 

@@ -31,11 +31,13 @@ import { useSession } from "next-auth/react";
 import nodeService from "@/services/nodeService";
 import { useSnackbar } from "notistack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerConfig";
 import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
+import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate pointers", "Generate media", "Generate video"];
 
@@ -88,6 +90,9 @@ export default function Page() {
   const selectedPointers =
     dataPointers &&
     dataPointers.filter((dataPointer) => dataPointer.generateMedia);
+
+  const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState(null);
 
   const handleAudioLanguageChange = (event) =>
     setAudioLanguage(event.target.value);
@@ -185,10 +190,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer, idx) =>
             idx === index
               ? {
-                  ...updatedPointer,
-                  generateMedia: false,
-                  isAudioPlaying: false,
-                }
+                ...updatedPointer,
+                generateMedia: false,
+                isAudioPlaying: false,
+              }
               : dataPointer,
           ),
         );
@@ -436,7 +441,6 @@ export default function Page() {
       const response = await nodeService.get(
         `/api/${userId}/generatevideo/${projectId}`,
       );
-
       if (response.status === 200) {
         if (process.env.NODE_ENV === "development") {
           const { videoUrl, message } = response.data;
@@ -640,10 +644,10 @@ export default function Page() {
         setDataPointers(() =>
           allOrderedPointers.length > 0
             ? allOrderedPointers.map((orderedPointer) => ({
-                ...orderedPointer,
-                generateMedia: false,
-                isAudioPlaying: false,
-              }))
+              ...orderedPointer,
+              generateMedia: false,
+              isAudioPlaying: false,
+            }))
             : null,
         );
         if (allOrderedPointers.length > 0) setActiveStep(1);
@@ -767,6 +771,33 @@ export default function Page() {
     return true;
   };
 
+  const handleMusicSelect = async (bgMusicId) => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.get(`/api/${userId}/updateMusicInProject/${projectId}/${bgMusicId}`);
+
+      if (response.status === 200) {
+        const { message } = response.data;
+        console.log(message);
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+
+    handleStopLoading();
+  };
+
   useEffect(() => {
     const onStartGeneratingDataPointers = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
@@ -867,9 +898,9 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
               ? {
-                  ...dataPointer,
-                  audioName: targetPointerAudioName,
-                }
+                ...dataPointer,
+                audioName: targetPointerAudioName,
+              }
               : dataPointer,
           ),
         );
@@ -901,6 +932,25 @@ export default function Page() {
       }
     };
 
+    const onStartGeneratingBgMusic = ({ targetProjectId }) => {
+      if (targetProjectId === projectId)
+        handleStartSocketLoading("Generating background music...");
+    }
+    const onGenerateBgMusic = async ({ targetProjectId,
+      sound,
+      message }) => {
+      if (targetProjectId === projectId) {
+        handleStopSocketLoading();
+        setSelectedMusic(sound);
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+        await handleGenerateVideo();
+      }
+    }
+
     const onErrorHandler = ({ message }) => {
       handleStopSocketLoading();
       enqueueSnackbar(message, {
@@ -931,11 +981,15 @@ export default function Page() {
         socket.on("generating-pointer-audio", onStartGeneratingAudio);
         socket.on("generated-pointer-audio", onGenerateAudio);
 
+        socket.on("generating-bg-music", onStartGeneratingBgMusic);
+        socket.on("generated-bg-music", onGenerateBgMusic);
+
         socket.on("error-generating-data-pointers", onErrorHandler);
         socket.on("error-generating-media", onErrorHandler);
         socket.on("error-generating-pointer-image", onErrorHandler);
         socket.on("error-uploading-pointer-image", onErrorHandler);
         socket.on("error-generating-pointer-audio", onErrorHandler);
+        socket.on("error-generating-bg-music", onErrorHandler);
       }
       return () => {
         if (session?.user.id && projectId) {
@@ -954,11 +1008,15 @@ export default function Page() {
           socket.off("generating-pointer-audio", onStartGeneratingAudio);
           socket.off("generated-pointer-audio", onGenerateAudio);
 
+          socket.off("generating-bg-music", onStartGeneratingBgMusic);
+          socket.off("generated-bg-music", onGenerateBgMusic);
+
           socket.off("error-generating-data-pointers", onErrorHandler);
           socket.off("error-generating-media", onErrorHandler);
           socket.off("error-generating-pointer-image", onErrorHandler);
           socket.off("error-uploading-pointer-image", onErrorHandler);
           socket.off("error-generating-pointer-audio", onErrorHandler);
+          socket.off("error-generating-bg-music", onErrorHandler);
 
           socket.off("connect", getProjectData);
           socket.on("disconnect", getProjectData);
@@ -1173,14 +1231,6 @@ export default function Page() {
     if (dataPointers)
       handleAllMediaAvailable() ? setActiveStep(2) : setActiveStep(1);
   }, [dataPointers]);
-
-  // if (
-  //   userPlan?.remainingPoints === 0 ||
-  //   userPlan?.remainingPoints < 0 ||
-  //   userPlan === null
-  // ) {
-  //   return router.push("/price");
-  // }
 
   return userPlanStatus ? (
     <Box
@@ -1435,13 +1485,13 @@ export default function Page() {
                     ? "row"
                     : "column"
                   : smBp
-                  ? "row"
-                  : "column",
+                    ? "row"
+                    : "column",
                 alignItems: selectBarScrolledToTop
                   ? "center"
                   : smBp
-                  ? "center"
-                  : "flex-start",
+                    ? "center"
+                    : "flex-start",
               }}
             >
               <FormControlLabel
@@ -1583,35 +1633,71 @@ export default function Page() {
                 borderRadius: scrolledToBottom && 2,
                 borderBottomLeftRadius: scrolledToBottom && 0,
                 borderBottomRightRadius: scrolledToBottom && 0,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
               }}
             >
-              <Button
-                sx={{
-                  textTransform: "none",
-                  backgroundColor: scrolledToBottom && "#000",
-                  "&:hover": {
-                    backgroundColor: scrolledToBottom && "#000",
-                  },
-                }}
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (
-                    selectedPointers.length > 0 &&
-                    (mediaTypes.audios || mediaTypes.images)
-                  )
-                    handleGenerateMedia();
-                  else handleGenerateVideo();
-                }}
-              >
-                <Typography mr={1}>
-                  {selectedPointers.length > 0 &&
-                  (mediaTypes.audios || mediaTypes.images)
-                    ? "Generate media"
-                    : "Generate video"}
-                </Typography>
-                <AutoAwesomeIcon />
-              </Button>
+              {activeStep === 2 && !selectedMusic ? (
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsMusicSelectorOpen(true)}
+                  >
+                    <Typography textTransform="none">Select Music</Typography>
+                    <MusicNoteIcon sx={{ ml: 1 }} />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleMusicSelect(null)}
+                  >
+                    <Typography textTransform="none" >Continue With AI Music</Typography>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: scrolledToBottom && "#000",
+                      "&:hover": {
+                        backgroundColor: scrolledToBottom && "#000",
+                      }
+                    }}
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      if (
+                        selectedPointers.length > 0 &&
+                        (mediaTypes.audios || mediaTypes.images)
+                      )
+                        handleGenerateMedia();
+                      else handleGenerateVideo();
+                    }}
+                  >
+                    <Typography mr={1}>
+                      {selectedPointers.length > 0 &&
+                        (mediaTypes.audios || mediaTypes.images)
+                        ? "Generate media"
+                        : "Generate video"}
+                    </Typography>
+                    <AutoAwesomeIcon />
+                  </Button>
+                  {/* <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => setIsMusicSelectorOpen(true)}
+                  >
+                    <Typography textTransform="none">
+                      {selectedMusic ? "Change music" : "Add music"}
+                    </Typography>
+                    <MusicNoteIcon />
+                  </Button> */}
+                </>
+              )}
             </Box>
           </Box>
         </>
@@ -1639,6 +1725,12 @@ export default function Page() {
           />
         </>
       )}
+      <MusicSelector
+        open={isMusicSelectorOpen}
+        handleClose={() => setIsMusicSelectorOpen(false)}
+        handleMusicSelect={handleMusicSelect}
+        projectId={projectId}
+      />
       <Backdrop
         sx={{
           color: "#dee2e6",
@@ -1651,7 +1743,7 @@ export default function Page() {
           <Typography variant={smBp ? "h5" : "h6"} mb={8} textAlign="center">
             {loadingText || socketLoadingText}
           </Typography>
-          <div class="custom-loader-text-to-video"></div>
+          <div className="custom-loader-text-to-video"></div>
         </Box>
       </Backdrop>
     </Box>
@@ -1703,9 +1795,8 @@ const Textarea = styled(BaseTextareaAutosize)(
   color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
   background: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
   border: 1px solid ${theme.palette.mode === "dark" ? grey[700] : grey[200]};
-  box-shadow: 0px 2px 2px ${
-    theme.palette.mode === "dark" ? grey[900] : grey[50]
-  };
+  box-shadow: 0px 2px 2px ${theme.palette.mode === "dark" ? grey[900] : grey[50]
+    };
 
   &:hover {
     border-color: ${blue[400]};
@@ -1713,8 +1804,7 @@ const Textarea = styled(BaseTextareaAutosize)(
 
   &:focus {
     border-color: ${blue[400]};
-    box-shadow: 0 0 0 3px ${
-      theme.palette.mode === "dark" ? blue[600] : blue[200]
+    box-shadow: 0 0 0 3px ${theme.palette.mode === "dark" ? blue[600] : blue[200]
     };
   }
 
