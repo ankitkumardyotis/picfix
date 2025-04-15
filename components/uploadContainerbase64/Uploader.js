@@ -24,7 +24,7 @@ function Uploader({ handleImageUpload }) {
                 <input
                     id="imageUpload"
                     type="file"
-                    accept="image/*"
+                    accept="image/heic, image/heif, image/jpeg, image/png, image/jpg"
                     onChange={handleImageUpload}
                     style={styles.uploadInput}
                 />
