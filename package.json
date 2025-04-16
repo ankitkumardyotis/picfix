@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@types/node": "20.2.5",
-    "eslint": "^9.24.0"
+    "eslint": "^9.24.0",
+    "prisma": "^5.9.0"
   }
 }
