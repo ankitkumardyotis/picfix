@@ -105,10 +105,7 @@ export default function SubtitleConfig({
     setLoading(true);
     try {
       // API call to save subtitle configuration
-      await nodeService.post(`/api/updateSubtitleConfig/${projectId}/${dataPointerId}`, {
-        subtitleConfig
-      });
-      
+ 
       // Update parent component state
       if (handleSubtitleConfigUpdate) {
         handleSubtitleConfigUpdate(subtitleConfig);
