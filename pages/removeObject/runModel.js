@@ -142,38 +142,38 @@ export default function Home() {
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      // Check if the file is HEIF/HEIC
-      if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
-        try {
-          // Dynamically import heic2any only on the client side
-          const heic2any = (await import('heic2any')).default;
+    // if (file) {
+    //   // Check if the file is HEIF/HEIC
+    //   if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+    //     try {
+    //       // Dynamically import heic2any only on the client side
+    //       const heic2any = (await import('heic2any')).default;
 
-          // Convert HEIF/HEIC to JPG
-          const convertedBlob = await heic2any({
-            blob: file,
-            toType: "image/jpeg",
-            quality: 0.8
-          });
+    //       // Convert HEIF/HEIC to JPG
+    //       const convertedBlob = await heic2any({
+    //         blob: file,
+    //         toType: "image/jpeg",
+    //         quality: 0.8
+    //       });
 
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            setImageSrc(e.target.result);
-          };
-          reader.readAsDataURL(convertedBlob);
-        } catch (error) {
-          console.error('Error converting HEIF/HEIC image:', error);
-          setError('Failed to convert HEIF/HEIC image');
-        }
-      } else {
-        // Handle regular images
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setImageSrc(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+    //       const reader = new FileReader();
+    //       reader.onload = (e) => {
+    //         setImageSrc(e.target.result);
+    //       };
+    //       reader.readAsDataURL(convertedBlob);
+    //     } catch (error) {
+    //       console.error('Error converting HEIF/HEIC image:', error);
+    //       setError('Failed to convert HEIF/HEIC image');
+    //     }
+    //   } else {
+    //     // Handle regular images
+    //     const reader = new FileReader();
+    //     reader.onload = (e) => {
+    //       setImageSrc(e.target.result);
+    //     };
+    //     reader.readAsDataURL(file);
+    //   }
+    // }
   };
 
 
