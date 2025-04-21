@@ -24,6 +24,12 @@ import {
   Stepper,
   Step,
   StepLabel,
+  ButtonGroup,
+  Popper,
+  Grow,
+  Paper,
+  ClickAwayListener,
+  MenuList,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useRouter } from "next/router";
@@ -32,6 +38,7 @@ import nodeService from "@/services/nodeService";
 import { useSnackbar } from "notistack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerConfig";
 import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
@@ -40,6 +47,11 @@ import Cookies from "js-cookie";
 import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate pointers", "Generate media", "Generate video"];
+const generateBtns = [
+  "Select background music",
+  "Continue with AI music",
+  "Continue without AI music",
+];
 
 export default function Page() {
   const router = useRouter();
@@ -54,6 +66,7 @@ export default function Page() {
   const [audioLanguage, setAudioLanguage] = useState("english");
   const [pointersCount, setPointersCount] = useState(5);
   const [voiceType, setVoiceType] = useState("male");
+  const [projectBgMusicId, setProjectBgMusicId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocketLoading, setIsSocketLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
@@ -81,6 +94,9 @@ export default function Page() {
   const secondDividerRef = useRef(null);
   const selectBarRef = useRef(null);
   const generateBtnRef = useRef(null);
+  const [generateBtnGroupOpen, setGenerateBtnGroupOpen] = useState(false);
+  const generateBtnGroupRef = useRef(null);
+  const [selectedGenerateBtnIndex, setSelectedGenerateBtnIndex] = useState(0);
   const xsBp = useMediaQuery("(min-width: 335px)");
   const smBp = useMediaQuery("(min-width: 500px)");
   const mdBp = useMediaQuery("(min-width: 768px)");
@@ -92,7 +108,6 @@ export default function Page() {
     dataPointers.filter((dataPointer) => dataPointer.generateMedia);
 
   const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
-  const [selectedMusic, setSelectedMusic] = useState(null);
 
   const handleAudioLanguageChange = (event) =>
     setAudioLanguage(event.target.value);
@@ -190,10 +205,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer, idx) =>
             idx === index
               ? {
-                ...updatedPointer,
-                generateMedia: false,
-                isAudioPlaying: false,
-              }
+                  ...updatedPointer,
+                  generateMedia: false,
+                  isAudioPlaying: false,
+                }
               : dataPointer,
           ),
         );
@@ -431,7 +446,7 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleGenerateVideo = async () => {
+  const handleGenerateVideo = async (includeBgMusic) => {
     process.env.NODE_ENV === "development"
       ? handleStartLoading("Hang tight! We are generating your video...")
       : handleStartLoading();
@@ -439,10 +454,10 @@ export default function Page() {
 
     try {
       const response = await nodeService.get(
-        `/api/${userId}/generatevideo/${projectId}`,
+        `/api/${userId}/generatevideo/${projectId}?includeBgMusic=${includeBgMusic}`,
       );
       if (response.status === 200) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "") {
           const { videoUrl, message } = response.data;
           setGeneratedVideo(videoUrl);
           setIsVideoGenerated(true);
@@ -489,7 +504,6 @@ export default function Page() {
           variant: "error",
         });
     }
-    // if(process.env.NODE_ENV === "")
     handleStopLoading();
   };
 
@@ -634,6 +648,7 @@ export default function Page() {
           pointersCount,
           article,
           allOrderedPointers,
+          bgMusicId,
         } = response.data;
         console.log(message);
         setProjectName(projectName);
@@ -641,13 +656,14 @@ export default function Page() {
         setAudioLanguage(audioLanguage);
         setVoiceType(voiceType);
         setPointersCount(pointersCount);
+        setProjectBgMusicId(() => (bgMusicId.length > 0 ? bgMusicId : null));
         setDataPointers(() =>
           allOrderedPointers.length > 0
             ? allOrderedPointers.map((orderedPointer) => ({
-              ...orderedPointer,
-              generateMedia: false,
-              isAudioPlaying: false,
-            }))
+                ...orderedPointer,
+                generateMedia: false,
+                isAudioPlaying: false,
+              }))
             : null,
         );
         if (allOrderedPointers.length > 0) setActiveStep(1);
@@ -771,12 +787,14 @@ export default function Page() {
     return true;
   };
 
-  const handleMusicSelect = async (bgMusicId) => {
+  const handleProjectMusicSelect = async (bgMusicId) => {
     handleStartLoading();
     try {
-      const response = await nodeService.get(`/api/${userId}/updateMusicInProject/${projectId}/${bgMusicId}`);
+      const response = await nodeService.post(
+        `/api/${userId}/${projectId}/updateMusicInProject/${bgMusicId}`,
+      );
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         const { message } = response.data;
         console.log(message);
         enqueueSnackbar(message, {
@@ -796,6 +814,65 @@ export default function Page() {
     }
 
     handleStopLoading();
+  };
+
+  const handlePointerMusicSelect = async (targetDataPointerId, bgMusicId) => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.post(
+        `/api/${userId}/${projectId}/updateMusicInPointer/${targetDataPointerId}/${bgMusicId}`,
+      );
+
+      if (response.status === 201) {
+        const { message } = response.data;
+        console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === targetDataPointerId
+              ? { ...dataPointer, bgMusicPointerId: bgMusicId }
+              : dataPointer,
+          ),
+        );
+        enqueueSnackbar("Music selected successfully!", {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+    handleStopLoading();
+  };
+
+  const handleSelectedGenerateBtn = async () => {
+    if (selectedGenerateBtnIndex === 0) setIsMusicSelectorOpen(true);
+    else if (selectedGenerateBtnIndex === 1)
+      await handleProjectMusicSelect(null);
+    else if (selectedGenerateBtnIndex === 2) await handleGenerateVideo(false);
+  };
+
+  const handleGenerateBtnMenuItem = (event, index) => {
+    setSelectedGenerateBtnIndex(index);
+    setGenerateBtnGroupOpen(false);
+  };
+
+  const handleGenerateBtnGroupToggle = () =>
+    setGenerateBtnGroupOpen((prevOpen) => !prevOpen);
+
+  const handleGenerateBtnGroupClose = (event) => {
+    if (
+      generateBtnGroupRef.current &&
+      generateBtnGroupRef.current.contains(event.target)
+    )
+      return;
+    setGenerateBtnGroupOpen(false);
   };
 
   useEffect(() => {
@@ -898,9 +975,9 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
               ? {
-                ...dataPointer,
-                audioName: targetPointerAudioName,
-              }
+                  ...dataPointer,
+                  audioName: targetPointerAudioName,
+                }
               : dataPointer,
           ),
         );
@@ -935,21 +1012,18 @@ export default function Page() {
     const onStartGeneratingBgMusic = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
         handleStartSocketLoading("Generating background music...");
-    }
-    const onGenerateBgMusic = async ({ targetProjectId,
-      sound,
-      message }) => {
+    };
+    const onGenerateBgMusic = async ({ targetProjectId, message }) => {
       if (targetProjectId === projectId) {
         handleStopSocketLoading();
-        setSelectedMusic(sound);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
           variant: "success",
         });
-        await handleGenerateVideo();
+        await handleGenerateVideo(true);
       }
-    }
+    };
 
     const onErrorHandler = ({ message }) => {
       handleStopSocketLoading();
@@ -1095,13 +1169,23 @@ export default function Page() {
                 videoUrl: data.videoUrl,
                 message,
               });
+            else if (type === "generating-bg-music")
+              onStartGeneratingBgMusic({
+                targetProjectId: data.targetProjectId,
+              });
+            else if (type === "generated-bg-music")
+              onGenerateBgMusic({
+                targetProjectId: data.targetProjectId,
+                message,
+              });
             else if (
               type === "error-generating-data-pointers" ||
               type === "error-generating-pointer-image" ||
               type === "error-uploading-pointer-image" ||
               type === "error-generating-pointer-audio" ||
               type === "error-generating-media" ||
-              type === "error-generating-video"
+              type === "error-generating-video" ||
+              type === "error-generating-bg-music"
             )
               onErrorHandler({ message });
           }
@@ -1485,13 +1569,13 @@ export default function Page() {
                     ? "row"
                     : "column"
                   : smBp
-                    ? "row"
-                    : "column",
+                  ? "row"
+                  : "column",
                 alignItems: selectBarScrolledToTop
                   ? "center"
                   : smBp
-                    ? "center"
-                    : "flex-start",
+                  ? "center"
+                  : "flex-start",
               }}
             >
               <FormControlLabel
@@ -1601,6 +1685,7 @@ export default function Page() {
                             handlePlayPauseDataPointer={
                               handlePlayPauseDataPointer
                             }
+                            handlePointerMusicSelect={handlePointerMusicSelect}
                           />
                         </Box>
                       )}
@@ -1639,63 +1724,96 @@ export default function Page() {
                 gap: 2,
               }}
             >
-              {activeStep === 2 && !selectedMusic ? (
-                <>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setIsMusicSelectorOpen(true)}
-                  >
-                    <Typography textTransform="none">Select Music</Typography>
-                    <MusicNoteIcon sx={{ ml: 1 }} />
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleMusicSelect(null)}
-                  >
-                    <Typography textTransform="none" >Continue With AI Music</Typography>
-                  </Button>
-                </>
+              {selectedPointers &&
+              selectedPointers.length > 0 &&
+              (mediaTypes.audios || mediaTypes.images) ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    backgroundColor: scrolledToBottom && "#000",
+                    "&:hover": {
+                      backgroundColor: scrolledToBottom && "#000",
+                    },
+                  }}
+                  onClick={handleGenerateMedia}
+                >
+                  <Typography mr={1} textTransform="none">
+                    Generate media
+                  </Typography>
+                </Button>
               ) : (
                 <>
-                  <Button
-                    sx={{
-                      textTransform: "none",
-                      backgroundColor: scrolledToBottom && "#000",
-                      "&:hover": {
+                  <ButtonGroup variant="contained" ref={generateBtnGroupRef}>
+                    <Button
+                      onClick={handleSelectedGenerateBtn}
+                      sx={{
                         backgroundColor: scrolledToBottom && "#000",
-                      }
-                    }}
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      if (
-                        selectedPointers.length > 0 &&
-                        (mediaTypes.audios || mediaTypes.images)
-                      )
-                        handleGenerateMedia();
-                      else handleGenerateVideo();
-                    }}
+                        "&:hover": {
+                          backgroundColor: scrolledToBottom && "#000",
+                        },
+                      }}
+                    >
+                      {generateBtns[selectedGenerateBtnIndex]}
+                      {selectedGenerateBtnIndex === 0 && (
+                        <MusicNoteIcon sx={{ ml: 1 }} />
+                      )}
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={handleGenerateBtnGroupToggle}
+                      sx={{
+                        backgroundColor: scrolledToBottom && "#000",
+                        "&:hover": {
+                          backgroundColor: scrolledToBottom && "#000",
+                        },
+                      }}
+                    >
+                      <ArrowDropDownIcon />
+                    </Button>
+                  </ButtonGroup>
+                  <Popper
+                    sx={{ zIndex: 1 }}
+                    open={generateBtnGroupOpen}
+                    anchorEl={generateBtnGroupRef.current}
+                    transition
+                    disablePortal
                   >
-                    <Typography mr={1}>
-                      {selectedPointers.length > 0 &&
-                        (mediaTypes.audios || mediaTypes.images)
-                        ? "Generate media"
-                        : "Generate video"}
-                    </Typography>
-                    <AutoAwesomeIcon />
-                  </Button>
-                  {/* <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={() => setIsMusicSelectorOpen(true)}
-                  >
-                    <Typography textTransform="none">
-                      {selectedMusic ? "Change music" : "Add music"}
-                    </Typography>
-                    <MusicNoteIcon />
-                  </Button> */}
+                    {({ TransitionProps, placement }) => (
+                      <Grow
+                        {...TransitionProps}
+                        style={{
+                          transformOrigin:
+                            placement === "bottom"
+                              ? "center top"
+                              : "center bottom",
+                        }}
+                      >
+                        <Paper>
+                          <ClickAwayListener
+                            onClickAway={handleGenerateBtnGroupClose}
+                          >
+                            <MenuList id="split-button-menu" autoFocusItem>
+                              {generateBtns.map((option, index) => (
+                                <MenuItem
+                                  key={option}
+                                  selected={index === selectedGenerateBtnIndex}
+                                  onClick={(event) =>
+                                    handleGenerateBtnMenuItem(event, index)
+                                  }
+                                >
+                                  {option}
+                                  {index === 0 && (
+                                    <MusicNoteIcon sx={{ ml: 1 }} />
+                                  )}
+                                </MenuItem>
+                              ))}
+                            </MenuList>
+                          </ClickAwayListener>
+                        </Paper>
+                      </Grow>
+                    )}
+                  </Popper>
                 </>
               )}
             </Box>
@@ -1728,8 +1846,8 @@ export default function Page() {
       <MusicSelector
         open={isMusicSelectorOpen}
         handleClose={() => setIsMusicSelectorOpen(false)}
-        handleMusicSelect={handleMusicSelect}
-        projectId={projectId}
+        handleMusicSelect={handleProjectMusicSelect}
+        selectedBgMusicId={projectBgMusicId}
       />
       <Backdrop
         sx={{
@@ -1795,8 +1913,9 @@ const Textarea = styled(BaseTextareaAutosize)(
   color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
   background: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
   border: 1px solid ${theme.palette.mode === "dark" ? grey[700] : grey[200]};
-  box-shadow: 0px 2px 2px ${theme.palette.mode === "dark" ? grey[900] : grey[50]
-    };
+  box-shadow: 0px 2px 2px ${
+    theme.palette.mode === "dark" ? grey[900] : grey[50]
+  };
 
   &:hover {
     border-color: ${blue[400]};
@@ -1804,7 +1923,8 @@ const Textarea = styled(BaseTextareaAutosize)(
 
   &:focus {
     border-color: ${blue[400]};
-    box-shadow: 0 0 0 3px ${theme.palette.mode === "dark" ? blue[600] : blue[200]
+    box-shadow: 0 0 0 3px ${
+      theme.palette.mode === "dark" ? blue[600] : blue[200]
     };
   }
 
