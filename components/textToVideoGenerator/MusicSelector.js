@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -7,36 +7,39 @@ import {
   Button,
   List,
   ListItem,
-  ListItemText,
   CircularProgress,
   IconButton,
   Slider,
   Chip,
-} from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import CloseIcon from '@mui/icons-material/Close';
-import nodeService from '../../services/nodeService';
-import { useSnackbar } from 'notistack';
+} from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import CloseIcon from "@mui/icons-material/Close";
+import nodeService from "../../services/nodeService";
 
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: '70%', md: '50%' },
-  maxHeight: '80vh',
-  bgcolor: 'background.paper',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: { xs: "90%", sm: "70%", md: "50%" },
+  maxHeight: "80vh",
+  bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
   borderRadius: 2,
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column'
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
 };
 
-export default function MusicSelector({ open, handleClose, projectId, dataPointerId, handleMusicSelect }) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function MusicSelector({
+  open,
+  handleClose,
+  handleMusicSelect,
+  selectedBgMusicId,
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [allMusic, setAllMusic] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +48,6 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
 
   // Fetch all music when component mounts
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
       setAllMusic(response.data.music || []);
       setSearchResults(response.data.music || []);
     } catch (error) {
-      console.error('Error fetching initial music:', error);
+      console.error("Error fetching initial music:", error);
     }
     setIsLoading(false);
   };
@@ -96,14 +98,14 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
         setAudioPlayer(null);
       };
 
-      audioPlayer.addEventListener('timeupdate', timeUpdate);
-      audioPlayer.addEventListener('loadeddata', loadedData);
-      audioPlayer.addEventListener('ended', ended);
+      audioPlayer.addEventListener("timeupdate", timeUpdate);
+      audioPlayer.addEventListener("loadeddata", loadedData);
+      audioPlayer.addEventListener("ended", ended);
 
       return () => {
-        audioPlayer.removeEventListener('timeupdate', timeUpdate);
-        audioPlayer.removeEventListener('loadeddata', loadedData);
-        audioPlayer.removeEventListener('ended', ended);
+        audioPlayer.removeEventListener("timeupdate", timeUpdate);
+        audioPlayer.removeEventListener("loadeddata", loadedData);
+        audioPlayer.removeEventListener("ended", ended);
       };
     }
   }, [audioPlayer, isDragging]);
@@ -119,12 +121,14 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
       const queryLower = searchQuery.toLowerCase();
 
       // Check if query matches any keywords
-      const keywordMatch = music.bgMusicKeywords?.some(keyword =>
-        keyword.toLowerCase().includes(queryLower)
+      const keywordMatch = music.bgMusicKeywords?.some((keyword) =>
+        keyword.toLowerCase().includes(queryLower),
       );
 
       // Check if query matches in prompt
-      const promptMatch = music.bgmusicprompt?.toLowerCase().includes(queryLower);
+      const promptMatch = music.bgmusicprompt
+        ?.toLowerCase()
+        .includes(queryLower);
 
       return keywordMatch || promptMatch;
     });
@@ -157,14 +161,14 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
         const musicUrl = response.data.musicUrl;
 
         if (!musicUrl) {
-          console.error('No music URL received');
+          console.error("No music URL received");
           return;
         }
 
         const newAudioPlayer = new Audio(musicUrl);
 
         // Set up duration once the metadata is loaded
-        newAudioPlayer.addEventListener('loadedmetadata', () => {
+        newAudioPlayer.addEventListener("loadedmetadata", () => {
           setDuration(newAudioPlayer.duration);
         });
 
@@ -173,7 +177,7 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
         setCurrentlyPlaying(id);
         setCurrentTime(0);
       } catch (error) {
-        console.error('Error playing music:', error);
+        console.error("Error playing music:", error);
       }
     }
   };
@@ -196,10 +200,8 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
-
-
 
   return (
     <Modal
@@ -208,7 +210,12 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
       aria-labelledby="music-selector-modal"
     >
       <Box sx={style}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
           <Typography variant="h6" component="h2">
             Select Background Music
           </Typography>
@@ -227,12 +234,14 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
           />
         </Box>
 
-        <Box sx={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          pr: 1
-        }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+            pr: 1,
+          }}
+        >
           {isLoading ? (
             <Box display="flex" justifyContent="center" p={3}>
               <CircularProgress />
@@ -241,45 +250,55 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
             <>
               {searchResults.length === 0 ? (
                 <Box textAlign="center" py={3}>
-                  <Typography variant="body1">No music found matching your search.</Typography>
+                  <Typography variant="body1">
+                    No music found matching your search.
+                  </Typography>
                 </Box>
               ) : (
-                <List sx={{ width: '100%' }}>
+                <List sx={{ width: "100%" }}>
                   {searchResults.slice(0, 10).map((sound) => (
                     <ListItem
                       key={sound.bgMusicId}
                       sx={{
-                        border: '1px solid #e0e0e0',
+                        border: "1px solid #e0e0e0",
                         borderRadius: 1,
                         mb: 1,
-                        '&:hover': {
-                          backgroundColor: '#f5f5f5',
+                        "&:hover": {
+                          backgroundColor: "#f5f5f5",
                         },
                         py: 2,
-                        width: '100%'
+                        width: "100%",
                       }}
                     >
-                      <Box display="flex" alignItems="flex-start" width="100%" gap={2}>
+                      <Box
+                        display="flex"
+                        alignItems="flex-start"
+                        width="100%"
+                        gap={2}
+                      >
                         <IconButton
                           edge="start"
                           onClick={() => handlePlayPause(sound.bgMusicId)}
                           sx={{ flexShrink: 0 }}
                         >
-                          {currentlyPlaying === sound.bgMusicId ? <PauseIcon /> : <PlayArrowIcon />}
+                          {currentlyPlaying === sound.bgMusicId ? (
+                            <PauseIcon />
+                          ) : (
+                            <PlayArrowIcon />
+                          )}
                         </IconButton>
-
                         <Box flexGrow={1} minWidth={0}>
                           <Typography
                             variant="body1"
                             sx={{
                               mb: 1,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
                               WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              lineHeight: '1.2em',
-                              maxHeight: '2.4em'
+                              WebkitBoxOrient: "vertical",
+                              lineHeight: "1.2em",
+                              maxHeight: "2.4em",
                             }}
                           >
                             {sound.bgmusicprompt}
@@ -290,7 +309,7 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
                             flexWrap="wrap"
                             gap={0.5}
                             mb={1}
-                            sx={{ maxWidth: '100%' }}
+                            sx={{ maxWidth: "100%" }}
                           >
                             {sound.bgMusicKeywords?.map((keyword, idx) => (
                               <Chip
@@ -300,21 +319,28 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
                                 variant="outlined"
                                 onClick={() => setSearchQuery(keyword)}
                                 sx={{
-                                  maxWidth: '150px',
-                                  '& .MuiChip-label': {
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
-                                  }
+                                  maxWidth: "150px",
+                                  "& .MuiChip-label": {
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  },
                                 }}
                               />
                             ))}
                           </Box>
-
-                          <Box display="flex" alignItems="center" gap={1} width="100%">
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            gap={1}
+                            width="100%"
+                          >
                             {currentlyPlaying === sound.bgMusicId ? (
                               <>
-                                <Typography variant="caption" sx={{ minWidth: '45px' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ minWidth: "45px" }}
+                                >
                                   {formatTime(currentTime)}
                                 </Typography>
                                 <Slider
@@ -328,12 +354,19 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
                                   onTouchEnd={handleSeekEnd}
                                   sx={{ mx: 1 }}
                                 />
-                                <Typography variant="caption" sx={{ minWidth: '45px' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ minWidth: "45px" }}
+                                >
                                   {formatTime(duration)}
                                 </Typography>
                               </>
                             ) : (
-                              <Typography variant="caption" color="text.secondary" noWrap>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                noWrap
+                              >
                                 Click play to preview
                               </Typography>
                             )}
@@ -342,15 +375,18 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
 
                         <Button
                           variant="contained"
-                          onClick={() => handleMusicSelect(sound)}
+                          onClick={() => handleMusicSelect(sound.bgMusicId)}
                           sx={{
                             ml: 2,
                             flexShrink: 0,
-                            position: 'sticky',
-                            right: 0
+                            position: "sticky",
+                            right: 0,
                           }}
+                          disabled={sound.bgMusicId === selectedBgMusicId}
                         >
-                          Select
+                          {sound.bgMusicId === selectedBgMusicId
+                            ? "Selected"
+                            : "Select"}
                         </Button>
                       </Box>
                     </ListItem>
@@ -363,4 +399,4 @@ export default function MusicSelector({ open, handleClose, projectId, dataPointe
       </Box>
     </Modal>
   );
-} 
+}
