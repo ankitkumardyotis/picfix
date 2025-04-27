@@ -66,7 +66,6 @@ export default function Page() {
   const [audioLanguage, setAudioLanguage] = useState("english");
   const [pointersCount, setPointersCount] = useState(5);
   const [voiceType, setVoiceType] = useState("male");
-  const [projectBgMusicId, setProjectBgMusicId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocketLoading, setIsSocketLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
@@ -446,7 +445,7 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleGenerateVideo = async (includeBgMusic) => {
+  const handleGenerateVideo = async (bgMusicId) => {
     process.env.NODE_ENV === "development"
       ? handleStartLoading("Hang tight! We are generating your video...")
       : handleStartLoading();
@@ -454,10 +453,10 @@ export default function Page() {
 
     try {
       const response = await nodeService.get(
-        `/api/${userId}/generatevideo/${projectId}?includeBgMusic=${includeBgMusic}`,
+        `/api/${userId}/generatevideo/${projectId}/${bgMusicId}`,
       );
       if (response.status === 200) {
-        if (process.env.NODE_ENV === "") {
+        if (process.env.NODE_ENV === "development") {
           const { videoUrl, message } = response.data;
           setGeneratedVideo(videoUrl);
           setIsVideoGenerated(true);
@@ -648,7 +647,6 @@ export default function Page() {
           pointersCount,
           article,
           allOrderedPointers,
-          bgMusicId,
         } = response.data;
         console.log(message);
         setProjectName(projectName);
@@ -656,7 +654,6 @@ export default function Page() {
         setAudioLanguage(audioLanguage);
         setVoiceType(voiceType);
         setPointersCount(pointersCount);
-        setProjectBgMusicId(() => (bgMusicId.length > 0 ? bgMusicId : null));
         setDataPointers(() =>
           allOrderedPointers.length > 0
             ? allOrderedPointers.map((orderedPointer) => ({
@@ -787,11 +784,11 @@ export default function Page() {
     return true;
   };
 
-  const handleProjectMusicSelect = async (bgMusicId) => {
+  const handleGenerateBgMusicForProject = async () => {
     handleStartLoading();
     try {
       const response = await nodeService.post(
-        `/api/${userId}/${projectId}/updateMusicInProject/${bgMusicId}`,
+        `/api/${userId}/generateBgMusicForProject/${projectId}`,
       );
 
       if (response.status === 201) {
@@ -854,8 +851,9 @@ export default function Page() {
   const handleSelectedGenerateBtn = async () => {
     if (selectedGenerateBtnIndex === 0) setIsMusicSelectorOpen(true);
     else if (selectedGenerateBtnIndex === 1)
-      await handleProjectMusicSelect(null);
-    else if (selectedGenerateBtnIndex === 2) await handleGenerateVideo(false);
+      await handleGenerateBgMusicForProject();
+    else if (selectedGenerateBtnIndex === 2)
+      await handleGenerateVideo(null);
   };
 
   const handleGenerateBtnMenuItem = (event, index) => {
@@ -994,7 +992,6 @@ export default function Page() {
       if (targetProjectId === projectId)
         handleStartSocketLoading("Generating video...");
     };
-
     const onGenerateVideo = ({ targetProjectId, videoUrl, message }) => {
       if (targetProjectId === projectId) {
         setGeneratedVideo(videoUrl);
@@ -1013,7 +1010,11 @@ export default function Page() {
       if (targetProjectId === projectId)
         handleStartSocketLoading("Generating background music...");
     };
-    const onGenerateBgMusic = async ({ targetProjectId, message }) => {
+    const onGenerateBgMusic = async ({
+      targetProjectId,
+      bgMusicId,
+      message,
+    }) => {
       if (targetProjectId === projectId) {
         handleStopSocketLoading();
         enqueueSnackbar(message, {
@@ -1021,7 +1022,7 @@ export default function Page() {
           autoHideDuration: 3000,
           variant: "success",
         });
-        await handleGenerateVideo(true);
+        await handleGenerateVideo(bgMusicId);
       }
     };
 
@@ -1176,6 +1177,7 @@ export default function Page() {
             else if (type === "generated-bg-music")
               onGenerateBgMusic({
                 targetProjectId: data.targetProjectId,
+                bgMusicId: data.bgMusicId,
                 message,
               });
             else if (
@@ -1846,8 +1848,8 @@ export default function Page() {
       <MusicSelector
         open={isMusicSelectorOpen}
         handleClose={() => setIsMusicSelectorOpen(false)}
-        handleMusicSelect={handleProjectMusicSelect}
-        selectedBgMusicId={projectBgMusicId}
+        handleMusicSelect={handleGenerateVideo}
+        selectedBgMusicId={null}
       />
       <Backdrop
         sx={{
