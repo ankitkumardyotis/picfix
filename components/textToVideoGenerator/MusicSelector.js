@@ -256,7 +256,7 @@ export default function MusicSelector({
                 </Box>
               ) : (
                 <List sx={{ width: "100%" }}>
-                  {searchResults.slice(0, 10).map((sound) => (
+                  {searchResults.map((sound) => (
                     <ListItem
                       key={sound.bgMusicId}
                       sx={{
