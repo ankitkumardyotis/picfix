@@ -163,7 +163,7 @@ export default function RemoveBackground() {
                     </label>
                 </div>
                 <label id="status" style={{ display: status != 'Loading model...' && 'none' }} ></label>
-                <input id="upload" type="file" accept="image/*" onChange={(e) => {
+                <input id="upload" type="file" accept="image/jpeg, image/png, image/jpg" onChange={(e) => {
                     setUploadedImage(URL.createObjectURL(e.target.files[0]))
                     setOriginalImageHieght(e.target.files[0].offsetHeight)
                 }}
