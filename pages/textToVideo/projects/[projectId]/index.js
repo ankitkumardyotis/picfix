@@ -24,6 +24,12 @@ import {
   Stepper,
   Step,
   StepLabel,
+  ButtonGroup,
+  Popper,
+  Grow,
+  Paper,
+  ClickAwayListener,
+  MenuList,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useRouter } from "next/router";
@@ -32,14 +38,20 @@ import nodeService from "@/services/nodeService";
 import { useSnackbar } from "notistack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import VideoPointerConfig from "@/components/textToVideoGenerator/VideoPointerConfig";
 import { socket } from "@/socket";
 import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
-// import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
+import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate pointers", "Generate media", "Generate video"];
+const generateBtns = [
+  "Select background music",
+  "Continue with AI music",
+  "Continue without AI music",
+];
 
 export default function Page() {
   const router = useRouter();
@@ -81,6 +93,9 @@ export default function Page() {
   const secondDividerRef = useRef(null);
   const selectBarRef = useRef(null);
   const generateBtnRef = useRef(null);
+  const [generateBtnGroupOpen, setGenerateBtnGroupOpen] = useState(false);
+  const generateBtnGroupRef = useRef(null);
+  const [selectedGenerateBtnIndex, setSelectedGenerateBtnIndex] = useState(0);
   const xsBp = useMediaQuery("(min-width: 335px)");
   const smBp = useMediaQuery("(min-width: 500px)");
   const mdBp = useMediaQuery("(min-width: 768px)");
@@ -91,8 +106,7 @@ export default function Page() {
     dataPointers &&
     dataPointers.filter((dataPointer) => dataPointer.generateMedia);
 
-  // const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
-  // const [selectedMusic, setSelectedMusic] = useState(null);
+  const [isMusicSelectorOpen, setIsMusicSelectorOpen] = useState(false);
 
   const handleAudioLanguageChange = (event) =>
     setAudioLanguage(event.target.value);
@@ -284,7 +298,11 @@ export default function Page() {
               setDataPointers((prevDataPointers) =>
                 prevDataPointers.map((dataPointer) =>
                   dataPointer.id === targetDataPointerId
-                    ? { ...dataPointer, imageName: targetPointerImageName }
+                    ? {
+                        ...dataPointer,
+                        imageName: targetPointerImageName,
+                        videoUrl: "",
+                      }
                     : dataPointer,
                 ),
               );
@@ -326,7 +344,53 @@ export default function Page() {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === dataPointerId
-              ? { ...dataPointer, imageName: targetPointerImageName }
+              ? {
+                  ...dataPointer,
+                  imageName: targetPointerImageName,
+                  videoUrl: "",
+                }
+              : dataPointer,
+          ),
+        );
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+    handleStopLoading();
+  };
+
+  const handleUploadSearchedVideo = async (selectedVideoUrl, dataPointerId) => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.post(
+        `/api/${userId}/${projectId}/uploadVideo/${dataPointerId}`,
+        {
+          videoUrl: selectedVideoUrl,
+        },
+      );
+
+      if (response.status === 201) {
+        const { message, targetPointerVideoUrl } = response.data;
+        console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === dataPointerId
+              ? {
+                  ...dataPointer,
+                  imageName: "",
+                  videoUrl: targetPointerVideoUrl,
+                }
               : dataPointer,
           ),
         );
@@ -381,25 +445,36 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleGenerateVideo = async () => {
-    handleStartLoading("Hang tight! We are generating your video...");
+  const handleGenerateVideo = async (bgMusicId) => {
+    process.env.NODE_ENV === "development"
+      ? handleStartLoading("Hang tight! We are generating your video...")
+      : handleStartLoading();
     setGeneratedVideo(null);
 
     try {
       const response = await nodeService.get(
-        `/api/${userId}/generatevideo/${projectId}`,
+        `/api/${userId}/generatevideo/${projectId}/${bgMusicId}`,
       );
-
       if (response.status === 200) {
-        const { videoUrl, message } = response.data;
-        setGeneratedVideo(videoUrl);
-        setIsVideoGenerated(true);
-        setActiveStep(3);
-        enqueueSnackbar(message, {
-          anchorOrigin: { horizontal: "right", vertical: "bottom" },
-          autoHideDuration: 3000,
-          variant: "success",
-        });
+        if (process.env.NODE_ENV === "development") {
+          const { videoUrl, message } = response.data;
+          setGeneratedVideo(videoUrl);
+          setIsVideoGenerated(true);
+          setActiveStep(3);
+          enqueueSnackbar(message, {
+            anchorOrigin: { horizontal: "right", vertical: "bottom" },
+            autoHideDuration: 3000,
+            variant: "success",
+          });
+        } else {
+          const { message } = response.data;
+          console.log(message);
+          enqueueSnackbar(message, {
+            anchorOrigin: { horizontal: "right", vertical: "bottom" },
+            autoHideDuration: 3000,
+            variant: "success",
+          });
+        }
       }
     } catch (error) {
       console.error(error.message);
@@ -452,6 +527,7 @@ export default function Page() {
             dataPointer: newDataPointer.dataPointer,
             keywords: newDataPointer.keywords,
             imageName: "",
+            videoUrl: "",
             audioName: "",
             generateMedia: false,
             isAudioPlaying: false,
@@ -699,18 +775,102 @@ export default function Page() {
   const handleAllMediaAvailable = () => {
     for (let i = 0; i < dataPointers.length; i++) {
       const curr = dataPointers[i];
-      if (curr.imageName === "" || curr.audioName === "") return false;
+      if (
+        (curr.imageName === "" && curr.videoUrl === "") ||
+        curr.audioName === ""
+      )
+        return false;
     }
     return true;
   };
 
-  const handleMusicSelect = (sound) => {
-    setSelectedMusic(sound);
-    enqueueSnackbar("Music selected successfully!", {
-      anchorOrigin: { horizontal: "right", vertical: "bottom" },
-      autoHideDuration: 3000,
-      variant: "success",
-    });
+  const handleGenerateBgMusicForProject = async () => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.post(
+        `/api/${userId}/generateBgMusicForProject/${projectId}`,
+      );
+
+      if (response.status === 201) {
+        const { message } = response.data;
+        console.log(message);
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+
+    handleStopLoading();
+  };
+
+  const handlePointerMusicSelect = async (targetDataPointerId, bgMusicId) => {
+    handleStartLoading();
+    try {
+      const response = await nodeService.post(
+        `/api/${userId}/${projectId}/updateMusicInPointer/${targetDataPointerId}/${bgMusicId}`,
+      );
+
+      if (response.status === 201) {
+        const { message } = response.data;
+        console.log(message);
+        setDataPointers((prevDataPointers) =>
+          prevDataPointers.map((dataPointer) =>
+            dataPointer.id === targetDataPointerId
+              ? { ...dataPointer, bgMusicPointerId: bgMusicId }
+              : dataPointer,
+          ),
+        );
+        enqueueSnackbar("Music selected successfully!", {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error(error.message);
+      console.error(error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {
+        anchorOrigin: { horizontal: "right", vertical: "bottom" },
+        autoHideDuration: 3000,
+        variant: "error",
+      });
+    }
+    handleStopLoading();
+  };
+
+  const handleSelectedGenerateBtn = async () => {
+    if (selectedGenerateBtnIndex === 0) setIsMusicSelectorOpen(true);
+    else if (selectedGenerateBtnIndex === 1)
+      await handleGenerateBgMusicForProject();
+    else if (selectedGenerateBtnIndex === 2)
+      await handleGenerateVideo(null);
+  };
+
+  const handleGenerateBtnMenuItem = (event, index) => {
+    setSelectedGenerateBtnIndex(index);
+    setGenerateBtnGroupOpen(false);
+  };
+
+  const handleGenerateBtnGroupToggle = () =>
+    setGenerateBtnGroupOpen((prevOpen) => !prevOpen);
+
+  const handleGenerateBtnGroupClose = (event) => {
+    if (
+      generateBtnGroupRef.current &&
+      generateBtnGroupRef.current.contains(event.target)
+    )
+      return;
+    setGenerateBtnGroupOpen(false);
   };
 
   useEffect(() => {
@@ -781,7 +941,11 @@ export default function Page() {
         setDataPointers((prevDataPointers) =>
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
-              ? { ...dataPointer, imageName: targetPointerImageName }
+              ? {
+                  ...dataPointer,
+                  imageName: targetPointerImageName,
+                  videoUrl: "",
+                }
               : dataPointer,
           ),
         );
@@ -824,6 +988,44 @@ export default function Page() {
       }
     };
 
+    const onStartGeneratingVideo = ({ targetProjectId }) => {
+      if (targetProjectId === projectId)
+        handleStartSocketLoading("Generating video...");
+    };
+    const onGenerateVideo = ({ targetProjectId, videoUrl, message }) => {
+      if (targetProjectId === projectId) {
+        setGeneratedVideo(videoUrl);
+        setIsVideoGenerated(true);
+        setActiveStep(3);
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+        handleStopSocketLoading();
+      }
+    };
+
+    const onStartGeneratingBgMusic = ({ targetProjectId }) => {
+      if (targetProjectId === projectId)
+        handleStartSocketLoading("Generating background music...");
+    };
+    const onGenerateBgMusic = async ({
+      targetProjectId,
+      bgMusicId,
+      message,
+    }) => {
+      if (targetProjectId === projectId) {
+        handleStopSocketLoading();
+        enqueueSnackbar(message, {
+          anchorOrigin: { horizontal: "right", vertical: "bottom" },
+          autoHideDuration: 3000,
+          variant: "success",
+        });
+        await handleGenerateVideo(bgMusicId);
+      }
+    };
+
     const onErrorHandler = ({ message }) => {
       handleStopSocketLoading();
       enqueueSnackbar(message, {
@@ -854,11 +1056,15 @@ export default function Page() {
         socket.on("generating-pointer-audio", onStartGeneratingAudio);
         socket.on("generated-pointer-audio", onGenerateAudio);
 
+        socket.on("generating-bg-music", onStartGeneratingBgMusic);
+        socket.on("generated-bg-music", onGenerateBgMusic);
+
         socket.on("error-generating-data-pointers", onErrorHandler);
         socket.on("error-generating-media", onErrorHandler);
         socket.on("error-generating-pointer-image", onErrorHandler);
         socket.on("error-uploading-pointer-image", onErrorHandler);
         socket.on("error-generating-pointer-audio", onErrorHandler);
+        socket.on("error-generating-bg-music", onErrorHandler);
       }
       return () => {
         if (session?.user.id && projectId) {
@@ -877,11 +1083,15 @@ export default function Page() {
           socket.off("generating-pointer-audio", onStartGeneratingAudio);
           socket.off("generated-pointer-audio", onGenerateAudio);
 
+          socket.off("generating-bg-music", onStartGeneratingBgMusic);
+          socket.off("generated-bg-music", onGenerateBgMusic);
+
           socket.off("error-generating-data-pointers", onErrorHandler);
           socket.off("error-generating-media", onErrorHandler);
           socket.off("error-generating-pointer-image", onErrorHandler);
           socket.off("error-uploading-pointer-image", onErrorHandler);
           socket.off("error-generating-pointer-audio", onErrorHandler);
+          socket.off("error-generating-bg-music", onErrorHandler);
 
           socket.off("connect", getProjectData);
           socket.on("disconnect", getProjectData);
@@ -952,12 +1162,32 @@ export default function Page() {
                 updatedPointers: data.updatedPointers,
                 message,
               });
+            else if (type === "generating-video")
+              onStartGeneratingVideo({ targetProjectId: data.targetProjectId });
+            else if (type === "generated-video")
+              onGenerateVideo({
+                targetProjectId: data.targetProjectId,
+                videoUrl: data.videoUrl,
+                message,
+              });
+            else if (type === "generating-bg-music")
+              onStartGeneratingBgMusic({
+                targetProjectId: data.targetProjectId,
+              });
+            else if (type === "generated-bg-music")
+              onGenerateBgMusic({
+                targetProjectId: data.targetProjectId,
+                bgMusicId: data.bgMusicId,
+                message,
+              });
             else if (
               type === "error-generating-data-pointers" ||
               type === "error-generating-pointer-image" ||
               type === "error-uploading-pointer-image" ||
               type === "error-generating-pointer-audio" ||
-              type === "error-generating-media"
+              type === "error-generating-media" ||
+              type === "error-generating-video" ||
+              type === "error-generating-bg-music"
             )
               onErrorHandler({ message });
           }
@@ -967,7 +1197,14 @@ export default function Page() {
           console.log("WebSocket connection closed");
         };
 
-        return () => ws.close();
+        const handleCloseConnection = () => ws.close();
+
+        window.addEventListener("beforeunload", handleCloseConnection);
+
+        return () => {
+          handleCloseConnection();
+          window.removeEventListener("beforeunload", handleCloseConnection);
+        };
       }
     }
   }, [router.query, session?.user.id]);
@@ -1080,14 +1317,6 @@ export default function Page() {
     if (dataPointers)
       handleAllMediaAvailable() ? setActiveStep(2) : setActiveStep(1);
   }, [dataPointers]);
-
-  // if (
-  //   userPlan?.remainingPoints === 0 ||
-  //   userPlan?.remainingPoints < 0 ||
-  //   userPlan === null
-  // ) {
-  //   return router.push("/price");
-  // }
 
   return userPlanStatus ? (
     <Box
@@ -1449,12 +1678,16 @@ export default function Page() {
                             handleUploadSearchedImage={
                               handleUploadSearchedImage
                             }
+                            handleUploadSearchedVideo={
+                              handleUploadSearchedVideo
+                            }
                             handleCurrentDataPointerAudio={
                               handleCurrentDataPointerAudio
                             }
                             handlePlayPauseDataPointer={
                               handlePlayPauseDataPointer
                             }
+                            handlePointerMusicSelect={handlePointerMusicSelect}
                           />
                         </Box>
                       )}
@@ -1493,37 +1726,98 @@ export default function Page() {
                 gap: 2,
               }}
             >
-              <Button
-                sx={{
-                  textTransform: "none",
-                  backgroundColor: scrolledToBottom && "#000",
-                  "&:hover": {
+              {selectedPointers &&
+              selectedPointers.length > 0 &&
+              (mediaTypes.audios || mediaTypes.images) ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
                     backgroundColor: scrolledToBottom && "#000",
-                  },
-                }}
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (
-                    selectedPointers.length > 0 &&
-                    (mediaTypes.audios || mediaTypes.images)
-                  )
-                    handleGenerateMedia();
-                  else handleGenerateVideo();
-                }}
-              >
-                <Typography mr={1}>
-                  {selectedPointers.length > 0 &&
-                  (mediaTypes.audios || mediaTypes.images)
-                    ? "Generate media"
-                    : "Generate video"}
-                </Typography>
-                <AutoAwesomeIcon />
-              </Button>
-              {/* <Button variant="contained" color="primary" onClick={() => setIsMusicSelectorOpen(true)}>
-                <Typography>Add music</Typography>
-                <MusicNoteIcon />
-              </Button> */}
+                    "&:hover": {
+                      backgroundColor: scrolledToBottom && "#000",
+                    },
+                  }}
+                  onClick={handleGenerateMedia}
+                >
+                  <Typography mr={1} textTransform="none">
+                    Generate media
+                  </Typography>
+                </Button>
+              ) : (
+                <>
+                  <ButtonGroup variant="contained" ref={generateBtnGroupRef}>
+                    <Button
+                      onClick={handleSelectedGenerateBtn}
+                      sx={{
+                        backgroundColor: scrolledToBottom && "#000",
+                        "&:hover": {
+                          backgroundColor: scrolledToBottom && "#000",
+                        },
+                      }}
+                    >
+                      {generateBtns[selectedGenerateBtnIndex]}
+                      {selectedGenerateBtnIndex === 0 && (
+                        <MusicNoteIcon sx={{ ml: 1 }} />
+                      )}
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={handleGenerateBtnGroupToggle}
+                      sx={{
+                        backgroundColor: scrolledToBottom && "#000",
+                        "&:hover": {
+                          backgroundColor: scrolledToBottom && "#000",
+                        },
+                      }}
+                    >
+                      <ArrowDropDownIcon />
+                    </Button>
+                  </ButtonGroup>
+                  <Popper
+                    sx={{ zIndex: 1 }}
+                    open={generateBtnGroupOpen}
+                    anchorEl={generateBtnGroupRef.current}
+                    transition
+                    disablePortal
+                  >
+                    {({ TransitionProps, placement }) => (
+                      <Grow
+                        {...TransitionProps}
+                        style={{
+                          transformOrigin:
+                            placement === "bottom"
+                              ? "center top"
+                              : "center bottom",
+                        }}
+                      >
+                        <Paper>
+                          <ClickAwayListener
+                            onClickAway={handleGenerateBtnGroupClose}
+                          >
+                            <MenuList id="split-button-menu" autoFocusItem>
+                              {generateBtns.map((option, index) => (
+                                <MenuItem
+                                  key={option}
+                                  selected={index === selectedGenerateBtnIndex}
+                                  onClick={(event) =>
+                                    handleGenerateBtnMenuItem(event, index)
+                                  }
+                                >
+                                  {option}
+                                  {index === 0 && (
+                                    <MusicNoteIcon sx={{ ml: 1 }} />
+                                  )}
+                                </MenuItem>
+                              ))}
+                            </MenuList>
+                          </ClickAwayListener>
+                        </Paper>
+                      </Grow>
+                    )}
+                  </Popper>
+                </>
+              )}
             </Box>
           </Box>
         </>
@@ -1551,11 +1845,12 @@ export default function Page() {
           />
         </>
       )}
-      {/* <MusicSelector
+      <MusicSelector
         open={isMusicSelectorOpen}
         handleClose={() => setIsMusicSelectorOpen(false)}
-        onMusicSelect={handleMusicSelect}
-      /> */}
+        handleMusicSelect={handleGenerateVideo}
+        selectedBgMusicId={null}
+      />
       <Backdrop
         sx={{
           color: "#dee2e6",
@@ -1568,7 +1863,7 @@ export default function Page() {
           <Typography variant={smBp ? "h5" : "h6"} mb={8} textAlign="center">
             {loadingText || socketLoadingText}
           </Typography>
-          <div class="custom-loader-text-to-video"></div>
+          <div className="custom-loader-text-to-video"></div>
         </Box>
       </Backdrop>
     </Box>

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -28,12 +28,13 @@
     "fluent-ffmpeg": "^2.1.2",
     "formidable": "^3.5.1",
     "fs": "^0.0.1-security",
+    "heic2any": "^0.0.4",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "mongodb": "^6.3.0",
-    "next": "^14.2.3",
+    "next": "^14.2.25",
     "next-auth": "^4.24.5",
     "next-connect": "^1.0.0",
     "notistack": "^3.0.1",
@@ -61,6 +62,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/node": "20.2.5"
+    "@types/node": "20.2.5",
+    "eslint": "^9.24.0",
+    "prisma": "^5.9.0"
   }
 }

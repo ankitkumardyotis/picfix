@@ -22,23 +22,23 @@ function CarouselSlider({beforeImageOne,afterImageOne,beforeImageTwo,afterImageT
 
                     <Box sx={{ position: 'relative' }}>
                         <Image src={beforeImageOne} alt="Pic fix Carousel one" width={200} height={300} />
-                        <span class="before-after-badge">Before</span>
+                        <span className="before-after-badge">Before</span>
                     </Box>
 
                     <Box sx={{ position: 'relative' }}>
                         <Image src={afterImageOne} alt="Pic fix Carousel one" width={200} height={300} />
-                        <span class="before-after-badge">After</span>
+                        <span className="before-after-badge">After</span>
                     </Box>
 
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                     <Box sx={{ position: 'relative' }}>
                         <Image src={beforeImageTwo} alt="Pic fix Carousel one" width={200} height={300} />
-                        <span class="before-after-badge">Before</span>
+                        <span className="before-after-badge">Before</span>
                     </Box>
                     <Box sx={{ position: 'relative' }}>
                         <Image src={afterImageTwo} alt="Pic fix Carousel one" width={200} height={300} />
-                        <span class="before-after-badge">After</span>
+                        <span className="before-after-badge">After</span>
                     </Box>
                 </Box>
             </Carousel>

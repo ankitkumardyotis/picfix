@@ -34,10 +34,12 @@ function VideoPointerConfig({
   handleRegenerateImage,
   handleUploadNewImage,
   handleUploadSearchedImage,
+  handleUploadSearchedVideo,
   handleStartLoading,
   handleStopLoading,
   handleCurrentDataPointerAudio,
   handlePlayPauseDataPointer,
+  handlePointerMusicSelect,
 }) {
   const [targetDataPointer, setTargetDataPointer] = useState(
     dataPointer.dataPointer,
@@ -93,18 +95,15 @@ function VideoPointerConfig({
         );
 
         if (response.status === 200) {
+          const { audioUrl, message } = response.data;
+          console.log(message);
           if (currentDataPointerAudio) {
             currentDataPointerAudio.pause();
             currentDataPointerAudio.currentTime = 0;
             handleCurrentDataPointerAudio(null);
           }
-          handleCurrentDataPointerAudio(response.data.audioUrl);
+          handleCurrentDataPointerAudio(audioUrl);
           handlePlayPauseDataPointer(targetDataPointerId);
-          enqueueSnackbar("Audio loaded successfully!", {
-            anchorOrigin: { horizontal: "right", vertical: "bottom" },
-            autoHideDuration: 3000,
-            variant: "success",
-          });
         }
       }
     } catch (error) {
@@ -356,18 +355,19 @@ function VideoPointerConfig({
             }}
           >
             <ImageIcon fontSize="small" />
-            {dataPointer.imageName.length === 0 && (
-              <Box
-                width="10px"
-                height="10px"
-                borderRadius="50%"
-                bgcolor="#ef5350"
-                position="absolute"
-                zIndex={100}
-                right={0}
-                bottom={0}
-              ></Box>
-            )}
+            {dataPointer.imageName.length === 0 &&
+              dataPointer.videoUrl.length === 0 && (
+                <Box
+                  width="10px"
+                  height="10px"
+                  borderRadius="50%"
+                  bgcolor="#ef5350"
+                  position="absolute"
+                  zIndex={100}
+                  right={0}
+                  bottom={0}
+                ></Box>
+              )}
           </IconButton>
         </Tooltip>
         <ImagePopupTabs
@@ -376,11 +376,15 @@ function VideoPointerConfig({
           dataPointerId={dataPointer.id}
           dataPointerText={dataPointer.keywords}
           dataPointerImageName={dataPointer.imageName}
+          dataPointerVideoUrl={dataPointer.videoUrl}
+          dataPointerBgMusicId={dataPointer.bgMusicPointerId}
           websocketInstance={websocketInstance}
           handleAddImagePopupClose={handleAddImagePopupClose}
           handleRegenerateImage={handleRegenerateImage}
           handleUploadNewImage={handleUploadNewImage}
           handleUploadSearchedImage={handleUploadSearchedImage}
+          handleUploadSearchedVideo={handleUploadSearchedVideo}
+          handlePointerMusicSelect={handlePointerMusicSelect}
         />
       </Box>
     </>

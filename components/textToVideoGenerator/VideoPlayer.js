@@ -3,7 +3,6 @@ import {
   Box,
   IconButton,
   Slider,
-  Menu,
   MenuItem,
   Button,
   Paper,
@@ -20,8 +19,10 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DownloadIcon from "@mui/icons-material/Download";
 import SettingsIcon from "@mui/icons-material/Settings";
+import SubtitlesIcon from "@mui/icons-material/Subtitles";
+import SubtitleConfig from "./SubtitleConfig";
 
-function VideoPlayer({ generatedVideo, videoName }) {
+function VideoPlayer({ generatedVideo, videoName, projectId, dataPointerId }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -34,6 +35,22 @@ function VideoPlayer({ generatedVideo, videoName }) {
   const [duration, setDuration] = useState(0);
   const [hoverTime, setHoverTime] = useState(null);
   const [hoverPosition, setHoverPosition] = useState(null);
+  const [subtitleConfigOpen, setSubtitleConfigOpen] = useState(false);
+  const [subtitleConfig, setSubtitleConfig] = useState({
+    position: "bottom",
+    fontFamily: "Arial",
+    fontSize: 16,
+    fontColor: "#FFFFFF",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    bold: false,
+    italic: false,
+    underline: false,
+    textAlign: "center",
+    borderColor: "transparent",
+    borderWidth: 0,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  });
   const videoRef = useRef();
   const playerRef = useRef();
 
@@ -86,7 +103,6 @@ function VideoPlayer({ generatedVideo, videoName }) {
     const handleFullscreenChange = () => {
       const isFullscreenNow = !!document.fullscreenElement;
       setIsFullscreen(isFullscreenNow);
-      // Close menus when fullscreen state changes
       setAnchorEl(null);
       setVolumeAnchorEl(null);
     };
@@ -133,7 +149,6 @@ function VideoPlayer({ generatedVideo, videoName }) {
   const toggleFullscreen = () => {
     if (!playerRef.current) return;
 
-    // Close any open menus before toggling fullscreen
     setAnchorEl(null);
     setVolumeAnchorEl(null);
 
@@ -217,10 +232,8 @@ function VideoPlayer({ generatedVideo, videoName }) {
     setHoverPosition(null);
   };
 
-  // Add keyboard event handlers
   useEffect(() => {
     const handleKeyPress = (e) => {
-      // Ignore if user is typing in an input field
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       switch (e.code) {
@@ -267,6 +280,18 @@ function VideoPlayer({ generatedVideo, videoName }) {
     };
   }, [volume, togglePlay, toggleMute, toggleFullscreen]);
 
+  const handleSubtitleConfigOpen = () => {
+    setSubtitleConfigOpen(true);
+  };
+  
+  const handleSubtitleConfigClose = () => {
+    setSubtitleConfigOpen(false);
+  };
+  
+  const handleSubtitleConfigUpdate = (newConfig) => {
+    setSubtitleConfig(newConfig);
+  };
+
   return (
     <Paper
       elevation={3}
@@ -301,7 +326,6 @@ function VideoPlayer({ generatedVideo, videoName }) {
           style={{ objectFit: "contain" }}
           onError={(e) => {
             console.error('Video playback error:', e);
-            // Handle error appropriately - maybe show an error message to user
           }}
         >
           Your browser does not support the video tag.
@@ -402,6 +426,9 @@ function VideoPlayer({ generatedVideo, videoName }) {
             )}
           </Box>
           <Box display="flex" alignItems="center">
+            {/* <IconButton onClick={handleSubtitleConfigOpen} color="primary" size="small">
+              <SubtitlesIcon fontSize="small" />
+            </IconButton> */}
             <IconButton onClick={handleDownload} color="primary" size="small">
               <DownloadIcon fontSize="small" />
             </IconButton>
@@ -473,6 +500,51 @@ function VideoPlayer({ generatedVideo, videoName }) {
           />
         </Box>
       </Popover>
+      {/* {subtitleConfig && (
+        <Box 
+          sx={{
+            position: "absolute",
+            bottom: subtitleConfig.position === "bottom" ? 50 : "auto",
+            top: subtitleConfig.position === "top" ? 20 : 
+                 subtitleConfig.position === "middle" ? "50%" : "auto",
+            left: 0,
+            right: 0,
+            transform: subtitleConfig.position === "middle" ? "translateY(-50%)" : "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2,
+            textAlign: subtitleConfig.textAlign,
+            px: 2,
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: subtitleConfig.backgroundColor,
+              color: subtitleConfig.fontColor,
+              fontFamily: subtitleConfig.fontFamily,
+              fontSize: `${subtitleConfig.fontSize}px`,
+              fontWeight: subtitleConfig.bold ? "bold" : "normal",
+              fontStyle: subtitleConfig.italic ? "italic" : "normal",
+              textDecoration: subtitleConfig.underline ? "underline" : "none",
+              border: `${subtitleConfig.borderWidth}px solid ${subtitleConfig.borderColor}`,
+              padding: `${subtitleConfig.paddingVertical}px ${subtitleConfig.paddingHorizontal}px`,
+              maxWidth: "90%",
+              borderRadius: 1,
+            }}
+          >
+            Sample subtitle text
+          </Box>
+        </Box>
+      )} */}
+      <SubtitleConfig
+        open={subtitleConfigOpen}
+        handleClose={handleSubtitleConfigClose}
+        projectId={projectId}
+        dataPointerId={dataPointerId}
+        currentSubtitleConfig={subtitleConfig}
+        handleSubtitleConfigUpdate={handleSubtitleConfigUpdate}
+      />
     </Paper>
   );
 }

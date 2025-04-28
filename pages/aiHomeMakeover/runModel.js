@@ -124,28 +124,28 @@ function DesignRoom() {
                         // if (userPlan) {
 
                         //     const response = await fetch(`/api/dataFetchingDB/updateData?userId=${session?.user.id}`);
-                       
+
                         //     const newCreditpoints = await response.json();
                         //     setCreditPoints(newCreditpoints.saveCreditPoint.remainingPoints)
-                  
+
                         //     if (!response.ok) {
                         //         throw new Error('Failed to fetch plan data');
                         //     }
-                            const history = await fetch('/api/dataFetchingDB/updateHistory', {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    userId: session.user.id,
-                                    model: data.webhookData.model,
-                                    status: data.webhookData.status,
-                                    createdAt: data.webhookData.created_at,
-                                    replicateId: data.webhookData.id
-                                }),
+                        const history = await fetch('/api/dataFetchingDB/updateHistory', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                userId: session.user.id,
+                                model: data.webhookData.model,
+                                status: data.webhookData.status,
+                                createdAt: data.webhookData.created_at,
+                                replicateId: data.webhookData.id
+                            }),
 
-                            });
-                        
+                        });
+
                         //     if (!history.ok) {
                         //         throw new Error('Failed to fetch plan data');
                         //     }
@@ -251,14 +251,40 @@ function DesignRoom() {
     if (userPlan?.remainingPoints === 0 || userPlan?.remainingPoints < 0 || userPlan === null) {
         return router.push('/price')
     }
-    const handleImageUpload = (event) => {
+
+    const handleImageUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setFileUrl(e.target.result);
-            };
-            reader.readAsDataURL(file);
+            // Check if the file is HEIF/HEIC
+            if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+                try {
+                    // Dynamically import heic2any only on the client side
+                    const heic2any = (await import('heic2any')).default;
+
+                    // Convert HEIF/HEIC to JPG
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: "image/jpeg",
+                        quality: 0.8
+                    });
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        setFileUrl(e.target.result);
+                    };
+                    reader.readAsDataURL(convertedBlob);
+                } catch (error) {
+                    console.error('Error converting HEIF/HEIC image:', error);
+                    setError('Failed to convert HEIF/HEIC image');
+                }
+            } else {
+                // Handle regular images
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setFileUrl(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 
@@ -348,7 +374,7 @@ function DesignRoom() {
                                         {fileUrl && (
                                             <div id="uploadedImage" className="originalImage" style={{ position: 'relative' }}>
                                                 <OriginalImage setOriginalImageHieght={setOriginalImageHieght} setOriginalImageWidth={setOriginalImageWidth} setIsImageLoaded={setIsImageLoaded} fileUrl={fileUrl} setFileUrl={setFileUrl} />
-                                                {!matches && <span class="before-after-badge">Before</span>}
+                                                {!matches && <span className="before-after-badge">Before</span>}
                                             </div>
                                         )}
                                         <div className="restoredImageContainer" style={fileUrl &&
@@ -423,7 +449,7 @@ function DesignRoom() {
                                                     width={400}
                                                     height={200}
                                                 />
-                                                {restoredPhoto && !matches && <span class="before-after-badge">After</span>}
+                                                {restoredPhoto && !matches && <span className="before-after-badge">After</span>}
                                             </div>
                                         </div>
                                         {restoreImageCompleteLoaded && restoredPhoto && (

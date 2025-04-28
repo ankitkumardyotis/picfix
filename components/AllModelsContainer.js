@@ -75,9 +75,9 @@ export default function AllModelsContainer() {
             fontSize: !matches && "1rem",
             marginBottom: !matches && "2rem",
           }}
-          class="ribbonHeading"
+          className="ribbonHeading"
         >
-          <span class="ribbonHeading-content">
+          <span className="ribbonHeading-content">
             {" "}
             All Model's are free for limited time
           </span>
@@ -95,7 +95,7 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleTextToVideo}
             >
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img">
@@ -130,7 +130,7 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleRestoreImage}
             >
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img">
@@ -164,7 +164,7 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleBlurImage}
             >
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img">
@@ -199,7 +199,7 @@ export default function AllModelsContainer() {
               onClick={handleRemoveBG}
             >
               {/* <div className="ribbon">Free</div> */}
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img ">
@@ -233,7 +233,7 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleObjectRemove}
             >
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img">
@@ -268,7 +268,7 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleRoomDesign}
             >
-              <div class="ribbon right">
+              <div className="ribbon right">
                 <h6 style={{ fontSize: "28px" }}>Free</h6>
               </div>
               <div className="card-img">
