@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import styles from "./CreditPlanCard.module.css";
-import { LemonSqueezy } from "@lemonsqueezy/lemonsqueezy.js";
 import { useRouter } from "next/router";
 import { useSession, signOut } from "next-auth/react";
 import { CircularProgress, useMediaQuery, useTheme } from "@mui/material";
