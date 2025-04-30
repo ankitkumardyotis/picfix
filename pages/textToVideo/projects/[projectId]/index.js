@@ -446,7 +446,7 @@ export default function Page() {
   };
 
   const handleGenerateVideo = async (bgMusicId) => {
-    process.env.NODE_ENV === ""
+    process.env.NODE_ENV === "development"
       ? handleStartLoading("Hang tight! We are generating your video...")
       : handleStartLoading();
     setGeneratedVideo(null);
@@ -456,7 +456,7 @@ export default function Page() {
         `/api/${userId}/generatevideo/${projectId}/${bgMusicId}`,
       );
       if (response.status === 200) {
-        if (process.env.NODE_ENV === "") {
+        if (process.env.NODE_ENV === "development") {
           const { videoUrl, message } = response.data;
           setGeneratedVideo(videoUrl);
           setIsVideoGenerated(true);
@@ -1034,7 +1034,7 @@ export default function Page() {
       });
     };
 
-    if (process.env.NODE_ENV === "") {
+    if (process.env.NODE_ENV === "development") {
       if (session?.user.id && projectId) {
         socket.disconnect();
         socket.connect();
