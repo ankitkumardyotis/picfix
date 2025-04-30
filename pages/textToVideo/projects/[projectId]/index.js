@@ -446,7 +446,7 @@ export default function Page() {
   };
 
   const handleGenerateVideo = async (bgMusicId) => {
-    process.env.NODE_ENV === "development"
+    process.env.NODE_ENV === ""
       ? handleStartLoading("Hang tight! We are generating your video...")
       : handleStartLoading();
     setGeneratedVideo(null);
@@ -456,7 +456,7 @@ export default function Page() {
         `/api/${userId}/generatevideo/${projectId}/${bgMusicId}`,
       );
       if (response.status === 200) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "") {
           const { videoUrl, message } = response.data;
           setGeneratedVideo(videoUrl);
           setIsVideoGenerated(true);
@@ -852,8 +852,7 @@ export default function Page() {
     if (selectedGenerateBtnIndex === 0) setIsMusicSelectorOpen(true);
     else if (selectedGenerateBtnIndex === 1)
       await handleGenerateBgMusicForProject();
-    else if (selectedGenerateBtnIndex === 2)
-      await handleGenerateVideo(null);
+    else if (selectedGenerateBtnIndex === 2) await handleGenerateVideo(null);
   };
 
   const handleGenerateBtnMenuItem = (event, index) => {
@@ -1035,7 +1034,7 @@ export default function Page() {
       });
     };
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "") {
       if (session?.user.id && projectId) {
         socket.disconnect();
         socket.connect();
@@ -1720,15 +1719,23 @@ export default function Page() {
                 borderRadius: scrolledToBottom && 2,
                 borderBottomLeftRadius: scrolledToBottom && 0,
                 borderBottomRightRadius: scrolledToBottom && 0,
-                display: "flex",
+                display:
+                  (selectedPointers &&
+                    selectedPointers.length > 0 &&
+                    (mediaTypes.audios || mediaTypes.images)) ||
+                  activeStep < 2 ||
+                  activeStep >= 2
+                    ? "flex"
+                    : "none",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 2,
               }}
             >
-              {selectedPointers &&
-              selectedPointers.length > 0 &&
-              (mediaTypes.audios || mediaTypes.images) ? (
+              {((selectedPointers &&
+                selectedPointers.length > 0 &&
+                (mediaTypes.audios || mediaTypes.images)) ||
+                activeStep < 2) && (
                 <Button
                   variant="contained"
                   color="primary"
@@ -1744,7 +1751,8 @@ export default function Page() {
                     Generate media
                   </Typography>
                 </Button>
-              ) : (
+              )}
+              {activeStep >= 2 && (
                 <>
                   <ButtonGroup variant="contained" ref={generateBtnGroupRef}>
                     <Button
