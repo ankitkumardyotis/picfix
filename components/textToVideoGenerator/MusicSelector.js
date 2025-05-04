@@ -143,12 +143,14 @@ export default function MusicSelector({
 
   const handlePlayPause = async (id) => {
     if (currentlyPlaying === id) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-      setCurrentTime(0);
-      setCurrentlyPlaying(null);
-      setAudioPlayer(null);
-      setDuration(0);
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        setCurrentTime(0);
+        setCurrentlyPlaying(null);
+        setAudioPlayer(null);
+        setDuration(0);
+      }
     } else {
       if (audioPlayer) {
         audioPlayer.pause();
@@ -206,7 +208,10 @@ export default function MusicSelector({
   return (
     <Modal
       open={open}
-      onClose={handleClose}
+      onClose={async () => {
+        await handlePlayPause(currentlyPlaying);
+        handleClose();
+      }}
       aria-labelledby="music-selector-modal"
     >
       <Box sx={style}>
@@ -219,7 +224,12 @@ export default function MusicSelector({
           <Typography variant="h6" component="h2">
             Select Background Music
           </Typography>
-          <IconButton onClick={handleClose}>
+          <IconButton
+            onClick={async () => {
+              await handlePlayPause(currentlyPlaying);
+              handleClose();
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
@@ -375,7 +385,17 @@ export default function MusicSelector({
 
                         <Button
                           variant="contained"
-                          onClick={() => handleMusicSelect(sound.bgMusicId)}
+                          onClick={async () => {
+                            if (audioPlayer) {
+                              audioPlayer.pause();
+                              audioPlayer.currentTime = 0;
+                              setCurrentTime(0);
+                              setCurrentlyPlaying(null);
+                              setAudioPlayer(null);
+                            }
+
+                            await handleMusicSelect(sound.bgMusicId);
+                          }}
                           sx={{
                             ml: 2,
                             flexShrink: 0,
