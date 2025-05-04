@@ -73,7 +73,7 @@ function PreviewImage({
         {pointerImage ? (
           <Image
             src={pointerImage}
-            alt="data-pointer-image"
+            alt="scene-image"
             sizes="100vw"
             width={0}
             height={0}

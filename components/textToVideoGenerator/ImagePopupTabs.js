@@ -96,12 +96,14 @@ function ImagePopupTabs({
 
   const handlePlayPause = async (id) => {
     if (currentlyPlaying === id) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-      setCurrentTime(0);
-      setCurrentlyPlaying(null);
-      setAudioPlayer(null);
-      setDuration(0);
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        setCurrentTime(0);
+        setCurrentlyPlaying(null);
+        setAudioPlayer(null);
+        setDuration(0);
+      }
     } else {
       if (audioPlayer) {
         audioPlayer.pause();
@@ -193,7 +195,10 @@ function ImagePopupTabs({
   return (
     <Dialog
       open={addImagePopupOpen}
-      onClose={handleAddImagePopupClose}
+      onClose={async () => {
+        await handlePlayPause(currentlyPlaying);
+        handleAddImagePopupClose();
+      }}
       fullWidth
       fullScreen={!mdBp}
       maxWidth="md"
@@ -252,13 +257,7 @@ function ImagePopupTabs({
             open={isMusicSelectorOpen}
             handleClose={() => setIsMusicSelectorOpen(false)}
             handleMusicSelect={async (bgMusicId) => {
-              if (audioPlayer) {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-              }
-
               await handlePointerMusicSelect(dataPointerId, bgMusicId);
-
               setIsMusicSelectorOpen(false);
             }}
             projectId={projectId}
@@ -417,7 +416,10 @@ function ImagePopupTabs({
               backgroundColor: "rgba(220,220,220)",
             },
           }}
-          onClick={handleAddImagePopupClose}
+          onClick={async () => {
+            await handlePlayPause(currentlyPlaying);
+            handleAddImagePopupClose();
+          }}
         >
           <CloseIcon fontSize="small" />
         </IconButton>
