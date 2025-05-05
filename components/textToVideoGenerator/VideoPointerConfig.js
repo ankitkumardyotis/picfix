@@ -246,7 +246,7 @@ function VideoPointerConfig({
               : "visible"
           }
         >
-          <Tooltip title="Append new video input" arrow>
+          <Tooltip title="Append new scene" arrow>
             <IconButton
               onClick={() => handleAppendDataPointer(index)}
               color="primary"
@@ -259,7 +259,7 @@ function VideoPointerConfig({
             handleConfirmationDialogBoxClose={
               handleDeletePointerConfirmationDialogBoxClose
             }
-            confirmationText="Do you really want to delete this video input?"
+            confirmationText="Do you really want to delete this scene?"
             handler={async () => {
               await handleDeleteDataPointer(dataPointer.id);
               if (currentDataPointerAudio) {
@@ -269,7 +269,7 @@ function VideoPointerConfig({
               }
             }}
           />
-          <Tooltip title="Delete input" arrow>
+          <Tooltip title="Delete scene" arrow>
             <IconButton
               onClick={handleDeletePointerConfirmationDialogBoxOpen}
               color="error"

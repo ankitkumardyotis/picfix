@@ -46,7 +46,7 @@ import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
 import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
-const steps = ["Generate pointers", "Generate media", "Generate video"];
+const steps = ["Generate scenes", "Generate media", "Generate video"];
 const generateBtns = [
   "Select background music",
   "Continue with AI music",
@@ -480,7 +480,7 @@ export default function Page() {
       console.error(error.message);
       if (error.response.status === 400)
         enqueueSnackbar(
-          "Please configure all the video inputs before proceeding",
+          "Please configure all scenes before proceeding",
           {
             anchorOrigin: { horizontal: "right", vertical: "bottom" },
             autoHideDuration: 3000,
@@ -715,6 +715,12 @@ export default function Page() {
       });
     }
     handleStopLoading();
+
+    try {
+      await nodeService.get(`/api/${userId}/getProjectJobStatus/${projectId}`);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleSelectAllPointersChange = (e) => {
@@ -875,7 +881,7 @@ export default function Page() {
   useEffect(() => {
     const onStartGeneratingDataPointers = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
-        handleStartSocketLoading("Generating video inputs...");
+        handleStartSocketLoading("Generating scenes...");
     };
     const onGenerateDataPointers = ({ targetProjectId, pointers, message }) => {
       if (targetProjectId === projectId) {
@@ -928,7 +934,7 @@ export default function Page() {
 
     const onStartCreatingImage = ({ targetProjectId, creationType }) => {
       if (targetProjectId === projectId)
-        handleStartSocketLoading(`${creationType} pointer image...`);
+        handleStartSocketLoading(`${creationType} scene image...`);
     };
     const onCreateImage = ({
       targetProjectId,
@@ -959,7 +965,7 @@ export default function Page() {
 
     const onStartGeneratingAudio = ({ targetProjectId }) => {
       if (targetProjectId === projectId)
-        handleStartSocketLoading("Generating pointer audio...");
+        handleStartSocketLoading("Generating scene audio...");
     };
     const onGenerateAudio = ({
       targetProjectId,
@@ -1473,13 +1479,13 @@ export default function Page() {
           </FormControl>
           <FormControl sx={{ flexGrow: 1, flexBasis: 0 }} size="small">
             <InputLabel id="pointers-count-select-label">
-              Max no. of data pointers
+              Max no. of scenes
             </InputLabel>
             <Select
               labelId="pointers-count-select-label"
               id="pointers-count-select"
               value={pointersCount}
-              label="Max no. of data pointers"
+              label="Max no. of scenes"
               onChange={handlePointersCountChange}
               sx={{ backgroundColor: smBp || "#b7e4c7" }}
             >
@@ -1529,7 +1535,7 @@ export default function Page() {
                 sx={{ mr: 1 }}
                 color="primary"
               />
-              Customize your video inputs
+              Customize your scenes
               <VideoSettingsIcon
                 fontSize="medium"
                 sx={{ ml: 1 }}
@@ -1856,7 +1862,10 @@ export default function Page() {
       <MusicSelector
         open={isMusicSelectorOpen}
         handleClose={() => setIsMusicSelectorOpen(false)}
-        handleMusicSelect={handleGenerateVideo}
+        handleMusicSelect={async (bgMusicId) => {
+          await handleGenerateVideo(bgMusicId);
+          setIsMusicSelectorOpen(false);
+        }}
         selectedBgMusicId={null}
       />
       <Backdrop
