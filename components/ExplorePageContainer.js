@@ -73,7 +73,6 @@ function ExplorePageContainer(props) {
     }
 
 
-
     return (
         // Outer Box
         <Container maxWidth='xl' ref={ref} sx={{ marginTop: matches ? '6em' : '5em', height: '100vh', paddingBottom: '10em', display: 'flex', alignItems: 'center' }}>
@@ -95,7 +94,16 @@ function ExplorePageContainer(props) {
                                 !matches &&
                                 <Box>
                                     <Box className={styles.animatedImageContainer} sx={{ alignSelf: 'end' }}>
-                                        <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                                        {images[currentImageIndex] && images[currentImageIndex].includes('.mp4') 
+                                            ? <video 
+                                                src={images[currentImageIndex]} 
+                                                autoPlay 
+                                                loop 
+                                                // controls
+                                                style={{ width: '100%', height: 'auto', maxWidth: '1600px' }} 
+                                              />
+                                            : <Image src={images[currentImageIndex] || ""} alt="Content image" width={1600} height={900} />
+                                        }
                                     </Box>
                                 </Box>
                             }
@@ -114,7 +122,18 @@ function ExplorePageContainer(props) {
                                 matches &&
                                 <Box >
                                     <Box className={styles.animatedImageContainer} sx={{ paddingLeft: '50px' }}>
-                                        <Image src={images[currentImageIndex]} alt="1600 X 900 image resolution  " width={1600} height={900} />
+                                        {images[currentImageIndex] && images[currentImageIndex].includes('.mp4') ?
+                                            <video 
+                                                src={images[currentImageIndex]} 
+                                                autoPlay 
+                                                // muted 
+                                                loop 
+                                                // controls  
+                                                style={{ width: '100%', height: 'auto', maxWidth: '1600px', borderRadius: '10px' }} 
+                                            />
+                                        :
+                                            <Image src={images[currentImageIndex] || ""} alt="Content image" width={1600} height={900} />
+                                        }
                                     </Box>
                                 </Box>
                             }

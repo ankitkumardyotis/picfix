@@ -1,11 +1,10 @@
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import React from "react";
 import ExplorePageContainer from "@/components/ExplorePageContainer";
-import textToVideoSample from "../../assets/text-to-video-sample.gif";
 
 function textToVideo() {
   const imagesPath = [
-    textToVideoSample
+    "/assets/text-to-video-sample.mp4"
   ];
 
   const heading =
