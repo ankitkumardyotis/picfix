@@ -34,7 +34,7 @@ function PreviewVideo({
           color="error"
           onClick={handlePreviewVideoPopupClose}
         >
-          Cancel
+          Close
         </Button>
       </DialogActions>
     </Dialog>
