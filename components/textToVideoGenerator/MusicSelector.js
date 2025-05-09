@@ -11,6 +11,7 @@ import {
   IconButton,
   Slider,
   Chip,
+  Tooltip,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -55,7 +56,7 @@ export default function MusicSelector({
       fetchInitialMusic();
     }
   }, [open]);
-
+  console.log("searchResults", searchResults);
   const fetchInitialMusic = async () => {
     setIsLoading(true);
     try {
@@ -297,22 +298,28 @@ export default function MusicSelector({
                             <PlayArrowIcon />
                           )}
                         </IconButton>
+
                         <Box flexGrow={1} minWidth={0}>
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              mb: 1,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              lineHeight: "1.2em",
-                              maxHeight: "2.4em",
-                            }}
-                          >
-                            {sound.bgmusicprompt}
-                          </Typography>
+                          <Tooltip title={sound.bgmusicprompt}>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                mb: 1,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                lineHeight: "1.2em",
+                                maxHeight: "2.4em",
+                              }}
+                            >
+                              {/* Trim the prompt, If it start with the Keyworrd like, Create, Generate, Compose then remove it */}
+                              {sound.bgmusicprompt
+                                .replace(/^(Create|Generate|Compose)(\s+(Create|Generate|Compose))*\s+/i, "")
+                                .trim()}
+                            </Typography>
+                          </Tooltip>
 
                           <Box
                             display="flex"

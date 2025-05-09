@@ -14,6 +14,7 @@ import {
   Typography,
   Chip,
   Slider,
+  Button,
 } from "@mui/material";
 import ImageGenerationTab from "./ImageGenerationTab";
 import ImageUploaderTab from "./ImageUploaderTab";
@@ -61,6 +62,11 @@ function ImagePopupTabs({
   const mdBp = useMediaQuery("(min-width: 800px)");
 
   const { enqueueSnackbar } = useSnackbar();
+  
+  const updateTime = (e) => {
+    setCurrentTime(e.target.currentTime);
+  };
+  
   const handleTabValueChange = (event, newTabValue) => {
     setTabValue(newTabValue);
     if (newTabValue === 4) {
@@ -98,6 +104,7 @@ function ImagePopupTabs({
     if (currentlyPlaying === id) {
       if (audioPlayer) {
         audioPlayer.pause();
+        audioPlayer.removeEventListener("timeupdate", updateTime);
         audioPlayer.currentTime = 0;
         setCurrentTime(0);
         setCurrentlyPlaying(null);
@@ -126,6 +133,8 @@ function ImagePopupTabs({
         newAudioPlayer.addEventListener("loadedmetadata", () => {
           setDuration(newAudioPlayer.duration);
         });
+
+        newAudioPlayer.addEventListener("timeupdate", updateTime);
 
         await newAudioPlayer.play();
         setAudioPlayer(newAudioPlayer);
@@ -191,6 +200,16 @@ function ImagePopupTabs({
   useEffect(() => {
     if (tabValue === 4) getDataPointerBgMusic();
   }, [tabValue, dataPointerBgMusicId]);
+
+  useEffect(() => {
+    return () => {
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.removeEventListener("timeupdate", updateTime);
+        setAudioPlayer(null);
+      }
+    };
+  }, [audioPlayer]);
 
   return (
     <Dialog
@@ -265,7 +284,14 @@ function ImagePopupTabs({
           />
           {selectedMusic === null ? (
             <Box textAlign="center" py={3}>
-              <Typography variant="body1">No music is associated</Typography>
+              <Typography variant="body1" mb={2}>No music is associated</Typography>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => setIsMusicSelectorOpen(true)}
+              >
+                Add Music
+              </Button>
             </Box>
           ) : (
             <List sx={{ width: "100%" }}>
@@ -389,6 +415,17 @@ function ImagePopupTabs({
                 </Box>
               </ListItem>
             </List>
+          )}
+          {selectedMusic && (
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => setIsMusicSelectorOpen(true)}
+              >
+                Change Music
+              </Button>
+            </Box>
           )}
         </CustomTabPanel>
         <PreviewImage

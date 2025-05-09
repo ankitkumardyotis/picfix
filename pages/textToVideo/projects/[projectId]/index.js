@@ -446,7 +446,7 @@ export default function Page() {
   };
 
   const handleGenerateVideo = async (bgMusicId) => {
-    process.env.NODE_ENV === "development"
+    process.env.NODE_ENV === ""
       ? handleStartLoading("Hang tight! We are generating your video...")
       : handleStartLoading();
     setGeneratedVideo(null);
@@ -456,7 +456,7 @@ export default function Page() {
         `/api/${userId}/generatevideo/${projectId}/${bgMusicId}`,
       );
       if (response.status === 200) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "") {
           const { videoUrl, message } = response.data;
           setGeneratedVideo(videoUrl);
           setIsVideoGenerated(true);
@@ -1227,7 +1227,7 @@ export default function Page() {
     const handleScroll = () => {
       if (stepperBarRef.current) {
         const { top } = stepperBarRef.current.getBoundingClientRect();
-        if (top === 52) setStepperBarScrolledToTop(true);
+        if (Math.abs(top - 52) <= 2) setStepperBarScrolledToTop(true);
         else setStepperBarScrolledToTop(false);
       }
     };
@@ -1244,7 +1244,7 @@ export default function Page() {
     const handleScroll = () => {
       if (selectBarRef.current) {
         const { top } = selectBarRef.current.getBoundingClientRect();
-        if (top === 146) setSelectBarScrolledToTop(true);
+        if (Math.abs(top - 146) <= 2) setSelectBarScrolledToTop(true);
         else setSelectBarScrolledToTop(false);
 
         if (

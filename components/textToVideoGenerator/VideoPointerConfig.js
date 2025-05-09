@@ -338,7 +338,7 @@ function VideoPointerConfig({
         right={0}
         top={-50}
       >
-        <Tooltip title="Upload new image" arrow>
+        <Tooltip title="Upload" arrow>
           <IconButton
             size="medium"
             onClick={handleAddImagePopupOpen}

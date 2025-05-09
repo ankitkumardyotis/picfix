@@ -93,7 +93,7 @@ function PreviewImage({
           color="error"
           onClick={handlePreviewImagePopupClose}
         >
-          Cancel
+          Close
         </Button>
       </DialogActions>
     </Dialog>
