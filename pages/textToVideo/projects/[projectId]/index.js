@@ -48,6 +48,7 @@ import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
 
 const steps = ["Generate scenes", "Generate media", "Generate video"];
 const generateBtns = [
+  "Configure background music",
   "Select background music",
   "Continue with AI music",
   "Continue without AI music",
@@ -204,10 +205,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer, idx) =>
             idx === index
               ? {
-                  ...updatedPointer,
-                  generateMedia: false,
-                  isAudioPlaying: false,
-                }
+                ...updatedPointer,
+                generateMedia: false,
+                isAudioPlaying: false,
+              }
               : dataPointer,
           ),
         );
@@ -299,10 +300,10 @@ export default function Page() {
                 prevDataPointers.map((dataPointer) =>
                   dataPointer.id === targetDataPointerId
                     ? {
-                        ...dataPointer,
-                        imageName: targetPointerImageName,
-                        videoUrl: "",
-                      }
+                      ...dataPointer,
+                      imageName: targetPointerImageName,
+                      videoUrl: "",
+                    }
                     : dataPointer,
                 ),
               );
@@ -345,10 +346,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === dataPointerId
               ? {
-                  ...dataPointer,
-                  imageName: targetPointerImageName,
-                  videoUrl: "",
-                }
+                ...dataPointer,
+                imageName: targetPointerImageName,
+                videoUrl: "",
+              }
               : dataPointer,
           ),
         );
@@ -387,10 +388,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === dataPointerId
               ? {
-                  ...dataPointer,
-                  imageName: "",
-                  videoUrl: targetPointerVideoUrl,
-                }
+                ...dataPointer,
+                imageName: "",
+                videoUrl: targetPointerVideoUrl,
+              }
               : dataPointer,
           ),
         );
@@ -657,10 +658,10 @@ export default function Page() {
         setDataPointers(() =>
           allOrderedPointers.length > 0
             ? allOrderedPointers.map((orderedPointer) => ({
-                ...orderedPointer,
-                generateMedia: false,
-                isAudioPlaying: false,
-              }))
+              ...orderedPointer,
+              generateMedia: false,
+              isAudioPlaying: false,
+            }))
             : null,
         );
         if (allOrderedPointers.length > 0) setActiveStep(1);
@@ -854,11 +855,10 @@ export default function Page() {
     handleStopLoading();
   };
 
-  const handleSelectedGenerateBtn = async () => {
-    if (selectedGenerateBtnIndex === 0) setIsMusicSelectorOpen(true);
-    else if (selectedGenerateBtnIndex === 1)
-      await handleGenerateBgMusicForProject();
-    else if (selectedGenerateBtnIndex === 2) await handleGenerateVideo(null);
+  const handleSelectedGenerateBtn = async (index) => {
+    if (index === 1) setIsMusicSelectorOpen(true);
+    else if (index === 2) await handleGenerateBgMusicForProject();
+    else if (index === 3) await handleGenerateVideo(null);
   };
 
   const handleGenerateBtnMenuItem = (event, index) => {
@@ -947,10 +947,10 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
               ? {
-                  ...dataPointer,
-                  imageName: targetPointerImageName,
-                  videoUrl: "",
-                }
+                ...dataPointer,
+                imageName: targetPointerImageName,
+                videoUrl: "",
+              }
               : dataPointer,
           ),
         );
@@ -978,9 +978,9 @@ export default function Page() {
           prevDataPointers.map((dataPointer) =>
             dataPointer.id === targetPointerId
               ? {
-                  ...dataPointer,
-                  audioName: targetPointerAudioName,
-                }
+                ...dataPointer,
+                audioName: targetPointerAudioName,
+              }
               : dataPointer,
           ),
         );
@@ -1576,13 +1576,13 @@ export default function Page() {
                     ? "row"
                     : "column"
                   : smBp
-                  ? "row"
-                  : "column",
+                    ? "row"
+                    : "column",
                 alignItems: selectBarScrolledToTop
                   ? "center"
                   : smBp
-                  ? "center"
-                  : "flex-start",
+                    ? "center"
+                    : "flex-start",
               }}
             >
               <FormControlLabel
@@ -1729,8 +1729,8 @@ export default function Page() {
                   (selectedPointers &&
                     selectedPointers.length > 0 &&
                     (mediaTypes.audios || mediaTypes.images)) ||
-                  activeStep < 2 ||
-                  activeStep >= 2
+                    activeStep < 2 ||
+                    activeStep >= 2
                     ? "flex"
                     : "none",
                 justifyContent: "space-between",
@@ -1742,39 +1742,39 @@ export default function Page() {
                 selectedPointers.length > 0 &&
                 (mediaTypes.audios || mediaTypes.images)) ||
                 activeStep < 2) && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    backgroundColor: scrolledToBottom && "#000",
-                    "&:hover": {
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{
                       backgroundColor: scrolledToBottom && "#000",
-                    },
-                  }}
-                  onClick={handleGenerateMedia}
-                >
-                  <Typography mr={1} textTransform="none">
-                    Generate media
-                  </Typography>
-                </Button>
-              )}
+                      "&:hover": {
+                        backgroundColor: scrolledToBottom && "#000",
+                      },
+                    }}
+                    onClick={handleGenerateMedia}
+                  >
+                    <Typography mr={1} textTransform="none">
+                      Generate media
+                    </Typography>
+                  </Button>
+                )}
               {activeStep >= 2 && (
                 <>
                   <ButtonGroup variant="contained" ref={generateBtnGroupRef}>
-                    <Button
-                      onClick={handleSelectedGenerateBtn}
+                    {/* <Button
+                      disabled
                       sx={{
                         backgroundColor: scrolledToBottom && "#000",
                         "&:hover": {
                           backgroundColor: scrolledToBottom && "#000",
                         },
+                        color: "#fff",
+                        opacity: 1,
                       }}
-                    >
-                      {generateBtns[selectedGenerateBtnIndex]}
-                      {selectedGenerateBtnIndex === 0 && (
-                        <MusicNoteIcon sx={{ ml: 1 }} />
-                      )}
-                    </Button>
+                    > */}
+                    {/* {generateBtns[0]} */}
+                    {/* <MusicNoteIcon sx={{ ml: 1 }} />
+                    </Button> */}
                     <Button
                       size="small"
                       onClick={handleGenerateBtnGroupToggle}
@@ -1785,7 +1785,8 @@ export default function Page() {
                         },
                       }}
                     >
-                      <ArrowDropDownIcon />
+
+                      {generateBtns[0]}<ArrowDropDownIcon />
                     </Button>
                   </ButtonGroup>
                   <Popper
@@ -1810,13 +1811,13 @@ export default function Page() {
                             onClickAway={handleGenerateBtnGroupClose}
                           >
                             <MenuList id="split-button-menu" autoFocusItem>
-                              {generateBtns.map((option, index) => (
+                              {generateBtns.slice(1).map((option, index) => (
                                 <MenuItem
                                   key={option}
-                                  selected={index === selectedGenerateBtnIndex}
-                                  onClick={(event) =>
-                                    handleGenerateBtnMenuItem(event, index)
-                                  }
+                                  onClick={() => {
+                                    handleSelectedGenerateBtn(index + 1);
+                                    setGenerateBtnGroupOpen(false);
+                                  }}
                                 >
                                   {option}
                                   {index === 0 && (
@@ -1932,9 +1933,8 @@ const Textarea = styled(BaseTextareaAutosize)(
   color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
   background: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
   border: 1px solid ${theme.palette.mode === "dark" ? grey[700] : grey[200]};
-  box-shadow: 0px 2px 2px ${
-    theme.palette.mode === "dark" ? grey[900] : grey[50]
-  };
+  box-shadow: 0px 2px 2px ${theme.palette.mode === "dark" ? grey[900] : grey[50]
+    };
 
   &:hover {
     border-color: ${blue[400]};
@@ -1942,8 +1942,7 @@ const Textarea = styled(BaseTextareaAutosize)(
 
   &:focus {
     border-color: ${blue[400]};
-    box-shadow: 0 0 0 3px ${
-      theme.palette.mode === "dark" ? blue[600] : blue[200]
+    box-shadow: 0 0 0 3px ${theme.palette.mode === "dark" ? blue[600] : blue[200]
     };
   }
 
