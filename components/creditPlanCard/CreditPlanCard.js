@@ -1,48 +1,20 @@
 import React, { useEffect, useState } from "react";
 import styles from "./CreditPlanCard.module.css";
 import { useRouter } from "next/router";
-import { useSession, signOut } from "next-auth/react";
-import { CircularProgress, useMediaQuery, useTheme } from "@mui/material";
+import { useSession } from "next-auth/react";
+import {  useMediaQuery, useTheme } from "@mui/material";
 import { priceStructure } from "../../constant/Constant";
 function CreditPlanCard() {
-  const [product, setProduct] = useState(null);
   const router = useRouter();
   const { data: session } = useSession();
-  const [countryLocation, setCountryLocation] = useState("");
   const [priceDetails, setPriceDetails] = useState([]);
-  // const [conversionRate, setConversionrate] = useState();
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
 
-  const fetchUserLocation = async () => {
-    await fetch("https://ipapi.co/json/")
-      .then((response) => response.json())
-      .then((data) => {
-        const country = data.country;
-        // Check if country is US and render price accordingly
-        setCountryLocation(country);
-        if (country === "IN") {
-          const inrPrice = priceStructure.filter(
-            (item) => item.country === "IN"
-          );
-          setPriceDetails(inrPrice);
-        } else {
-          const usPrice = priceStructure.filter(
-            (item) => item.country === "Others Country"
-          );
-          setPriceDetails(usPrice);
-        }
-      })
-      .catch((error) => console.error("Error fetching IP geolocation:", error));
-    // Setting URL
-    const url_str =
-      "https://v6.exchangerate-api.com/v6/ef1fc8abb23f6d2e3dabbbc2/latest/USD";
-  };
 
   useEffect(() => {
-    fetchUserLocation();
-    const Price = priceStructure.filter((item) => item.country === countryLocation);
+    const Price = priceStructure.filter((item) => item.country === "Others Country");
     setPriceDetails(Price);
   }, []);
 
@@ -58,7 +30,7 @@ function CreditPlanCard() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ amount: price, currency: countryLocation }),
+          body: JSON.stringify({ amount: price}),
         });
         const { order } = await response.json();
 

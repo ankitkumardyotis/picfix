@@ -51,7 +51,7 @@ const generateBtns = [
   "Configure background music",
   "Select background music",
   "Continue with AI music",
-  "Continue without AI music",
+  "Continue without music",
 ];
 
 export default function Page() {
