@@ -526,7 +526,7 @@ export default function Page() {
           newPointers.splice(index + 1, 0, {
             id: newDataPointer.id,
             dataPointer: newDataPointer.dataPointer,
-            keywords: newDataPointer.keywords,
+            imagePrompt: newDataPointer.imagePrompt,
             imageName: "",
             videoUrl: "",
             audioName: "",
@@ -1489,9 +1489,9 @@ export default function Page() {
               onChange={handlePointersCountChange}
               sx={{ backgroundColor: smBp || "#b7e4c7" }}
             >
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((_, i) => (
-                <MenuItem key={uuidv4()} value={`${i + 1}`}>
-                  {i + 1}
+              {Array.from({ length: 18 }, (_, i) => i + 3).map((value) => (
+                <MenuItem key={uuidv4()} value={`${value}`}>
+                  {value}
                 </MenuItem>
               ))}
             </Select>

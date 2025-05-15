@@ -374,7 +374,11 @@ function VideoPointerConfig({
           addImagePopupOpen={addImagePopupOpen}
           projectId={projectId}
           dataPointerId={dataPointer.id}
-          dataPointerText={dataPointer.keywords}
+          dataPointerText={
+            dataPointer.imagePrompt
+              ? dataPointer.imagePrompt
+              : dataPointer.keywords
+          }
           dataPointerImageName={dataPointer.imageName}
           dataPointerVideoUrl={dataPointer.videoUrl}
           dataPointerBgMusicId={dataPointer.bgMusicPointerId}
