@@ -12,6 +12,7 @@ import {
   Slider,
   Chip,
   Tooltip,
+  Pagination,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -42,29 +43,60 @@ export default function MusicSelector({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [allMusic, setAllMusic] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [audioPlayer, setAudioPlayer] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const [paginationMetadata, setPaginationMetadata] = useState({
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1,
+    limit: 5
+  });
 
-  // Fetch all music when component mounts
+  // Use debounce for search to avoid too many API calls
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  // Fetch music data when component mounts, page changes, or search query changes
   useEffect(() => {
     if (open) {
-      fetchInitialMusic();
+      fetchMusic();
     }
-  }, [open]);
-  console.log("searchResults", searchResults);
-  const fetchInitialMusic = async () => {
+  }, [open, page, debouncedSearchQuery]);
+  
+  const fetchMusic = async () => {
     setIsLoading(true);
     try {
-      const response = await nodeService.get("/api/getAllListOfMusic");
-      setAllMusic(response.data.music || []);
+      // Server-side search and pagination
+      const response = await nodeService.get(`/api/getAllListOfMusic`, {
+        params: {
+          page: page,
+          limit: itemsPerPage,
+          search: debouncedSearchQuery
+        }
+      });
+      
       setSearchResults(response.data.music || []);
+      if (response.data.pagination) {
+        setPaginationMetadata(response.data.pagination);
+      }
     } catch (error) {
-      console.error("Error fetching initial music:", error);
+      console.error("Error fetching music:", error);
     }
     setIsLoading(false);
   };
@@ -111,36 +143,11 @@ export default function MusicSelector({
     }
   }, [audioPlayer, isDragging]);
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setSearchResults(allMusic);
-      return;
-    }
-
-    // Filter music based on keywords
-    const filteredMusic = allMusic.filter((music) => {
-      const queryLower = searchQuery.toLowerCase();
-
-      // Check if query matches any keywords
-      const keywordMatch = music.bgMusicKeywords?.some((keyword) =>
-        keyword.toLowerCase().includes(queryLower),
-      );
-
-      // Check if query matches in prompt
-      const promptMatch = music.bgmusicprompt
-        ?.toLowerCase()
-        .includes(queryLower);
-
-      return keywordMatch || promptMatch;
-    });
-
-    setSearchResults(filteredMusic);
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    // Reset to first page when searching
+    setPage(1);
   };
-
-  // Run search when searchQuery changes
-  useEffect(() => {
-    handleSearch();
-  }, [searchQuery]);
 
   const handlePlayPause = async (id) => {
     if (currentlyPlaying === id) {
@@ -206,6 +213,30 @@ export default function MusicSelector({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    // If something is playing, stop it when changing pages
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      setCurrentTime(0);
+      setCurrentlyPlaying(null);
+      setAudioPlayer(null);
+    }
+  };
+
+  const handleChipClick = (keyword) => {
+    setSearchQuery(keyword);
+    setPage(1);
+  };
+
+  // Get values from pagination metadata
+  const totalPages = paginationMetadata.totalPages || 1;
+  const totalCount = paginationMetadata.totalCount || 0;
+  const currentPage = paginationMetadata.currentPage || page;
+  const indexOfFirstItem = totalCount > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0;
+  const indexOfLastItem = Math.min(currentPage * itemsPerPage, totalCount);
+
   return (
     <Modal
       open={open}
@@ -241,7 +272,7 @@ export default function MusicSelector({
             variant="outlined"
             placeholder="Search for music by keywords..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleInputChange}
           />
         </Box>
 
@@ -266,159 +297,180 @@ export default function MusicSelector({
                   </Typography>
                 </Box>
               ) : (
-                <List sx={{ width: "100%" }}>
-                  {searchResults.map((sound) => (
-                    <ListItem
-                      key={sound.bgMusicId}
-                      sx={{
-                        border: "1px solid #e0e0e0",
-                        borderRadius: 1,
-                        mb: 1,
-                        "&:hover": {
-                          backgroundColor: "#f5f5f5",
-                        },
-                        py: 2,
-                        width: "100%",
-                      }}
-                    >
-                      <Box
-                        display="flex"
-                        alignItems="flex-start"
-                        width="100%"
-                        gap={2}
+                <>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {totalCount > 0 ? 
+                        `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} results` : 
+                        'No results found'}
+                    </Typography>
+                  </Box>
+                  <List sx={{ width: "100%" }}>
+                    {searchResults.map((sound) => (
+                      <ListItem
+                        key={sound.bgMusicId}
+                        sx={{
+                          border: "1px solid #e0e0e0",
+                          borderRadius: 1,
+                          mb: 1,
+                          "&:hover": {
+                            backgroundColor: "#f5f5f5",
+                          },
+                          py: 2,
+                          width: "100%",
+                        }}
                       >
-                        <IconButton
-                          edge="start"
-                          onClick={() => handlePlayPause(sound.bgMusicId)}
-                          sx={{ flexShrink: 0 }}
+                        <Box
+                          display="flex"
+                          alignItems="flex-start"
+                          width="100%"
+                          gap={2}
                         >
-                          {currentlyPlaying === sound.bgMusicId ? (
-                            <PauseIcon />
-                          ) : (
-                            <PlayArrowIcon />
-                          )}
-                        </IconButton>
-
-                        <Box flexGrow={1} minWidth={0}>
-                          <Tooltip title={sound.bgmusicprompt}>
-                            <Typography
-                              variant="body1"
-                              sx={{
-                                mb: 1,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                lineHeight: "1.2em",
-                                maxHeight: "2.4em",
-                              }}
-                            >
-                              {/* Trim the prompt, If it start with the Keyworrd like, Create, Generate, Compose then remove it */}
-                              {sound.bgmusicprompt
-                                .replace(/^(Create|Generate|Compose)(\s+(Create|Generate|Compose))*\s+/i, "")
-                                .trim()}
-                            </Typography>
-                          </Tooltip>
-
-                          <Box
-                            display="flex"
-                            flexWrap="wrap"
-                            gap={0.5}
-                            mb={1}
-                            sx={{ maxWidth: "100%" }}
-                          >
-                            {sound.bgMusicKeywords?.map((keyword, idx) => (
-                              <Chip
-                                key={idx}
-                                label={keyword}
-                                size="small"
-                                variant="outlined"
-                                onClick={() => setSearchQuery(keyword)}
-                                sx={{
-                                  maxWidth: "150px",
-                                  "& .MuiChip-label": {
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                  },
-                                }}
-                              />
-                            ))}
-                          </Box>
-                          <Box
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                            width="100%"
+                          <IconButton
+                            edge="start"
+                            onClick={() => handlePlayPause(sound.bgMusicId)}
+                            sx={{ flexShrink: 0 }}
                           >
                             {currentlyPlaying === sound.bgMusicId ? (
-                              <>
-                                <Typography
-                                  variant="caption"
-                                  sx={{ minWidth: "45px" }}
-                                >
-                                  {formatTime(currentTime)}
-                                </Typography>
-                                <Slider
-                                  size="small"
-                                  value={currentTime}
-                                  max={duration || 100}
-                                  onChange={handleSeekChange}
-                                  onMouseDown={handleSeekStart}
-                                  onMouseUp={handleSeekEnd}
-                                  onTouchStart={handleSeekStart}
-                                  onTouchEnd={handleSeekEnd}
-                                  sx={{ mx: 1 }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  sx={{ minWidth: "45px" }}
-                                >
-                                  {formatTime(duration)}
-                                </Typography>
-                              </>
+                              <PauseIcon />
                             ) : (
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                noWrap
-                              >
-                                Click play to preview
-                              </Typography>
+                              <PlayArrowIcon />
                             )}
+                          </IconButton>
+
+                          <Box flexGrow={1} minWidth={0}>
+                            <Tooltip title={sound.bgmusicprompt}>
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  mb: 1,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                  lineHeight: "1.2em",
+                                  maxHeight: "2.4em",
+                                }}
+                              >
+                                {/* Trim the prompt, If it start with the Keyworrd like, Create, Generate, Compose then remove it */}
+                                {sound.bgmusicprompt
+                                  .replace(/^(Create|Generate|Compose)(\s+(Create|Generate|Compose))*\s+/i, "")
+                                  .trim()}
+                              </Typography>
+                            </Tooltip>
+
+                            <Box
+                              display="flex"
+                              flexWrap="wrap"
+                              gap={0.5}
+                              mb={1}
+                              sx={{ maxWidth: "100%" }}
+                            >
+                              {sound.bgMusicKeywords?.map((keyword, idx) => (
+                                <Chip
+                                  key={idx}
+                                  label={keyword}
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => handleChipClick(keyword)}
+                                  sx={{
+                                    maxWidth: "150px",
+                                    "& .MuiChip-label": {
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    },
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              gap={1}
+                              width="100%"
+                            >
+                              {currentlyPlaying === sound.bgMusicId ? (
+                                <>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ minWidth: "45px" }}
+                                  >
+                                    {formatTime(currentTime)}
+                                  </Typography>
+                                  <Slider
+                                    size="small"
+                                    value={currentTime}
+                                    max={duration || 100}
+                                    onChange={handleSeekChange}
+                                    onMouseDown={handleSeekStart}
+                                    onMouseUp={handleSeekEnd}
+                                    onTouchStart={handleSeekStart}
+                                    onTouchEnd={handleSeekEnd}
+                                    sx={{ mx: 1 }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ minWidth: "45px" }}
+                                  >
+                                    {formatTime(duration)}
+                                  </Typography>
+                                </>
+                              ) : (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  noWrap
+                                >
+                                  Click play to preview
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
+
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              if (audioPlayer) {
+                                audioPlayer.pause();
+                                audioPlayer.currentTime = 0;
+                                setCurrentTime(0);
+                                setCurrentlyPlaying(null);
+                                setAudioPlayer(null);
+                              }
+
+                              await handleMusicSelect(sound.bgMusicId);
+                            }}
+                            sx={{
+                              ml: 2,
+                              flexShrink: 0,
+                              position: "sticky",
+                              right: 0,
+                            }}
+                            disabled={sound.bgMusicId === selectedBgMusicId}
+                          >
+                            {sound.bgMusicId === selectedBgMusicId
+                              ? "Selected"
+                              : "Select"}
+                          </Button>
                         </Box>
-
-                        <Button
-                          variant="contained"
-                          onClick={async () => {
-                            if (audioPlayer) {
-                              audioPlayer.pause();
-                              audioPlayer.currentTime = 0;
-                              setCurrentTime(0);
-                              setCurrentlyPlaying(null);
-                              setAudioPlayer(null);
-                            }
-
-                            await handleMusicSelect(sound.bgMusicId);
-                          }}
-                          sx={{
-                            ml: 2,
-                            flexShrink: 0,
-                            position: "sticky",
-                            right: 0,
-                          }}
-                          disabled={sound.bgMusicId === selectedBgMusicId}
-                        >
-                          {sound.bgMusicId === selectedBgMusicId
-                            ? "Selected"
-                            : "Select"}
-                        </Button>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </List>
+                      </ListItem>
+                    ))}
+                  </List>
+                  {totalPages > 1 && (
+                    <Box display="flex" justifyContent="center" my={2}>
+                      <Pagination 
+                        count={totalPages} 
+                        page={currentPage} 
+                        onChange={handlePageChange} 
+                        color="primary"
+                        showFirstButton
+                        showLastButton
+                      />
+                    </Box>
+                  )}
+                </>
               )}
             </>
           )}
