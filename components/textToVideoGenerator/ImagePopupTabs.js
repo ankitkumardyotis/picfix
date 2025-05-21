@@ -48,6 +48,7 @@ function ImagePopupTabs({
   handleUploadSearchedImage,
   handleUploadSearchedVideo,
   handlePointerMusicSelect,
+  userId,
 }) {
   const [tabValue, setTabValue] = useState(0);
   const [isPreviewImagePopupOpen, setIsPreviewImagePopupOpen] = useState(false);
@@ -281,6 +282,7 @@ function ImagePopupTabs({
             }}
             projectId={projectId}
             selectedBgMusicId={dataPointerBgMusicId}
+            userId={userId}
           />
           {selectedMusic === null ? (
             <Box textAlign="center" py={3}>

@@ -13,6 +13,8 @@ import {
   Chip,
   Tooltip,
   Pagination,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -40,6 +42,7 @@ export default function MusicSelector({
   handleClose,
   handleMusicSelect,
   selectedBgMusicId,
+  userId,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -57,6 +60,7 @@ export default function MusicSelector({
     currentPage: 1,
     limit: 5
   });
+  const [activeTab, setActiveTab] = useState(0); // 0 for All Music, 1 for My Music
 
   // Use debounce for search to avoid too many API calls
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -77,7 +81,7 @@ export default function MusicSelector({
     if (open) {
       fetchMusic();
     }
-  }, [open, page, debouncedSearchQuery]);
+  }, [open, page, debouncedSearchQuery, activeTab]);
   
   const fetchMusic = async () => {
     setIsLoading(true);
@@ -87,7 +91,9 @@ export default function MusicSelector({
         params: {
           page: page,
           limit: itemsPerPage,
-          search: debouncedSearchQuery
+          search: debouncedSearchQuery,
+          userGenerated: activeTab === 1, // Only request user-generated music for tab 1
+          userId: userId,
         }
       });
       
@@ -230,6 +236,20 @@ export default function MusicSelector({
     setPage(1);
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setPage(1); // Reset to page 1 when switching tabs
+    
+    // If something is playing, stop it when changing tabs
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      setCurrentTime(0);
+      setCurrentlyPlaying(null);
+      setAudioPlayer(null);
+    }
+  };
+
   // Get values from pagination metadata
   const totalPages = paginationMetadata.totalPages || 1;
   const totalCount = paginationMetadata.totalCount || 0;
@@ -266,11 +286,21 @@ export default function MusicSelector({
           </IconButton>
         </Box>
 
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          variant="fullWidth" 
+          sx={{ mb: 2 }}
+        >
+          <Tab label="All Music" />
+          <Tab label="My Music" />
+        </Tabs>
+
         <Box display="flex" gap={1} mb={3}>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search for music by keywords..."
+            placeholder={`Search for ${activeTab === 0 ? 'music' : 'your music'} by keywords...`}
             value={searchQuery}
             onChange={handleInputChange}
           />
@@ -293,7 +323,9 @@ export default function MusicSelector({
               {searchResults.length === 0 ? (
                 <Box textAlign="center" py={3}>
                   <Typography variant="body1">
-                    No music found matching your search.
+                    {activeTab === 0 
+                      ? "No music found matching your search." 
+                      : "No user-generated music found matching your search."}
                   </Typography>
                 </Box>
               ) : (
@@ -301,7 +333,7 @@ export default function MusicSelector({
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       {totalCount > 0 ? 
-                        `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} results` : 
+                        `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} ${activeTab === 0 ? '' : 'user-generated'} results` : 
                         'No results found'}
                     </Typography>
                   </Box>

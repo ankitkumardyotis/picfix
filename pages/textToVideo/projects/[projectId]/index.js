@@ -1862,6 +1862,7 @@ export default function Page() {
       )}
       <MusicSelector
         open={isMusicSelectorOpen}
+        userId={userId}
         handleClose={() => setIsMusicSelectorOpen(false)}
         handleMusicSelect={async (bgMusicId) => {
           await handleGenerateVideo(bgMusicId);

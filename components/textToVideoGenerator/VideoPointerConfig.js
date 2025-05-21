@@ -389,6 +389,7 @@ function VideoPointerConfig({
           handleUploadSearchedImage={handleUploadSearchedImage}
           handleUploadSearchedVideo={handleUploadSearchedVideo}
           handlePointerMusicSelect={handlePointerMusicSelect}
+          userId={userId}
         />
       </Box>
     </>
