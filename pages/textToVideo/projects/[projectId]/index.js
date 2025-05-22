@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, createRef } from "react";
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
 import {
@@ -45,6 +45,7 @@ import VideoPlayer from "@/components/textToVideoGenerator/VideoPlayer";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import Cookies from "js-cookie";
 import MusicSelector from "@/components/textToVideoGenerator/MusicSelector";
+import ConfirmationDialogBox from "@/components/textToVideoGenerator/ConfirmationDialogBox";
 
 const steps = ["Generate scenes", "Generate media", "Generate video"];
 const generateBtns = [
@@ -72,6 +73,7 @@ export default function Page() {
   const [loadingText, setLoadingText] = useState("");
   const [socketLoadingText, setSocketLoadingText] = useState("");
   const [dataPointers, setDataPointers] = useState();
+  const [dataPointerRefs, setDataPointerRefs] = useState([]);
   const [mediaTypes, setMediaTypes] = useState({
     audios: false,
     images: false,
@@ -95,6 +97,8 @@ export default function Page() {
   const selectBarRef = useRef(null);
   const generateBtnRef = useRef(null);
   const [generateBtnGroupOpen, setGenerateBtnGroupOpen] = useState(false);
+  const [openSaveAllPointersConfirmationDialog, setOpenSaveAllPointersConfirmationDialog] = useState(false);
+  const [pendingVideoGenerationAction, setPendingVideoGenerationAction] = useState(null);
   const generateBtnGroupRef = useRef(null);
   const xsBp = useMediaQuery("(min-width: 335px)");
   const smBp = useMediaQuery("(min-width: 500px)");
@@ -855,9 +859,30 @@ export default function Page() {
   };
 
   const handleSelectedGenerateBtn = async (index) => {
-    if (index === 1) setIsMusicSelectorOpen(true);
-    else if (index === 2) await handleGenerateBgMusicForProject();
-    else if (index === 3) await handleGenerateVideo(null);
+    if (index === 1) {
+      const canProceed = await checkAndSaveEditing();
+      if (canProceed) {
+        setIsMusicSelectorOpen(true);
+      } else {
+        setPendingVideoGenerationAction({ action: 'selectMusic' });
+      }
+    }
+    else if (index === 2) {
+      const canProceed = await checkAndSaveEditing();
+      if (canProceed) {
+        await handleGenerateBgMusicForProject();
+      } else {
+        setPendingVideoGenerationAction({ action: 'generateBgMusic' });
+      }
+    }
+    else if (index === 3) {
+      const canProceed = await checkAndSaveEditing();
+      if (canProceed) {
+        await handleGenerateVideo(null);
+      } else {
+        setPendingVideoGenerationAction({ action: 'generate', params: null });
+      }
+    }
   };
 
   const handleGenerateBtnGroupToggle = () =>
@@ -1313,9 +1338,63 @@ export default function Page() {
   }, [isVideoGenerated]);
 
   useEffect(() => {
-    if (dataPointers)
+    if (dataPointers) {
+      setDataPointerRefs(dataPointers.map(() => createRef()));
       handleAllMediaAvailable() ? setActiveStep(2) : setActiveStep(1);
+    }
   }, [dataPointers]);
+
+  const checkAndSaveEditing = async () => {
+    if (!dataPointers || !dataPointerRefs.length) return true;
+    
+    const editingPointers = dataPointerRefs.filter(
+      (ref, idx) => ref.current && ref.current.isEditing()
+    );
+    
+    if (editingPointers.length === 0) return true;
+    
+    // Store pending action and open confirmation dialog
+    setOpenSaveAllPointersConfirmationDialog(true);
+    return false;
+  };
+
+  const handleSaveAllPointersConfirmation = async () => {
+    // Save all editing pointers
+    for (let i = 0; i < dataPointerRefs.length; i++) {
+      const ref = dataPointerRefs[i];
+      if (ref.current && ref.current.isEditing()) {
+        await ref.current.saveChanges();
+      }
+    }
+    
+    // Close the dialog
+    setOpenSaveAllPointersConfirmationDialog(false);
+    
+    // Execute the pending action if exists
+    if (pendingVideoGenerationAction) {
+      const { action, params } = pendingVideoGenerationAction;
+      if (action === 'generate') {
+        await handleGenerateVideo(params);
+      } else if (action === 'generateBgMusic') {
+        await handleGenerateBgMusicForProject();
+      } else if (action === 'selectMusic') {
+        setIsMusicSelectorOpen(true);
+      }
+      setPendingVideoGenerationAction(null);
+    }
+  };
+
+  const handleSaveAllPointersDialogClose = () => {
+    setOpenSaveAllPointersConfirmationDialog(false);
+    setPendingVideoGenerationAction(null);
+  };
+
+  const handleGenerateVideoWithCheck = async (bgMusicId) => {
+    const canProceed = await checkAndSaveEditing();
+    if (canProceed) {
+      await handleGenerateVideo(bgMusicId);
+    }
+  };
 
   return userPlanStatus ? (
     <Box
@@ -1660,6 +1739,7 @@ export default function Page() {
                           {...provided.dragHandleProps}
                         >
                           <VideoPointerConfig
+                            ref={dataPointerRefs[idx]}
                             index={idx}
                             dataPointer={dataPointer}
                             currentDataPointerAudio={currentDataPointerAudio}
@@ -1755,20 +1835,6 @@ export default function Page() {
               {activeStep >= 2 && (
                 <>
                   <ButtonGroup variant="contained" ref={generateBtnGroupRef}>
-                    {/* <Button
-                      disabled
-                      sx={{
-                        backgroundColor: scrolledToBottom && "#000",
-                        "&:hover": {
-                          backgroundColor: scrolledToBottom && "#000",
-                        },
-                        color: "#fff",
-                        opacity: 1,
-                      }}
-                    > */}
-                    {/* {generateBtns[0]} */}
-                    {/* <MusicNoteIcon sx={{ ml: 1 }} />
-                    </Button> */}
                     <Button
                       size="small"
                       onClick={handleGenerateBtnGroupToggle}
@@ -1779,7 +1845,6 @@ export default function Page() {
                         },
                       }}
                     >
-
                       {generateBtns[0]}<ArrowDropDownIcon />
                     </Button>
                   </ButtonGroup>
@@ -1854,16 +1919,29 @@ export default function Page() {
           />
         </>
       )}
-      <MusicSelector
+            <MusicSelector
         open={isMusicSelectorOpen}
         userId={userId}
         handleClose={() => setIsMusicSelectorOpen(false)}
         handleMusicSelect={async (bgMusicId) => {
-          await handleGenerateVideo(bgMusicId);
-          setIsMusicSelectorOpen(false);
+          const canProceed = await checkAndSaveEditing();
+          if (canProceed) {
+            await handleGenerateVideo(bgMusicId);
+            setIsMusicSelectorOpen(false);
+          } else {
+            setPendingVideoGenerationAction({ action: 'generate', params: bgMusicId });
+          }
         }}
         selectedBgMusicId={null}
       />
+      
+      <ConfirmationDialogBox
+        openConfirmationDialogBox={openSaveAllPointersConfirmationDialog}
+        handleConfirmationDialogBoxClose={handleSaveAllPointersDialogClose}
+        confirmationText="Do you want to save these changes before generating the video?"
+        handler={handleSaveAllPointersConfirmation}
+      />
+      
       <Backdrop
         sx={{
           color: "#dee2e6",

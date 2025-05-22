@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import {
   TextField,
   Box,
@@ -22,7 +22,7 @@ import ConfirmationDialogBox from "./ConfirmationDialogBox";
 import ImageIcon from "@mui/icons-material/Image";
 import ImagePopupTabs from "./ImagePopupTabs";
 
-function VideoPointerConfig({
+const VideoPointerConfig = forwardRef(({
   index,
   dataPointer,
   currentDataPointerAudio,
@@ -40,7 +40,7 @@ function VideoPointerConfig({
   handleCurrentDataPointerAudio,
   handlePlayPauseDataPointer,
   handlePointerMusicSelect,
-}) {
+}, ref) => {
   const [targetDataPointer, setTargetDataPointer] = useState(
     dataPointer.dataPointer,
   );
@@ -154,6 +154,32 @@ function VideoPointerConfig({
       }
     };
   }, [dataPointer.isAudioPlaying]);
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    isEditing: () => isDataPointerEditing,
+    saveChanges: async () => {
+      if (isDataPointerEditing) {
+        await handleUpdateDataPointers(
+          targetDataPointer,
+          dataPointer.id,
+          index,
+        );
+        if (targetDataPointer !== initialDataPointerText)
+          handleCurrentDataPointerAudio(null);
+        setIsDataPointerEditing(false);
+        return true;
+      }
+      return false;
+    },
+    openSaveDialog: () => {
+      if (isDataPointerEditing) {
+        handleSavePointerConfirmationDialogBoxOpen();
+        return true;
+      }
+      return false;
+    }
+  }));
 
   return (
     <>
@@ -394,6 +420,6 @@ function VideoPointerConfig({
       </Box>
     </>
   );
-}
+});
 
 export default VideoPointerConfig;
