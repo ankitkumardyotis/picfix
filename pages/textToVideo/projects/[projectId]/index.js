@@ -1246,7 +1246,7 @@ export default function Page() {
     const handleScroll = () => {
       if (stepperBarRef.current) {
         const { top } = stepperBarRef.current.getBoundingClientRect();
-        if (Math.abs(top - 52) <= 2) setStepperBarScrolledToTop(true);
+        if (Math.abs(top - 53) <= 2) setStepperBarScrolledToTop(true);
         else setStepperBarScrolledToTop(false);
       }
     };
@@ -1263,7 +1263,7 @@ export default function Page() {
     const handleScroll = () => {
       if (selectBarRef.current) {
         const { top } = selectBarRef.current.getBoundingClientRect();
-        if (Math.abs(top - 146) <= 2) setSelectBarScrolledToTop(true);
+        if (Math.abs(top - 133) <= 2) setSelectBarScrolledToTop(true);
         else setSelectBarScrolledToTop(false);
 
         if (
@@ -1412,11 +1412,11 @@ export default function Page() {
             stepperBarScrolledToTop &&
             !selectBarScrolledToTop &&
             "0 4px 5px rgba(0,0,0,0.2)",
-          py: stepperBarScrolledToTop && 1,
+          // py: stepperBarScrolledToTop && 1,
           mb: smBp ? 5 : 3,
           mx: "auto",
           position: "sticky",
-          top: 52,
+          top: 53,
           width: stepperBarScrolledToTop ? (xsBp ? "300px" : "250px") : "100%",
           backgroundColor: "#FFF",
           backgroundImage:
@@ -1616,107 +1616,107 @@ export default function Page() {
               />
             </Typography>
           </Divider>
-          <Box
-            ref={selectBarRef}
-            sx={{
-              boxShadow: selectBarScrolledToTop && "0 4px 5px rgba(0,0,0,0.2)",
-              p: selectBarScrolledToTop && 1,
-              mb: smBp ? 5 : 3,
-              mx: "auto",
-              position: "sticky",
-              top: 146,
-              width: selectBarScrolledToTop
-                ? xsBp
-                  ? "300px"
-                  : "200px"
-                : "100%",
-              backgroundColor: "#FFF",
-              backgroundImage:
-                selectBarScrolledToTop &&
-                "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
-              zIndex: 1000,
-              borderRadius: 2,
-              borderTopLeftRadius: selectBarScrolledToTop && 0,
-              borderTopRightRadius: selectBarScrolledToTop && 0,
-              visibility: isSelectBarHidden ? "hidden" : "visible",
-            }}
-          >
-            <FormGroup
-              row
+            <Box
+              ref={selectBarRef}
               sx={{
-                flexDirection: selectBarScrolledToTop
+                boxShadow: selectBarScrolledToTop && "0 4px 5px rgba(0,0,0,0.2)",
+                p: selectBarScrolledToTop && 1,
+                mb: smBp ? 5 : 3,
+                mx: "auto",
+                position: "sticky",
+                top: 133,
+                width: selectBarScrolledToTop
                   ? xsBp
-                    ? "row"
-                    : "column"
-                  : smBp
-                    ? "row"
-                    : "column",
-                alignItems: selectBarScrolledToTop
-                  ? "center"
-                  : smBp
-                    ? "center"
-                    : "flex-start",
+                    ? "300px"
+                    : "200px"
+                  : "100%",
+                backgroundColor: "#FFF",
+                backgroundImage:
+                  selectBarScrolledToTop &&
+                  "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
+                zIndex: 1000,
+                borderRadius: 2,
+                borderTopLeftRadius: selectBarScrolledToTop && 0,
+                borderTopRightRadius: selectBarScrolledToTop && 0,
+                visibility: isSelectBarHidden ? "hidden" : "visible",
               }}
             >
-              <FormControlLabel
-                label="Select all"
-                sx={{ m: 0, whiteSpace: "nowrap" }}
-                control={
-                  <Checkbox
-                    checked={selectedPointers.length === dataPointers.length}
-                    indeterminate={
-                      selectedPointers.length === dataPointers.length
-                    }
-                    onChange={handleSelectAllPointersChange}
-                    sx={{ m: 0, p: 0 }}
-                  />
-                }
-              />
-              <Box
-                component="fieldset"
-                borderRadius={2}
-                pl={2}
-                pb={1}
-                borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
-                mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
-                ml={smBp ? 2 : 0}
-
-                whiteSpace="nowrap"
+              <FormGroup
+                row
+                sx={{
+                  flexDirection: selectBarScrolledToTop
+                    ? xsBp
+                      ? "row"
+                      : "column"
+                    : smBp
+                      ? "row"
+                      : "column",
+                  alignItems: selectBarScrolledToTop
+                    ? "center"
+                    : smBp
+                      ? "center"
+                      : "flex-start",
+                }}
               >
-                <legend
-                  style={{
-                    color: selectBarScrolledToTop ? "#000" : "#42a5f5",
-                  }}
+                <FormControlLabel
+                  label="Select all"
+                  sx={{ m: 0, whiteSpace: "nowrap" }}
+                  control={
+                    <Checkbox
+                      checked={selectedPointers.length === dataPointers.length}
+                      indeterminate={
+                        selectedPointers.length === dataPointers.length
+                      }
+                      onChange={handleSelectAllPointersChange}
+                      sx={{ m: 0, p: 0 }}
+                    />
+                  }
+                />
+                <Box
+                  component="fieldset"
+                  borderRadius={2}
+                  pl={2}
+                  pb={1}
+                  borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
+                  mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
+                  ml={smBp ? 1 : 0}
+
+                  whiteSpace="nowrap"
                 >
-                  &nbsp;Generate&nbsp;
-                </legend>
-                <FormControlLabel
-                  checked={mediaTypes.audios}
-                  onChange={() => handleMediaTypesChange("audios")}
-                  control={
-                    selectBarScrolledToTop ? (
-                      <Checkbox sx={{ m: 0, p: 0 }} />
-                    ) : (
-                      <Checkbox />
-                    )
-                  }
-                  label="Audios"
-                />
-                <FormControlLabel
-                  checked={mediaTypes.images}
-                  onChange={() => handleMediaTypesChange("images")}
-                  control={
-                    selectBarScrolledToTop ? (
-                      <Checkbox sx={{ m: 0, p: 0 }} />
-                    ) : (
-                      <Checkbox />
-                    )
-                  }
-                  label="Images"
-                />
-              </Box>
-            </FormGroup>
-          </Box>
+                  <legend
+                    style={{
+                      color: selectBarScrolledToTop ? "#000" : "#42a5f5",
+                    }}
+                  >
+                    &nbsp;Generate&nbsp;
+                  </legend>
+                  <FormControlLabel
+                    checked={mediaTypes.audios}
+                    onChange={() => handleMediaTypesChange("audios")}
+                    control={
+                      selectBarScrolledToTop ? (
+                        <Checkbox sx={{ m: 0, p: 0 }} />
+                      ) : (
+                        <Checkbox />
+                      )
+                    }
+                    label="Audios"
+                  />
+                  <FormControlLabel
+                    checked={mediaTypes.images}
+                    onChange={() => handleMediaTypesChange("images")}
+                    control={
+                      selectBarScrolledToTop ? (
+                        <Checkbox sx={{ m: 0, p: 0 }} />
+                      ) : (
+                        <Checkbox />
+                      )
+                    }
+                    label="Images"
+                  />
+                </Box>
+              </FormGroup>
+            </Box>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="droppable">
               {(provided) => (
