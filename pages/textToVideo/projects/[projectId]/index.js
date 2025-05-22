@@ -1679,7 +1679,8 @@ export default function Page() {
                 pb={1}
                 borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
                 mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
-                ml={selectBarScrolledToTop ? "auto" : smBp ? "auto" : "unset"}
+                ml={smBp ? 2 : 0}
+
                 whiteSpace="nowrap"
               >
                 <legend
