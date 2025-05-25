@@ -97,7 +97,44 @@ export default function MusicSelector({
         }
       });
       
-      setSearchResults(response.data.music || []);
+      let musicResults = response.data.music || [];
+      
+      // If there's a selected music and we're on the first page with no search query,
+      // move the selected music to the top
+      if (selectedBgMusicId && page === 1 && !debouncedSearchQuery) {
+        const selectedMusicIndex = musicResults.findIndex(
+          music => music.bgMusicId === selectedBgMusicId
+        );
+        
+        if (selectedMusicIndex > 0) {
+          // Remove selected music from its current position and add it to the beginning
+          const selectedMusic = musicResults.splice(selectedMusicIndex, 1)[0];
+          musicResults.unshift(selectedMusic);
+        } else if (selectedMusicIndex === -1) {
+          // If selected music is not in current results, fetch it separately and add to top
+          try {
+            const selectedMusicResponse = await nodeService.get(`/api/getBgMusic/${selectedBgMusicId}`);
+            if (selectedMusicResponse.status === 200) {
+              const selectedMusic = selectedMusicResponse.data.bgMusic;
+              // Convert to the same format as the music list
+              const formattedSelectedMusic = {
+                bgMusicId: selectedMusic.bgMusicId,
+                bgmusicprompt: selectedMusic.bgmusicprompt,
+                bgMusicKeywords: selectedMusic.bgMusicKeywords || []
+              };
+              musicResults.unshift(formattedSelectedMusic);
+              // Remove the last item to maintain the same count
+              if (musicResults.length > itemsPerPage) {
+                musicResults.pop();
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching selected music:", error);
+          }
+        }
+      }
+      
+      setSearchResults(musicResults);
       if (response.data.pagination) {
         setPaginationMetadata(response.data.pagination);
       }
@@ -336,20 +373,33 @@ export default function MusicSelector({
                         `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} ${activeTab === 0 ? '' : 'user-generated'} results` : 
                         'No results found'}
                     </Typography>
+                    {/* {selectedBgMusicId && page === 1 && !debouncedSearchQuery && searchResults.length > 0 && searchResults[0].bgMusicId === selectedBgMusicId && (
+                      <Typography variant="body2" color="primary" sx={{ mt: 1, fontStyle: "italic" }}>
+                        Your currently selected music is shown at the top
+                      </Typography>
+                    )} */}
                   </Box>
                   <List sx={{ width: "100%" }}>
                     {searchResults.map((sound) => (
                       <ListItem
                         key={sound.bgMusicId}
                         sx={{
-                          border: "1px solid #e0e0e0",
+                          border: sound.bgMusicId === selectedBgMusicId 
+                            ? "2px solid #1976d2" 
+                            : "1px solid #e0e0e0",
                           borderRadius: 1,
                           mb: 1,
+                          backgroundColor: sound.bgMusicId === selectedBgMusicId 
+                            ? "#e3f2fd" 
+                            : "transparent",
                           "&:hover": {
-                            backgroundColor: "#f5f5f5",
+                            backgroundColor: sound.bgMusicId === selectedBgMusicId 
+                              ? "#bbdefb" 
+                              : "#f5f5f5",
                           },
                           py: 2,
                           width: "100%",
+                          position: "relative",
                         }}
                       >
                         <Box
@@ -371,6 +421,14 @@ export default function MusicSelector({
                           </IconButton>
 
                           <Box flexGrow={1} minWidth={0}>
+                            {sound.bgMusicId === selectedBgMusicId && (
+                              <Chip
+                                label="Currently Selected"
+                                size="small"
+                                color="primary"
+                                sx={{ mb: 1, fontSize: "0.75rem" }}
+                              />
+                            )}
                             <Tooltip title={sound.bgmusicprompt}>
                               <Typography
                                 variant="body1"
@@ -383,6 +441,7 @@ export default function MusicSelector({
                                   WebkitBoxOrient: "vertical",
                                   lineHeight: "1.2em",
                                   maxHeight: "2.4em",
+                                  fontWeight: sound.bgMusicId === selectedBgMusicId ? 600 : 400,
                                 }}
                               >
                                 {/* Trim the prompt, If it start with the Keyworrd like, Create, Generate, Compose then remove it */}

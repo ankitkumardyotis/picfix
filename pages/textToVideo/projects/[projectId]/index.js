@@ -74,6 +74,7 @@ export default function Page() {
   const [socketLoadingText, setSocketLoadingText] = useState("");
   const [dataPointers, setDataPointers] = useState();
   const [dataPointerRefs, setDataPointerRefs] = useState([]);
+  const [selectedMusicIdForMusicSelector, setSelectedMusicIdForMusicSelector] = useState("");
   const [mediaTypes, setMediaTypes] = useState({
     audios: false,
     images: false,
@@ -267,6 +268,8 @@ export default function Page() {
     }
     handleStopLoading();
   };
+
+
 
   const handleUploadNewImage = (event, targetDataPointerId) => {
     return new Promise((resolve) => {
@@ -634,6 +637,9 @@ export default function Page() {
     handleStopLoading();
   };
 
+
+
+
   const getProjectData = async () => {
     handleStartLoading("Loading project...");
     try {
@@ -642,22 +648,25 @@ export default function Page() {
       );
 
       if (response.status === 200) {
+        console.log("response.data", response.data);
         const {
           message,
           projectName,
           projectDescription,
+          selectedMusicId,
           audioLanguage,
           voiceType,
           pointersCount,
           article,
           allOrderedPointers,
         } = response.data;
-        console.log(message);
+        console.log("message", message);
         setProjectName(projectName);
         setArticle(article);
         setAudioLanguage(audioLanguage);
         setVoiceType(voiceType);
         setPointersCount(pointersCount);
+        setSelectedMusicIdForMusicSelector(selectedMusicId);
         setDataPointers(() =>
           allOrderedPointers.length > 0
             ? allOrderedPointers.map((orderedPointer) => ({
@@ -726,7 +735,7 @@ export default function Page() {
       console.error(error);
     }
   };
-
+  console.log("selectedMusicIdForMusicSelector", selectedMusicIdForMusicSelector);  
   const handleSelectAllPointersChange = (e) => {
     setDataPointers((prevDataPointers) =>
       prevDataPointers.map((dataPointer) => ({
@@ -1041,6 +1050,7 @@ export default function Page() {
     }) => {
       if (targetProjectId === projectId) {
         handleStopSocketLoading();
+        setSelectedMusicIdForMusicSelector(bgMusicId);
         enqueueSnackbar(message, {
           anchorOrigin: { horizontal: "right", vertical: "bottom" },
           autoHideDuration: 3000,
@@ -1346,13 +1356,13 @@ export default function Page() {
 
   const checkAndSaveEditing = async () => {
     if (!dataPointers || !dataPointerRefs.length) return true;
-    
+
     const editingPointers = dataPointerRefs.filter(
       (ref, idx) => ref.current && ref.current.isEditing()
     );
-    
+
     if (editingPointers.length === 0) return true;
-    
+
     // Store pending action and open confirmation dialog
     setOpenSaveAllPointersConfirmationDialog(true);
     return false;
@@ -1366,14 +1376,17 @@ export default function Page() {
         await ref.current.saveChanges();
       }
     }
-    
+
     // Close the dialog
     setOpenSaveAllPointersConfirmationDialog(false);
-    
+
     // Execute the pending action if exists
     if (pendingVideoGenerationAction) {
       const { action, params } = pendingVideoGenerationAction;
       if (action === 'generate') {
+        if (params) {
+          setSelectedMusicIdForMusicSelector(params);
+        }
         await handleGenerateVideo(params);
       } else if (action === 'generateBgMusic') {
         await handleGenerateBgMusicForProject();
@@ -1616,107 +1629,107 @@ export default function Page() {
               />
             </Typography>
           </Divider>
-            <Box
-              ref={selectBarRef}
+          <Box
+            ref={selectBarRef}
+            sx={{
+              boxShadow: selectBarScrolledToTop && "0 4px 5px rgba(0,0,0,0.2)",
+              p: selectBarScrolledToTop && 1,
+              mb: smBp ? 5 : 3,
+              mx: "auto",
+              position: "sticky",
+              top: 133,
+              width: selectBarScrolledToTop
+                ? xsBp
+                  ? "300px"
+                  : "200px"
+                : "100%",
+              backgroundColor: "#FFF",
+              backgroundImage:
+                selectBarScrolledToTop &&
+                "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
+              zIndex: 1000,
+              borderRadius: 2,
+              borderTopLeftRadius: selectBarScrolledToTop && 0,
+              borderTopRightRadius: selectBarScrolledToTop && 0,
+              visibility: isSelectBarHidden ? "hidden" : "visible",
+            }}
+          >
+            <FormGroup
+              row
               sx={{
-                boxShadow: selectBarScrolledToTop && "0 4px 5px rgba(0,0,0,0.2)",
-                p: selectBarScrolledToTop && 1,
-                mb: smBp ? 5 : 3,
-                mx: "auto",
-                position: "sticky",
-                top: 133,
-                width: selectBarScrolledToTop
+                flexDirection: selectBarScrolledToTop
                   ? xsBp
-                    ? "300px"
-                    : "200px"
-                  : "100%",
-                backgroundColor: "#FFF",
-                backgroundImage:
-                  selectBarScrolledToTop &&
-                  "linear-gradient(59deg,rgba(100, 214, 207, 1) 0%,rgba(242, 212, 159, 1) 100%);",
-                zIndex: 1000,
-                borderRadius: 2,
-                borderTopLeftRadius: selectBarScrolledToTop && 0,
-                borderTopRightRadius: selectBarScrolledToTop && 0,
-                visibility: isSelectBarHidden ? "hidden" : "visible",
+                    ? "row"
+                    : "column"
+                  : smBp
+                    ? "row"
+                    : "column",
+                alignItems: selectBarScrolledToTop
+                  ? "center"
+                  : smBp
+                    ? "center"
+                    : "flex-start",
               }}
             >
-              <FormGroup
-                row
-                sx={{
-                  flexDirection: selectBarScrolledToTop
-                    ? xsBp
-                      ? "row"
-                      : "column"
-                    : smBp
-                      ? "row"
-                      : "column",
-                  alignItems: selectBarScrolledToTop
-                    ? "center"
-                    : smBp
-                      ? "center"
-                      : "flex-start",
-                }}
-              >
-                <FormControlLabel
-                  label="Select all"
-                  sx={{ m: 0, whiteSpace: "nowrap" }}
-                  control={
-                    <Checkbox
-                      checked={selectedPointers.length === dataPointers.length}
-                      indeterminate={
-                        selectedPointers.length === dataPointers.length
-                      }
-                      onChange={handleSelectAllPointersChange}
-                      sx={{ m: 0, p: 0 }}
-                    />
-                  }
-                />
-                <Box
-                  component="fieldset"
-                  borderRadius={2}
-                  pl={2}
-                  pb={1}
-                  borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
-                  mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
-                  ml={smBp ? 1 : 0}
+              <FormControlLabel
+                label="Select all"
+                sx={{ m: 0, whiteSpace: "nowrap" }}
+                control={
+                  <Checkbox
+                    checked={selectedPointers.length === dataPointers.length}
+                    indeterminate={
+                      selectedPointers.length === dataPointers.length
+                    }
+                    onChange={handleSelectAllPointersChange}
+                    sx={{ m: 0, p: 0 }}
+                  />
+                }
+              />
+              <Box
+                component="fieldset"
+                borderRadius={2}
+                pl={2}
+                pb={1}
+                borderColor={selectBarScrolledToTop ? "#000" : "#42a5f5"}
+                mt={selectBarScrolledToTop ? (xsBp ? -1 : 1) : smBp ? -1 : 3}
+                ml={smBp ? 1 : 0}
 
-                  whiteSpace="nowrap"
+                whiteSpace="nowrap"
+              >
+                <legend
+                  style={{
+                    color: selectBarScrolledToTop ? "#000" : "#42a5f5",
+                  }}
                 >
-                  <legend
-                    style={{
-                      color: selectBarScrolledToTop ? "#000" : "#42a5f5",
-                    }}
-                  >
-                    &nbsp;Generate&nbsp;
-                  </legend>
-                  <FormControlLabel
-                    checked={mediaTypes.audios}
-                    onChange={() => handleMediaTypesChange("audios")}
-                    control={
-                      selectBarScrolledToTop ? (
-                        <Checkbox sx={{ m: 0, p: 0 }} />
-                      ) : (
-                        <Checkbox />
-                      )
-                    }
-                    label="Audios"
-                  />
-                  <FormControlLabel
-                    checked={mediaTypes.images}
-                    onChange={() => handleMediaTypesChange("images")}
-                    control={
-                      selectBarScrolledToTop ? (
-                        <Checkbox sx={{ m: 0, p: 0 }} />
-                      ) : (
-                        <Checkbox />
-                      )
-                    }
-                    label="Images"
-                  />
-                </Box>
-              </FormGroup>
-            </Box>
+                  &nbsp;Generate&nbsp;
+                </legend>
+                <FormControlLabel
+                  checked={mediaTypes.audios}
+                  onChange={() => handleMediaTypesChange("audios")}
+                  control={
+                    selectBarScrolledToTop ? (
+                      <Checkbox sx={{ m: 0, p: 0 }} />
+                    ) : (
+                      <Checkbox />
+                    )
+                  }
+                  label="Audios"
+                />
+                <FormControlLabel
+                  checked={mediaTypes.images}
+                  onChange={() => handleMediaTypesChange("images")}
+                  control={
+                    selectBarScrolledToTop ? (
+                      <Checkbox sx={{ m: 0, p: 0 }} />
+                    ) : (
+                      <Checkbox />
+                    )
+                  }
+                  label="Images"
+                />
+              </Box>
+            </FormGroup>
+          </Box>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="droppable">
               {(provided) => (
@@ -1920,29 +1933,30 @@ export default function Page() {
           />
         </>
       )}
-            <MusicSelector
+      <MusicSelector
         open={isMusicSelectorOpen}
         userId={userId}
         handleClose={() => setIsMusicSelectorOpen(false)}
         handleMusicSelect={async (bgMusicId) => {
           const canProceed = await checkAndSaveEditing();
           if (canProceed) {
+            setSelectedMusicIdForMusicSelector(bgMusicId);
             await handleGenerateVideo(bgMusicId);
             setIsMusicSelectorOpen(false);
           } else {
             setPendingVideoGenerationAction({ action: 'generate', params: bgMusicId });
           }
         }}
-        selectedBgMusicId={null}
+        selectedBgMusicId={isMusicSelectorOpen ? selectedMusicIdForMusicSelector : null}
       />
-      
+
       <ConfirmationDialogBox
         openConfirmationDialogBox={openSaveAllPointersConfirmationDialog}
         handleConfirmationDialogBoxClose={handleSaveAllPointersDialogClose}
         confirmationText="Do you want to save these changes before generating the video?"
         handler={handleSaveAllPointersConfirmation}
       />
-      
+
       <Backdrop
         sx={{
           color: "#dee2e6",
