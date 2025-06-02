@@ -13,6 +13,8 @@ import {
   Chip,
   Tooltip,
   Pagination,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -40,6 +42,7 @@ export default function MusicSelector({
   handleClose,
   handleMusicSelect,
   selectedBgMusicId,
+  userId,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -57,6 +60,7 @@ export default function MusicSelector({
     currentPage: 1,
     limit: 5
   });
+  const [activeTab, setActiveTab] = useState(0); // 0 for All Music, 1 for My Music
 
   // Use debounce for search to avoid too many API calls
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -77,7 +81,7 @@ export default function MusicSelector({
     if (open) {
       fetchMusic();
     }
-  }, [open, page, debouncedSearchQuery]);
+  }, [open, page, debouncedSearchQuery, activeTab]);
   
   const fetchMusic = async () => {
     setIsLoading(true);
@@ -87,11 +91,50 @@ export default function MusicSelector({
         params: {
           page: page,
           limit: itemsPerPage,
-          search: debouncedSearchQuery
+          search: debouncedSearchQuery,
+          userGenerated: activeTab === 1, // Only request user-generated music for tab 1
+          userId: userId,
         }
       });
       
-      setSearchResults(response.data.music || []);
+      let musicResults = response.data.music || [];
+      
+      // If there's a selected music and we're on the first page with no search query,
+      // move the selected music to the top
+      if (selectedBgMusicId && page === 1 && !debouncedSearchQuery) {
+        const selectedMusicIndex = musicResults.findIndex(
+          music => music.bgMusicId === selectedBgMusicId
+        );
+        
+        if (selectedMusicIndex > 0) {
+          // Remove selected music from its current position and add it to the beginning
+          const selectedMusic = musicResults.splice(selectedMusicIndex, 1)[0];
+          musicResults.unshift(selectedMusic);
+        } else if (selectedMusicIndex === -1) {
+          // If selected music is not in current results, fetch it separately and add to top
+          try {
+            const selectedMusicResponse = await nodeService.get(`/api/getBgMusic/${selectedBgMusicId}`);
+            if (selectedMusicResponse.status === 200) {
+              const selectedMusic = selectedMusicResponse.data.bgMusic;
+              // Convert to the same format as the music list
+              const formattedSelectedMusic = {
+                bgMusicId: selectedMusic.bgMusicId,
+                bgmusicprompt: selectedMusic.bgmusicprompt,
+                bgMusicKeywords: selectedMusic.bgMusicKeywords || []
+              };
+              musicResults.unshift(formattedSelectedMusic);
+              // Remove the last item to maintain the same count
+              if (musicResults.length > itemsPerPage) {
+                musicResults.pop();
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching selected music:", error);
+          }
+        }
+      }
+      
+      setSearchResults(musicResults);
       if (response.data.pagination) {
         setPaginationMetadata(response.data.pagination);
       }
@@ -230,6 +273,20 @@ export default function MusicSelector({
     setPage(1);
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setPage(1); // Reset to page 1 when switching tabs
+    
+    // If something is playing, stop it when changing tabs
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      setCurrentTime(0);
+      setCurrentlyPlaying(null);
+      setAudioPlayer(null);
+    }
+  };
+
   // Get values from pagination metadata
   const totalPages = paginationMetadata.totalPages || 1;
   const totalCount = paginationMetadata.totalCount || 0;
@@ -266,11 +323,21 @@ export default function MusicSelector({
           </IconButton>
         </Box>
 
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          variant="fullWidth" 
+          sx={{ mb: 2 }}
+        >
+          <Tab label="All Music" />
+          <Tab label="My Music" />
+        </Tabs>
+
         <Box display="flex" gap={1} mb={3}>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search for music by keywords..."
+            placeholder={`Search for ${activeTab === 0 ? 'music' : 'your music'} by keywords...`}
             value={searchQuery}
             onChange={handleInputChange}
           />
@@ -293,7 +360,9 @@ export default function MusicSelector({
               {searchResults.length === 0 ? (
                 <Box textAlign="center" py={3}>
                   <Typography variant="body1">
-                    No music found matching your search.
+                    {activeTab === 0 
+                      ? "No music found matching your search." 
+                      : "No user-generated music found matching your search."}
                   </Typography>
                 </Box>
               ) : (
@@ -301,23 +370,36 @@ export default function MusicSelector({
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       {totalCount > 0 ? 
-                        `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} results` : 
+                        `Showing ${indexOfFirstItem}-${indexOfLastItem} of ${totalCount} ${activeTab === 0 ? '' : 'user-generated'} results` : 
                         'No results found'}
                     </Typography>
+                    {/* {selectedBgMusicId && page === 1 && !debouncedSearchQuery && searchResults.length > 0 && searchResults[0].bgMusicId === selectedBgMusicId && (
+                      <Typography variant="body2" color="primary" sx={{ mt: 1, fontStyle: "italic" }}>
+                        Your currently selected music is shown at the top
+                      </Typography>
+                    )} */}
                   </Box>
                   <List sx={{ width: "100%" }}>
                     {searchResults.map((sound) => (
                       <ListItem
                         key={sound.bgMusicId}
                         sx={{
-                          border: "1px solid #e0e0e0",
+                          border: sound.bgMusicId === selectedBgMusicId 
+                            ? "2px solid #1976d2" 
+                            : "1px solid #e0e0e0",
                           borderRadius: 1,
                           mb: 1,
+                          backgroundColor: sound.bgMusicId === selectedBgMusicId 
+                            ? "#e3f2fd" 
+                            : "transparent",
                           "&:hover": {
-                            backgroundColor: "#f5f5f5",
+                            backgroundColor: sound.bgMusicId === selectedBgMusicId 
+                              ? "#bbdefb" 
+                              : "#f5f5f5",
                           },
                           py: 2,
                           width: "100%",
+                          position: "relative",
                         }}
                       >
                         <Box
@@ -339,6 +421,14 @@ export default function MusicSelector({
                           </IconButton>
 
                           <Box flexGrow={1} minWidth={0}>
+                            {sound.bgMusicId === selectedBgMusicId && (
+                              <Chip
+                                label="Currently Selected"
+                                size="small"
+                                color="primary"
+                                sx={{ mb: 1, fontSize: "0.75rem" }}
+                              />
+                            )}
                             <Tooltip title={sound.bgmusicprompt}>
                               <Typography
                                 variant="body1"
@@ -351,6 +441,7 @@ export default function MusicSelector({
                                   WebkitBoxOrient: "vertical",
                                   lineHeight: "1.2em",
                                   maxHeight: "2.4em",
+                                  fontWeight: sound.bgMusicId === selectedBgMusicId ? 600 : 400,
                                 }}
                               >
                                 {/* Trim the prompt, If it start with the Keyworrd like, Create, Generate, Compose then remove it */}
