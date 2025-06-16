@@ -62,7 +62,14 @@ export default function App({
   return (
     <>
       <SessionProvider session={session}>
-        <SnackbarProvider>
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          autoHideDuration={3000}
+        >
           <ThemeProvider theme={theme}>
             <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
               <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
@@ -76,7 +83,7 @@ export default function App({
             </AppContext.Provider>
           </ThemeProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-          </SnackbarProvider>
+        </SnackbarProvider>
       </SessionProvider >
 
     </>

@@ -273,6 +273,19 @@ export default function AccountMenu() {
         </MenuItem>
         <MenuItem
           onClick={() => {
+            context.setFileUrl("");
+            router.push("/ai-image-editor");
+            localStorage.setItem("path", "/ai-image-editor");
+            // context.setFileUrl('')
+          }}
+        >
+          <ListItemIcon>
+            <BrushIcon fontSize="small" />
+          </ListItemIcon>
+          AI Image Editor
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
             router.push("/textToVideo");
             localStorage.setItem("path", "/textToVideo");
             // context.setFileUrl('')
