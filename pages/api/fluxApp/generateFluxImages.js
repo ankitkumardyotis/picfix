@@ -25,18 +25,18 @@ export default async function handler(req, res) {
 
   console.log(config)
   if (!session) {
-    res.status(401).json("Unauthorized");
+    res.status(401).json("Please login to use this feature.");
     return;
   }
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_KEY,
   });
-  // const planData = await getUserPlan(session.user.id)
+  const planData = await getUserPlan(session.user.id)
 
-  // if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
-  //   res.status(402).json("Please Subscribe to a plan to use this feature.");
-  //   return;
-  // }
+  if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
+    res.status(402).json("Please Subscribe to a plan to use this feature.");
+    return;
+  }
 
   try {
     // POST request to Replicate to start the image restoration generation process
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         prompt: config.prompt,
         go_fast: true,
         megapixels: "1",
-        num_outputs: config.num_outputs || 2, // Default to 2 if not specified
+        num_outputs: config.num_outputs,
         aspect_ratio: config.aspect_ratio,
         output_format: "jpg",
         output_quality: 100,

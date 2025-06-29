@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import Script from "next/script";
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { SnackbarProvider } from "notistack";
+import { useRouter } from "next/router";
 
 export default function App({
   Component,
@@ -21,6 +22,7 @@ export default function App({
   const [timerForRunModel, setTimerForRunModel] = useState(0)
   const [creditPoints, setCreditPoints] = useState(0)
 
+  const router=useRouter()
 
   const theme = createTheme({
     // palette: {
@@ -79,7 +81,7 @@ export default function App({
                 removeImageFromTransformerJs,
                 pageProps,
                 timerForRunModel])}
-              <Footer />
+              {router.pathname!='/ai-image-editor' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />

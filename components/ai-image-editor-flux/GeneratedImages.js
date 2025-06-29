@@ -12,8 +12,9 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CompareIcon from '@mui/icons-material/Compare';
 
-const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handlePreview, handleDownload, removeImage }) => {
+const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handlePreview, handleDownload, removeImage, canCompare, handleComparePreview }) => {
   const theme = useTheme();
   
   console.log("GeneratedImages component received:", { 
@@ -99,7 +100,7 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                   >
                     <Tooltip title="Preview Image">
                       <IconButton
-                        onClick={() => handlePreview(image)}
+                        onClick={() => handlePreview(image, index)}
                         sx={{
                           color: 'white',
                           backgroundColor: 'rgba(255,255,255,0.1)',
@@ -111,6 +112,22 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
+                    {canCompare && handleComparePreview && (
+                      <Tooltip title="Compare Images">
+                        <IconButton
+                          onClick={() => handleComparePreview(image, index)}
+                          sx={{
+                            color: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255,255,255,0.2)',
+                            },
+                          }}
+                        >
+                          <CompareIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <Tooltip title="Download Image">
                       <IconButton
                         onClick={() => handleDownload(image, index)}

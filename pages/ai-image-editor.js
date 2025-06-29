@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import AppContext from '../components/AppContext';
 import {
   Box,
@@ -28,10 +28,7 @@ import {
   useTheme,
   Tooltip,
   CircularProgress,
-  Alert,
-  Dialog,
-  DialogContent,
-  DialogTitle
+  Alert
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
@@ -47,133 +44,13 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import Head from 'next/head';
 import { useSnackbar } from 'notistack';
-import GeneratedImages from '../components/GeneratedImages';
-
-// Model configurations
-const modelConfigurations = {
-  'generate-image': {
-    name: 'Generate Image',
-    type: 'prompts',
-    options: ['A sunset over mountains', 'Futuristic city', 'Abstract art', 'Nature landscape', 'Portrait photography']
-  },
-  'hair-style': {
-    name: 'Hair Style',
-    type: 'hair-style',
-    hairStyles: [
-      { id: 1, name: "No change", image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop' },
-      { id: 2, name: "Random", image: '/assets/ai-image-editor/hair-cut/Random.png' },
-      { id: 3, name: "Messy Bun", image: '/assets/ai-image-editor/hair-cut/messy-bun.png' },
-      { id: 4, name: "Soft Waves", image: '/assets/ai-image-editor/hair-cut/soft-wave.png' },
-      { id: 5, name: "Blunt Bangs", image: '/assets/ai-image-editor/hair-cut/blunt-bang.png' },
-      { id: 6, name: "Lob", image: '/assets/ai-image-editor/hair-cut/lob.jpg' },
-      { id: 7, name: "Layered Shag", image: '/assets/ai-image-editor/hair-cut/layered-shag.jpg' },
-      { id: 8, name: "High Ponytail", image: '/assets/ai-image-editor/hair-cut/high ponytail.png' },
-      { id: 9, name: "Straight", image: '/assets/ai-image-editor/hair-cut/straight.png' },
-      { id: 11, name: "Curly", image: '/assets/ai-image-editor/hair-cut/curly.jpg' },
-      { id: 13, name: "Pixie Cut", image: '/assets/ai-image-editor/hair-cut/pixi-cut.jpg' },
-      { id: 15, name: "Low Ponytail", image: '/assets/ai-image-editor/hair-cut/low-ponytail.jpg' }
-    ],
-    hairColors: [
-      "No change", "Random", "Blonde", "Brunette", "Black", "Dark Brown", "Medium Brown", "Light Brown", "Auburn", "Copper", "Red", "Strawberry Blonde", "Platinum Blonde", "Silver", "White", "Blue", "Purple", "Pink", "Green", "Blue-Black", "Golden Blonde", "Honey Blonde", "Caramel", "Chestnut", "Mahogany", "Burgundy", "Jet Black", "Ash Brown", "Ash Blonde", "Titanium", "Rose Gold"
-    ],
-    genders: ["Male", "Female", "None"],
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ]
-  },
-  'combine-image': {
-    name: 'Combine Image',
-    type: 'prompts',
-    options: [
-      'Put the woman next to the house',
-      'Merge the two landscapes together',
-      'Combine the person with the background',
-      'Place the object in the scene',
-      'Blend the two images naturally',
-      'Create a composite of both images',
-      'Mix the foreground with the background',
-      'Combine the elements seamlessly'
-    ],
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ]
-  },
-  'text-removal': {
-    name: 'Text Removal',
-    type: 'text-removal',
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ]
-  },
-  'cartoonify': {
-    name: 'Cartoonify',
-    type: 'cartoonify',
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ]
-  },
-  'headshot': {
-    name: 'Headshot',
-    type: 'headshot',
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ],
-    genders: ["Male", "Female", "None"],
-    backgrounds: ["White", "Black", "Gray", "Neutral", "Office"]
-  },
-  'restore-image': {
-    name: 'Restore Image',
-    type: 'restore-image'
-    // No aspect ratios needed for restore-image
-  },
-  'reimagine': {
-    name: 'ReImagine',
-    type: 'reimagine',
-    genders: ["Male", "Female", "None"],
-    aspectRatios: [
-      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
-    ],
-    scenarios: [
-      "Random",
-      "Floating in space as an astronaut",
-      "Walking on the moon surface",
-      "Spacewalk outside the International Space Station",
-      "Standing on Mars in a spacesuit",
-      "Swimming with great white sharks",
-      "Deep sea diving with giant whales",
-      "Underwater with full scuba gear surrounded by jellyfish",
-      "Skydiving from 30,000 feet",
-      "Wingsuit flying through mountains",
-      "Bungee jumping from a helicopter",
-      "Free climbing El Capitan without ropes",
-      "Base jumping off a skyscraper",
-      "Riding on the back of a great white shark",
-      "Standing face-to-face with a roaring lion",
-      "Swimming with killer whales in Arctic waters",
-      "Gorilla encounter in dense jungle",
-      "Running with a pack of cheetahs",
-      "Standing in the eye of a hurricane",
-      "Surfing a massive tsunami wave",
-      "Volcano exploration in heat-proof suit",
-      "Lightning strike survivor in a storm",
-      "Avalanche escape on skis",
-      "Motorcycle jumping over helicopters",
-      "Hanging from a helicopter ladder",
-      "High-speed car chase as driver",
-      "Zipline across the Grand Canyon",
-      "Parachuting into a volcano",
-      "Flying through clouds without equipment",
-      "Superhero landing with impact crater",
-      "Dragon encounter in medieval armor",
-      "Levitating with magical energy",
-      "Standing on top of Mount Everest"
-    ]
-  }
-};
+import GeneratedImages from '../components/ai-image-editor-flux/GeneratedImages';
+import ImageUploader from '../components/ai-image-editor-flux/ImageUploader';
+import ExampleMasonry from '../components/ai-image-editor-flux/ExampleMasonry';
+import ImagePreviewModal from '../components/ai-image-editor-flux/ImagePreviewModal';
+import modelConfigurations from '../constant/ModelConfigurations';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -187,15 +64,15 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const SidePanel = styled(Box)(({ theme }) => ({
-  width: '280px',
-  height: '100%',
+  width: '250px',
+  height: '94vh',
   background: alpha(theme.palette.background.paper, 0.95),
   backdropFilter: 'blur(10px)',
   borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   padding: theme.spacing(3),
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(3),
+  gap: theme.spacing(2),
   overflow: 'auto',
   boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
   [theme.breakpoints.down('md')]: {
@@ -215,7 +92,7 @@ const MainEditor = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1),
   overflow: 'auto',
   background: alpha(theme.palette.background.default, 0.5),
 }));
@@ -230,77 +107,14 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
       },
     },
   },
-}));
-
-const StyleCard = styled(Card)(({ theme }) => ({
-  cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  border: '2px solid transparent',
-  overflow: 'hidden',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
-    transform: 'translateX(-100%)',
-    transition: 'transform 0.6s',
-  },
-  '&:hover': {
-    transform: 'translateY(-4px) scale(1.02)',
-    boxShadow: theme.shadows[12],
-    borderColor: theme.palette.primary.main,
-    '&::before': {
-      transform: 'translateX(100%)',
-    },
-  },
-  '&.selected': {
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
-    transform: 'scale(1.02)',
+  '& .MuiInputBase-input': {
+    // padding: theme.spacing(1),
+    // paddingLeft: theme.spacing(2),
+    fontSize: '14px',
   },
 }));
 
-const ImagePlaceholder = styled(Box)(({ theme }) => ({
-  width: '100%',
-  height: '300px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-  border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-  borderRadius: theme.spacing(2),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  cursor: 'pointer',
-  transition: 'all 0.3s ease',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: '0%',
-    height: '0%',
-    background: alpha(theme.palette.primary.main, 0.1),
-    borderRadius: '50%',
-    transform: 'translate(-50%, -50%)',
-    transition: 'width 0.6s, height 0.6s',
-  },
-  '&:hover': {
-    borderColor: theme.palette.primary.main,
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-    transform: 'scale(1.02)',
-    '&::before': {
-      width: '200%',
-      height: '200%',
-    },
-  },
-}));
+
 
 const MenuButton = styled(IconButton)(({ theme }) => ({
   display: 'none',
@@ -364,7 +178,6 @@ export default function AIImageEditor() {
   const context = useContext(AppContext);
   const [selectedModel, setSelectedModel] = useState('generate-image');
   const [aspectRatio, setAspectRatio] = useState('1:1');
-  const [qualityMode, setQualityMode] = useState('pro');
   const [inputPrompt, setInputPrompt] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedStyles, setSelectedStyles] = useState([]);
@@ -378,7 +191,7 @@ export default function AIImageEditor() {
   // Hair style specific states
   const [selectedHairStyle, setSelectedHairStyle] = useState('No change');
   const [selectedHairColor, setSelectedHairColor] = useState('No change');
-  const [selectedGender, setSelectedGender] = useState('None');
+  const [selectedGender, setSelectedGender] = useState('Male');
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [uploadingHairImage, setUploadingHairImage] = useState(false);
@@ -401,7 +214,7 @@ export default function AIImageEditor() {
   const [selectedHeadshotBackground, setSelectedHeadshotBackground] = useState('Neutral');
 
   // Restore image specific states
-  const [restoreImage, setRestoreImage] = useState(null);
+  const [restoreImage, setRestoreImage] = useState(null);9
   const [restoreImageUrl, setRestoreImageUrl] = useState(null);
   const [uploadingRestoreImage, setUploadingRestoreImage] = useState(false);
 
@@ -420,12 +233,40 @@ export default function AIImageEditor() {
   const [uploadingCombine1, setUploadingCombine1] = useState(false);
   const [uploadingCombine2, setUploadingCombine2] = useState(false);
 
-  // Hair style pagination state
-  const [currentStylePage, setCurrentStylePage] = useState(0);
+
 
   // Preview modal states
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [previewType, setPreviewType] = useState('generated'); // 'generated' or 'example'
+  const [exampleImages, setExampleImages] = useState([]);
+  const [exampleImageInfo, setExampleImageInfo] = useState(null);
+  const [autoOpenComparison, setAutoOpenComparison] = useState(false);
+
+  // Refs for smooth scrolling
+  const imageGenerationRef = useRef(null);
+  const inputSectionRef = useRef(null);
+
+  // Smooth scroll to image generation section
+  const scrollToImageGeneration = () => {
+    if (imageGenerationRef.current) {
+      imageGenerationRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  };
+
+  // Smooth scroll to input section
+  const scrollToInput = () => {
+    if (inputSectionRef.current) {
+      inputSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  };
 
   // Dynamic aspect ratio options based on selected model
   const getAspectRatioOptions = () => {
@@ -466,44 +307,37 @@ export default function AIImageEditor() {
     ];
   };
 
-  // Add this after aspectRatioOptions
-  const outputNumberOptions = [
-    { value: 1, label: '1 Image' },
-    { value: 2, label: '2 Images' },
-    { value: 3, label: '3 Images' },
-    { value: 4, label: '4 Images' },
-  ];
 
   const handleModelChange = (event) => {
     const newModel = event.target.value;
     setSelectedModel(newModel);
     setSelectedItems([]);
     setSelectedStyles([]);
-    
+
     // Reset hair style specific states when switching models
     if (newModel !== 'hair-style') {
       setSelectedHairStyle('No change');
       setSelectedHairColor('No change');
-      setSelectedGender('None');
+      setSelectedGender('Male');
       setUploadedImage(null);
       setUploadedImageUrl(null);
       setUploadingHairImage(false);
     }
-    
+
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
       setTextRemovalImage(null);
       setTextRemovalImageUrl(null);
       setUploadingTextRemovalImage(false);
     }
-    
+
     // Reset cartoonify specific states when switching models
     if (newModel !== 'cartoonify') {
       setCartoonifyImage(null);
       setCartoonifyImageUrl(null);
       setUploadingCartoonifyImage(false);
     }
-    
+
     // Reset headshot specific states when switching models
     if (newModel !== 'headshot') {
       setHeadshotImage(null);
@@ -512,14 +346,14 @@ export default function AIImageEditor() {
       setSelectedHeadshotGender('None');
       setSelectedHeadshotBackground('Neutral');
     }
-    
+
     // Reset restore image specific states when switching models
     if (newModel !== 'restore-image') {
       setRestoreImage(null);
       setRestoreImageUrl(null);
       setUploadingRestoreImage(false);
     }
-    
+
     // Reset reimagine specific states when switching models
     if (newModel !== 'reimagine') {
       setReimagineImage(null);
@@ -528,7 +362,7 @@ export default function AIImageEditor() {
       setSelectedReimagineGender('None');
       setSelectedScenario('Random');
     }
-    
+
     // Reset combine image specific states when switching models
     if (newModel !== 'combine-image') {
       setCombineImage1(null);
@@ -538,17 +372,18 @@ export default function AIImageEditor() {
       setUploadingCombine1(false);
       setUploadingCombine2(false);
     }
-    
+
     // Reset aspect ratio to default for new model
-    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'reimagine') {
+    if (newModel === 'hair-style' || newModel === 'combine-image') {
       setAspectRatio('match_input_image');
     } else if (newModel === 'restore-image') {
-      // For restore-image, aspect ratio is not needed/used
       setAspectRatio('');
+    } else if (newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'reimagine') {
+      setAspectRatio('1:1');
     } else {
       setAspectRatio('1:1');
     }
-    
+
     // Set number of outputs based on model
     if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'reimagine') {
       setNumOutputs(1);
@@ -597,6 +432,9 @@ export default function AIImageEditor() {
     setError(null);
     setGeneratedImages(Array(numOutputs).fill(null));
 
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
     try {
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
@@ -639,6 +477,9 @@ export default function AIImageEditor() {
     setIsLoading(true);
     setError(null);
     setGeneratedImages([null]); // Hair style model returns only 1 image
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
 
     try {
       enqueueSnackbar('Changing hair style...', { variant: 'info' });
@@ -692,6 +533,9 @@ export default function AIImageEditor() {
     setError(null);
     setGeneratedImages([null]); // Combine image model returns only 1 image
 
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
     try {
       enqueueSnackbar('Combining images...', { variant: 'info' });
 
@@ -739,6 +583,9 @@ export default function AIImageEditor() {
     setError(null);
     setNumOutputs(1); // Ensure only 1 output for text removal
     setGeneratedImages([null]); // Text removal model returns only 1 image
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
 
     try {
       enqueueSnackbar('Removing text from image...', { variant: 'info' });
@@ -797,6 +644,9 @@ export default function AIImageEditor() {
     setNumOutputs(1); // Ensure only 1 output for cartoonify
     setGeneratedImages([null]); // Cartoonify model returns only 1 image
 
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
     try {
       enqueueSnackbar('Cartoonifying image...', { variant: 'info' });
 
@@ -853,6 +703,9 @@ export default function AIImageEditor() {
     setError(null);
     setNumOutputs(1); // Ensure only 1 output for headshot
     setGeneratedImages([null]); // Headshot model returns only 1 image
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
 
     try {
       enqueueSnackbar('Generating professional headshot...', { variant: 'info' });
@@ -913,6 +766,9 @@ export default function AIImageEditor() {
     setNumOutputs(1); // Ensure only 1 output for restore image
     setGeneratedImages([null]); // Restore image model returns only 1 image
 
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
     try {
       enqueueSnackbar('Restoring image...', { variant: 'info' });
 
@@ -970,6 +826,9 @@ export default function AIImageEditor() {
     setNumOutputs(1); // Ensure only 1 output for reimagine
     setGeneratedImages([null]); // ReImagine model returns only 1 image
 
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
     try {
       enqueueSnackbar('Generating impossible scenario...', { variant: 'info' });
 
@@ -1019,7 +878,7 @@ export default function AIImageEditor() {
   };
 
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       if (inputPrompt.trim()) {
         if (selectedModel === 'combine-image') {
@@ -1125,14 +984,81 @@ export default function AIImageEditor() {
     console.log("generatedImages state updated:", generatedImages);
   }, [generatedImages]);
 
+
+
   const currentConfig = modelConfigurations[selectedModel];
 
+  // Get display name for model
+  const getModelDisplayName = (model) => {
+    const names = {
+      'generate-image': 'AI Image Generator',
+      'hair-style': 'Hair Style Changer',
+      'headshot': 'Professional Headshot',
+      'cartoonify': 'Cartoonify',
+      'restore-image': 'Image Restoration',
+      'text-removal': 'Text/Watermark Removal',
+      'reimagine': 'ReImagine Scenarios',
+      'combine-image': 'Image Combiner'
+    };
+    return names[model] || model;
+  };
+
+  // Utility function to generate intelligent filename
+  const generateFileName = (model, prompt = '', index = 0) => {
+    const config = modelConfigurations[model];
+    const usesPrompts = config?.type === 'prompts';
+    
+    // Generate random string
+    const randomString = Math.random().toString(36).substring(2, 8);
+    
+    if (usesPrompts && prompt && prompt.trim()) {
+      // Clean and format prompt for filename
+      const cleanPrompt = prompt
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .substring(0, 50); // Limit length to 50 characters
+      
+      return `${cleanPrompt}-${randomString}.jpg`;
+    } else if (model === 'hair-style' && selectedHairStyle && selectedHairStyle !== 'No change') {
+      // Use selected hair style for hair-style model
+      const cleanStyle = selectedHairStyle
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .substring(0, 30); // Limit length to 30 characters
+      
+      return `hair-style-${cleanStyle}-${randomString}.jpg`;
+    } else if (model === 'reimagine' && selectedScenario && selectedScenario !== 'Random') {
+      // Use selected scenario for reimagine model
+      const cleanScenario = selectedScenario
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .substring(0, 40); // Limit length to 40 characters
+      
+      return `reimagine-${cleanScenario}-${randomString}.jpg`;
+    } else {
+      // Use model name with random string
+      const modelName = getModelDisplayName(model)
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-');
+      
+      return `${modelName}-${randomString}.jpg`;
+    }
+  };
+
   const handleDownload = (imageUrl, index) => {
+    // Generate intelligent filename
+    const filename = generateFileName(selectedModel, inputPrompt, index);
+    
     // For base64 images
     if (imageUrl.startsWith('data:')) {
       const link = document.createElement('a');
       link.href = imageUrl;
-      link.download = `generated-image-${index + 1}.jpg`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1144,7 +1070,7 @@ export default function AIImageEditor() {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `generated-image-${index + 1}.jpg`;
+          link.download = filename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -1153,32 +1079,162 @@ export default function AIImageEditor() {
     }
   };
 
-  const handlePrevStylePage = () => {
-    setCurrentStylePage(prevPage => prevPage - 1);
+  const getAllStyleItems = () => {
+    if (!currentConfig) return [];
+    console.log(currentConfig);
+    if (selectedGender === "Male") {
+      return currentConfig.hairStylesMale || [];
+    } else if (selectedGender === "Female") {
+      return currentConfig.hairStylesFemale || [];
+    }
+    return [];
   };
 
-  const handleNextStylePage = () => {
-    setCurrentStylePage(prevPage => prevPage + 1);
-  };
-
-  const getCurrentStyleItems = () => {
-    if (!currentConfig?.hairStyles) return [];
-    const startIndex = currentStylePage * 10;
-    const endIndex = startIndex + 10;
-    return currentConfig.hairStyles.slice(startIndex, endIndex);
-  };
-
-  const handlePreview = (imageUrl) => {
+  const handlePreview = (imageUrl, imageIndex = 0) => {
+    // Filter out null images to get valid images array
+    const validImages = generatedImages.filter(img => img !== null);
+    // Find the index in the valid images array
+    const validIndex = validImages.findIndex(img => img === imageUrl);
+    setCurrentImageIndex(validIndex >= 0 ? validIndex : 0);
     setPreviewImage(imageUrl);
+    setPreviewType('generated');
+    setExampleImages([]);
+    setExampleImageInfo(null);
+    setAutoOpenComparison(false);
+    setPreviewOpen(true);
+  };
+
+  const handleComparePreview = (imageUrl, imageIndex = 0) => {
+    // Open preview modal and automatically activate comparison mode
+    const validImages = generatedImages.filter(img => img !== null);
+    const validIndex = validImages.findIndex(img => img === imageUrl);
+    setCurrentImageIndex(validIndex >= 0 ? validIndex : 0);
+    setPreviewImage(imageUrl);
+    setPreviewType('generated');
+    setExampleImages([]);
+    setExampleImageInfo(null);
+    setAutoOpenComparison(true);
     setPreviewOpen(true);
   };
 
   const handlePreviewClose = () => {
     setPreviewOpen(false);
     setPreviewImage(null);
+    setCurrentImageIndex(0);
+    setPreviewType('generated');
+    setExampleImages([]);
+    setExampleImageInfo(null);
+    setAutoOpenComparison(false);
   };
 
-  const totalPages = Math.ceil(currentConfig.hairStyles?.length / 10) || 0;
+  // Handle image navigation in preview
+  const handleImageChange = (newIndex) => {
+    setCurrentImageIndex(newIndex);
+
+    if (previewType === 'generated') {
+      // Update previewImage based on the new index for generated images
+      const validImages = generatedImages.filter(img => img !== null);
+      if (validImages[newIndex]) {
+        setPreviewImage(validImages[newIndex]);
+      }
+    } else if (previewType === 'example') {
+      // Update previewImage based on the new index for example images
+      if (exampleImages[newIndex]) {
+        setPreviewImage(exampleImages[newIndex].url);
+        setExampleImageInfo({
+          title: exampleImages[newIndex].title,
+          prompt: exampleImages[newIndex].prompt,
+          model: selectedModel,
+          // created: 'Example Image',
+          resolution: 'High Quality',
+          format: 'JPEG',
+          type: 'example'
+        });
+      }
+    }
+  };
+
+  // Handle example image click from masonry
+  const handleExampleImageClick = (imageData) => {
+    setPreviewImage(imageData.url);
+    setCurrentImageIndex(imageData.index);
+    setPreviewType('example');
+    setExampleImages(imageData.images);
+    setExampleImageInfo(imageData.imageInfo);
+    setPreviewOpen(true);
+  };
+
+  // Handle prompt use from masonry
+  const handlePromptUse = (prompt) => {
+    setInputPrompt(prompt);
+    enqueueSnackbar('Prompt added! Scrolling to input field...', { variant: 'success' });
+
+    // Smooth scroll to input section after a short delay to let the snackbar appear
+    setTimeout(() => {
+      scrollToInput();
+
+      // Focus the input field after scrolling for better UX
+      const inputElement = inputSectionRef.current?.querySelector('textarea');
+      if (inputElement) {
+        setTimeout(() => {
+          inputElement.focus();
+          inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+        }, 500);
+      }
+    }, 300);
+  };
+
+  // Image comparison functions
+  const canCompareImages = () => {
+    // Check if we have images available for comparison
+    if (selectedModel === 'hair-style' && uploadedImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'text-removal' && textRemovalImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'cartoonify' && cartoonifyImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'headshot' && headshotImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'restore-image' && restoreImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'reimagine' && reimagineImage && generatedImages[0]) {
+      return true;
+    }
+    if (selectedModel === 'combine-image' && combineImage1 && generatedImages[0]) {
+      return true;
+    }
+    // For generate-image model, check if we have at least 2 generated images
+    if (selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2) {
+      return true;
+    }
+    return false;
+  };
+
+  const getComparisonLabels = () => {
+    if (selectedModel === 'hair-style') {
+      return { before: 'Original', after: 'New Hair Style' };
+    } else if (selectedModel === 'text-removal') {
+      return { before: 'With Text', after: 'Text Removed' };
+    } else if (selectedModel === 'cartoonify') {
+      return { before: 'Original', after: 'Cartoonified' };
+    } else if (selectedModel === 'headshot') {
+      return { before: 'Original', after: 'Professional Headshot' };
+    } else if (selectedModel === 'restore-image') {
+      return { before: 'Original', after: 'Restored' };
+    } else if (selectedModel === 'reimagine') {
+      return { before: 'Original', after: 'Reimagined' };
+    } else if (selectedModel === 'combine-image') {
+      return { before: 'Input Image', after: 'Combined Result' };
+    } else if (selectedModel === 'generate-image') {
+      return { before: 'Generated Image 1', after: 'Generated Image 2' };
+    }
+    return { before: 'Before', after: 'After' };
+  };
 
   return (
     <>
@@ -1213,32 +1269,28 @@ export default function AIImageEditor() {
 
           {/* Right Side Panel */}
           <SidePanel className={mobileMenuOpen ? 'open' : ''}>
-            {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <AutoAwesomeIcon sx={{ color: theme.palette.primary.main, fontSize: 32 }} />
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                PicFix.ai
-              </Typography>
-            </Box> */}
 
             {/* Model Selection */}
             <FormControl fullWidth variant="outlined">
-              <InputLabel>Select Model</InputLabel>
+              <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>Select Model</InputLabel>
               <Select
                 value={selectedModel}
                 onChange={handleModelChange}
                 label="Select Model"
-                sx={{ borderRadius: 2 }}
+                sx={{
+                  borderRadius: 2,
+                  '& .MuiSelect-select': {
+                    padding: '.5rem',
+                    paddingLeft: '1rem',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                  },
+
+
+                }}
               >
                 {Object.entries(modelConfigurations).map(([key, config]) => (
-                  <MenuItem key={key} value={key}>
+                  <MenuItem key={key} value={key} sx={{ fontSize: '12px', fontWeight: 400, }}>
                     {config.name}
                   </MenuItem>
                 ))}
@@ -1253,7 +1305,15 @@ export default function AIImageEditor() {
                   value={aspectRatio}
                   onChange={(e) => setAspectRatio(e.target.value)}
                   label="Aspect Ratio"
-                  sx={{ borderRadius: 2 }}
+                  sx={{
+                    borderRadius: 2,
+                    '& .MuiSelect-select': {
+                      padding: '.5rem',
+                      paddingLeft: '1rem',
+                      fontSize: '2px',
+                      fontWeight: 400,
+                    },
+                  }}
                 >
                   {getAspectRatioOptions().map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -1284,7 +1344,7 @@ export default function AIImageEditor() {
                             }}
                           />
                         </Box>
-                        <Typography variant="body2">{option.label}</Typography>
+                        <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 500, }}>{option.label}</Typography>
                       </Box>
                     </MenuItem>
                   ))}
@@ -1302,10 +1362,18 @@ export default function AIImageEditor() {
                     value={selectedHairColor}
                     onChange={(e) => setSelectedHairColor(e.target.value)}
                     label="Hair Color"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.hairColors.map((color, index) => (
-                      <MenuItem key={index} value={color}>
+                      <MenuItem key={index} value={color} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {color}
                       </MenuItem>
                     ))}
@@ -1319,10 +1387,18 @@ export default function AIImageEditor() {
                     value={selectedGender}
                     onChange={(e) => setSelectedGender(e.target.value)}
                     label="Gender"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender}>
+                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {gender}
                       </MenuItem>
                     ))}
@@ -1330,7 +1406,6 @@ export default function AIImageEditor() {
                 </FormControl>
               </>
             )}
-
             {/* Headshot Specific Sidebar Controls */}
             {selectedModel === 'headshot' && (
               <>
@@ -1341,10 +1416,18 @@ export default function AIImageEditor() {
                     value={selectedHeadshotGender}
                     onChange={(e) => setSelectedHeadshotGender(e.target.value)}
                     label="Gender"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender}>
+                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {gender}
                       </MenuItem>
                     ))}
@@ -1358,10 +1441,18 @@ export default function AIImageEditor() {
                     value={selectedHeadshotBackground}
                     onChange={(e) => setSelectedHeadshotBackground(e.target.value)}
                     label="Background"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.backgrounds.map((background, index) => (
-                      <MenuItem key={index} value={background}>
+                      <MenuItem key={index} value={background} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {background}
                       </MenuItem>
                     ))}
@@ -1380,27 +1471,41 @@ export default function AIImageEditor() {
                     value={selectedReimagineGender}
                     onChange={(e) => setSelectedReimagineGender(e.target.value)}
                     label="Gender"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender}>
+                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {gender}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-
-                {/* Scenario Selection */}
                 <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
                   <InputLabel>Reimagine Yourself</InputLabel>
                   <Select
                     value={selectedScenario}
                     onChange={(e) => setSelectedScenario(e.target.value)}
                     label="Reimagine Yourself"
-                    sx={{ borderRadius: 2 }}
+                    sx={{
+                      borderRadius: 2,
+                      '& .MuiSelect-select': {
+                        padding: '.5rem',
+                        paddingLeft: '1rem',
+                        fontSize: '12px',
+                        fontWeight: 400,
+                      },
+                    }}
                   >
                     {currentConfig.scenarios.map((scenario, index) => (
-                      <MenuItem key={index} value={scenario}>
+                      <MenuItem key={index} value={scenario} sx={{ fontSize: '12px', fontWeight: 400, }}>
                         {scenario}
                       </MenuItem>
                     ))}
@@ -1411,8 +1516,8 @@ export default function AIImageEditor() {
 
             {/* Number of Outputs */}
             {selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'reimagine' && (
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+              <Box sx={{ mt: -1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
                   Number of Outputs
                 </Typography>
                 <Box
@@ -1422,7 +1527,10 @@ export default function AIImageEditor() {
                     bgcolor: alpha(theme.palette.background.paper, 0.8),
                     borderRadius: 2,
                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    p: 0.5,
+                    '& .MuiSelect-select': {
+                      padding: '.5rem',
+                      paddingLeft: '1rem',
+                    },
                   }}
                 >
                   <IconButton
@@ -1489,34 +1597,36 @@ export default function AIImageEditor() {
               <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
                 Credits remaining: {context.creditPoints || 0}
               </Typography>
-              <Button 
-                fullWidth 
-                variant="contained" 
+              
+
+              <Button
+                fullWidth
+                variant="contained"
                 startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
-                disabled={isLoading || 
-                  (selectedModel === 'hair-style' ? !uploadedImageUrl : 
-                  selectedModel === 'text-removal' ? !textRemovalImageUrl :
-                  selectedModel === 'cartoonify' ? !cartoonifyImageUrl :
-                  selectedModel === 'headshot' ? !headshotImageUrl :
-                  selectedModel === 'restore-image' ? !restoreImageUrl :
-                  selectedModel === 'reimagine' ? !reimagineImageUrl :
-                  selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
-                  !inputPrompt.trim())}
-                onClick={selectedModel === 'hair-style' ? generateHairStyleImages : 
-                        selectedModel === 'text-removal' ? generateTextRemovalImage :
-                        selectedModel === 'cartoonify' ? generateCartoonifyImage :
-                        selectedModel === 'headshot' ? generateHeadshotImage :
+                disabled={isLoading ||
+                  (selectedModel === 'hair-style' ? !uploadedImageUrl :
+                    selectedModel === 'text-removal' ? !textRemovalImageUrl :
+                      selectedModel === 'cartoonify' ? !cartoonifyImageUrl :
+                        selectedModel === 'headshot' ? !headshotImageUrl :
+                          selectedModel === 'restore-image' ? !restoreImageUrl :
+                            selectedModel === 'reimagine' ? !reimagineImageUrl :
+                              selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
+                                !inputPrompt.trim())}
+                onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
+                  selectedModel === 'text-removal' ? generateTextRemovalImage :
+                    selectedModel === 'cartoonify' ? generateCartoonifyImage :
+                      selectedModel === 'headshot' ? generateHeadshotImage :
                         selectedModel === 'restore-image' ? generateRestoreImage :
-                        selectedModel === 'reimagine' ? generateReimagineImage :
-                        selectedModel === 'combine-image' ? generateCombineImages : 
-                        generateFluxImages}
-                sx={{ 
+                          selectedModel === 'reimagine' ? generateReimagineImage :
+                            selectedModel === 'combine-image' ? generateCombineImages :
+                              generateFluxImages}
+                sx={{
                   borderRadius: 3,
-                  py: 1.5,
+                  py: 1,
                   background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '1rem',
+                  fontSize: '.8rem',
                   boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
                   '&:hover': {
                     background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
@@ -1530,15 +1640,15 @@ export default function AIImageEditor() {
                   transition: 'all 0.3s ease',
                 }}
               >
-                {isLoading ? 'Generating...' : 
-                 selectedModel === 'hair-style' ? 'Change Hair Style' : 
-                 selectedModel === 'text-removal' ? 'Remove Text' :
-                 selectedModel === 'cartoonify' ? 'Cartoonify Image' :
-                 selectedModel === 'headshot' ? 'Generate Headshot' :
-                 selectedModel === 'restore-image' ? 'Restore Image' :
-                 selectedModel === 'reimagine' ? 'Reimagine Yourself' :
-                 selectedModel === 'combine-image' ? 'Combine Images' :
-                 'Generate Image'}
+                {isLoading ? 'Generating...' :
+                  selectedModel === 'hair-style' ? 'Change Hair Style' :
+                    selectedModel === 'text-removal' ? 'Remove Watermark' :
+                      selectedModel === 'cartoonify' ? 'Cartoonify Image' :
+                        selectedModel === 'headshot' ? 'Generate Headshot' :
+                          selectedModel === 'restore-image' ? 'Restore Image' :
+                            selectedModel === 'reimagine' ? 'Reimagine Yourself' :
+                              selectedModel === 'combine-image' ? 'Combine Images' :
+                                'Generate Image'}
               </Button>
             </Box>
           </SidePanel>
@@ -1548,88 +1658,81 @@ export default function AIImageEditor() {
             {/* Hair Style Scrollable Strip for Hair Style Model */}
             {selectedModel === 'hair-style' ? (
               <Box>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                  Choose Hair Style
-                </Typography>
                 <Box
                   sx={{
-                    position: 'relative',
                     borderRadius: 2,
                   }}
                 >
-                  {/* Navigation Arrows */}
-                  <IconButton
-                    onClick={handlePrevStylePage}
-                    disabled={currentStylePage === 0}
-                    sx={{
-                      position: 'absolute',
-                      left: 8,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 2,
-                      backgroundColor: 'rgba(255,255,255,0.9)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,1)',
-                      },
-                      '&.Mui-disabled': {
-                        backgroundColor: 'rgba(255,255,255,0.5)',
-                      },
-                    }}
-                  >
-                    <ArrowBackIosIcon />
-                  </IconButton>
-
-                  <IconButton
-                    onClick={handleNextStylePage}
-                    disabled={currentStylePage >= totalPages - 1}
-                    sx={{
-                      position: 'absolute',
-                      right: 8,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 2,
-                      backgroundColor: 'rgba(255,255,255,0.9)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,1)',
-                      },
-                      '&.Mui-disabled': {
-                        backgroundColor: 'rgba(255,255,255,0.5)',
-                      },
-                    }}
-                  >
-                    <ArrowForwardIosIcon />
-                  </IconButton>
-
                   {/* Hair Style Strip */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: 2,
-                      overflowX: 'hidden',
-                      px: 5, // Add padding for arrows
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {getCurrentStyleItems().map((style) => (
-                      <AppStyleCard
-                        key={style.id}
-                        onClick={() => setSelectedHairStyle(style.name)}
-                        sx={{ minWidth: 80, flexShrink: 0 }}
-                      >
-                        <AppStyleIcon className={selectedHairStyle === style.name ? 'selected' : ''}>
-                          <img src={style.image} alt={style.name} height={100} width={100} />
-                        </AppStyleIcon>
-                        <AppStyleLabel>{style.name}</AppStyleLabel>
-                      </AppStyleCard>
-                    ))}
-                  </Box>
-
-                  {/* Page Indicator */}
-                  <Box sx={{ textAlign: 'center', mt: 2 }}>
-                    <Typography variant="caption" color="textSecondary">
-                      {currentStylePage + 1} of {totalPages}
-                    </Typography>
-                  </Box>
+                  {(selectedGender === "Male" || selectedGender === "Female") ? (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        overflowX: 'auto',
+                        pb: 1,
+                        px: 1,
+                        scrollBehavior: 'smooth',
+                        '&::-webkit-scrollbar': {
+                          height: 8,
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          backgroundColor: alpha(theme.palette.grey[300], 0.3),
+                          borderRadius: 4,
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.6),
+                          borderRadius: 4,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.8),
+                          },
+                        },
+                        // For Firefox
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: `${alpha(theme.palette.primary.main, 0.6)} ${alpha(theme.palette.grey[300], 0.3)}`,
+                      }}
+                    >
+                      {getAllStyleItems().map((style) => (
+                        <AppStyleCard
+                          key={style.id}
+                          onClick={() => setSelectedHairStyle(style.name)}
+                          sx={{ 
+                            minWidth: 80, 
+                            flexShrink: 0,
+                            userSelect: 'none', // Prevent text selection when dragging
+                          }}
+                        >
+                          <AppStyleIcon className={selectedHairStyle === style.name ? 'selected' : ''}>
+                            <img 
+                              src={style.image} 
+                              alt={style.name} 
+                              height={100} 
+                              width={100}
+                              draggable={false} // Prevent image drag
+                            />
+                          </AppStyleIcon>
+                          <AppStyleLabel>{style.name}</AppStyleLabel>
+                        </AppStyleCard>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        py: 4,
+                        px: 2,
+                        backgroundColor: alpha(theme.palette.info.main, 0.1),
+                        borderRadius: 2,
+                        border: `1px dashed ${alpha(theme.palette.info.main, 0.3)}`,
+                      }}
+                    >
+                      <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center' }}>
+                        Please select a gender from the sidebar to view available hair styles
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             ) : (
@@ -1637,9 +1740,7 @@ export default function AIImageEditor() {
               <>
                 {currentConfig.type === 'styles' ? (
                   <Box>
-                    <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                      Choose Your Style
-                    </Typography>
+
                     <Box
                       sx={{
                         display: 'grid',
@@ -1665,9 +1766,7 @@ export default function AIImageEditor() {
                   null
                 ) : (
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Suggested Prompts
-                    </Typography>
+
                     <Box
                       sx={{
                         display: 'flex',
@@ -1685,8 +1784,8 @@ export default function AIImageEditor() {
                           sx={{
                             borderRadius: '50px',
                             textTransform: 'none',
-                            padding: '6px 20px',
-                            fontSize: '14px',
+                            padding: '4px 14px',
+                            fontSize: '12px',
                             fontWeight: 400,
                             borderColor: selectedItems.includes(option)
                               ? 'transparent'
@@ -1718,9 +1817,11 @@ export default function AIImageEditor() {
 
             {/* Input Section - Only show for models that need prompts */}
             {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'reimagine' && (
-              <Box sx={{ position: 'relative' }}>
+              <Box ref={inputSectionRef} sx={{ position: 'relative' }}>
                 <StyledTextField
                   fullWidth
+                  multiline
+                  rows={2}
                   placeholder="Enter your creative prompt here..."
                   value={inputPrompt}
                   onChange={(e) => setInputPrompt(e.target.value)}
@@ -1728,7 +1829,7 @@ export default function AIImageEditor() {
                   disabled={isLoading}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ alignSelf: 'flex-end', mb: 1 }}>
                         {selectedModel !== 'generate-image' && (
                           <input
                             type="file"
@@ -1752,36 +1853,17 @@ export default function AIImageEditor() {
                             }}
                           />
                         )}
-                        {selectedModel !== 'generate-image' && (
-                          <label htmlFor="prompt-image-upload">
-                            <Tooltip title="Upload Image">
-                              <IconButton
-                                component="span"
-                                disabled={isLoading}
-                                sx={{
-                                  mr: 1,
-                                  color: theme.palette.text.secondary,
-                                  '&:hover': {
-                                    color: theme.palette.primary.main,
-                                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                                  },
-                                }}
-                              >
-                                <CloudUploadIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </label>
-                        )}
-                        <IconButton 
-                          onClick={selectedModel === 'hair-style' ? generateHairStyleImages : 
-                                  selectedModel === 'text-removal' ? generateTextRemovalImage :
-                                  selectedModel === 'combine-image' ? generateCombineImages : 
-                                  generateFluxImages}
-                          disabled={isLoading || 
+                        <IconButton
+                          onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
+                            selectedModel === 'text-removal' ? generateTextRemovalImage :
+                              selectedModel === 'combine-image' ? generateCombineImages :
+                                generateFluxImages}
+                          disabled={isLoading ||
                             (selectedModel === 'text-removal' ? !textRemovalImageUrl :
-                            selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
-                            !inputPrompt.trim())}
-                          sx={{ 
+                              selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
+                                !inputPrompt.trim())}
+                          sx={{
+                            padding: 0.7,
                             background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                             color: 'white',
                             '&:hover': {
@@ -1795,7 +1877,7 @@ export default function AIImageEditor() {
                             transition: 'all 0.3s ease',
                           }}
                         >
-                          <SendIcon />
+                          <SendIcon sx={{ fontSize: '18px' }} />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -1803,7 +1885,6 @@ export default function AIImageEditor() {
                 />
               </Box>
             )}
-
             {/* Selected Items */}
             {currentConfig.type === 'styles' && selectedItems.length > 0 && (
               <Box sx={{ mt: 2 }}>
@@ -1838,121 +1919,48 @@ export default function AIImageEditor() {
             {selectedModel === 'hair-style' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="hair-style-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setUploadedImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingHairImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'hair-style-input.jpg');
-                          if (url) {
-                            setUploadedImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setUploadedImage(null); // Reset if upload failed
-                          }
-                          setUploadingHairImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="hair-style-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: uploadedImage ? 'auto' : '120px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {uploadedImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={uploadedImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '200px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingHairImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingHairImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setUploadedImage(null);
-                              setUploadedImageUrl(null);
-                            }}
-                            disabled={uploadingHairImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload image
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                </Box>
+                <ImageUploader
+                  title="Upload Image"
+                  uploadedImage={uploadedImage}
+                  uploadingImage={uploadingHairImage}
+                  height="120px"
+                  placeholderText="Click to upload image"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setUploadedImage(base64Data);
 
-                
+                        // Immediately upload to R2
+                        setUploadingHairImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'hair-style-input.jpg');
+                        if (url) {
+                          setUploadedImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setUploadedImage(null); // Reset if upload failed
+                        }
+                        setUploadingHairImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setUploadedImage(null);
+                    setUploadedImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
+
               </>
             )}
 
@@ -1960,120 +1968,46 @@ export default function AIImageEditor() {
             {selectedModel === 'text-removal' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image with Text to Remove
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="text-removal-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setTextRemovalImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingTextRemovalImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'text-removal-input.jpg');
-                          if (url) {
-                            setTextRemovalImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setTextRemovalImage(null); // Reset if upload failed
-                          }
-                          setUploadingTextRemovalImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="text-removal-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: textRemovalImage ? 'auto' : '200px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {textRemovalImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={textRemovalImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '300px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingTextRemovalImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingTextRemovalImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setTextRemovalImage(null);
-                              setTextRemovalImageUrl(null);
-                            }}
-                            disabled={uploadingTextRemovalImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload an image with text to remove
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                </Box>
-                
+                <ImageUploader
+                  title="Upload Image with Text to Remove"
+                  uploadedImage={textRemovalImage}
+                  uploadingImage={uploadingTextRemovalImage}
+                  placeholderText="Click to upload an image with text to remove"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setTextRemovalImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingTextRemovalImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'text-removal-input.jpg');
+                        if (url) {
+                          setTextRemovalImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setTextRemovalImage(null); // Reset if upload failed
+                        }
+                        setUploadingTextRemovalImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setTextRemovalImage(null);
+                    setTextRemovalImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
                     This tool will automatically remove text from your image while preserving the background.
@@ -2086,120 +2020,46 @@ export default function AIImageEditor() {
             {selectedModel === 'cartoonify' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image to Cartoonify
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="cartoonify-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setCartoonifyImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingCartoonifyImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'cartoonify-input.jpg');
-                          if (url) {
-                            setCartoonifyImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setCartoonifyImage(null); // Reset if upload failed
-                          }
-                          setUploadingCartoonifyImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="cartoonify-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: cartoonifyImage ? 'auto' : '200px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {cartoonifyImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={cartoonifyImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '300px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingCartoonifyImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingCartoonifyImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCartoonifyImage(null);
-                              setCartoonifyImageUrl(null);
-                            }}
-                            disabled={uploadingCartoonifyImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload an image to cartoonify
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                </Box>
-                
+                <ImageUploader
+                  title="Upload Image to Cartoonify"
+                  uploadedImage={cartoonifyImage}
+                  uploadingImage={uploadingCartoonifyImage}
+                  placeholderText="Click to upload an image to cartoonify"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setCartoonifyImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingCartoonifyImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'cartoonify-input.jpg');
+                        if (url) {
+                          setCartoonifyImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setCartoonifyImage(null); // Reset if upload failed
+                        }
+                        setUploadingCartoonifyImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setCartoonifyImage(null);
+                    setCartoonifyImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
                     This tool will transform your photo into a cartoon-style image.
@@ -2212,125 +2072,51 @@ export default function AIImageEditor() {
             {selectedModel === 'headshot' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image for Professional Headshot
+                <ImageUploader
+                  title="Upload Image for Professional Headshot"
+                  uploadedImage={headshotImage}
+                  uploadingImage={uploadingHeadshotImage}
+                  placeholderText="Click to upload an image for professional headshot"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setHeadshotImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingHeadshotImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'headshot-input.jpg');
+                        if (url) {
+                          setHeadshotImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setHeadshotImage(null); // Reset if upload failed
+                        }
+                        setUploadingHeadshotImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setHeadshotImage(null);
+                    setHeadshotImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" color="textSecondary">
+                    This tool will transform your photo into a professional headshot with the selected background.
                   </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="headshot-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setHeadshotImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingHeadshotImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'headshot-input.jpg');
-                          if (url) {
-                            setHeadshotImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setHeadshotImage(null); // Reset if upload failed
-                          }
-                          setUploadingHeadshotImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="headshot-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: headshotImage ? 'auto' : '200px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {headshotImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={headshotImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '300px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingHeadshotImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingHeadshotImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setHeadshotImage(null);
-                              setHeadshotImageUrl(null);
-                            }}
-                            disabled={uploadingHeadshotImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload an image for professional headshot
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                                 </Box>
-                 
-                 <Box sx={{ mt: 2 }}>
-                   <Typography variant="body2" color="textSecondary">
-                     This tool will transform your photo into a professional headshot with the selected background.
-                   </Typography>
-                 </Box>
+                </Box>
               </>
             )}
 
@@ -2338,120 +2124,46 @@ export default function AIImageEditor() {
             {selectedModel === 'restore-image' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image to Restore
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="restore-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setRestoreImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingRestoreImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'restore-input.jpg');
-                          if (url) {
-                            setRestoreImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setRestoreImage(null); // Reset if upload failed
-                          }
-                          setUploadingRestoreImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="restore-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: restoreImage ? 'auto' : '200px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {restoreImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={restoreImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '300px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingRestoreImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingRestoreImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setRestoreImage(null);
-                              setRestoreImageUrl(null);
-                            }}
-                            disabled={uploadingRestoreImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload an image to restore
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                </Box>
-                
+                <ImageUploader
+                  title="Upload Image to Restore"
+                  uploadedImage={restoreImage}
+                  uploadingImage={uploadingRestoreImage}
+                  placeholderText="Click to upload an image to restore"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setRestoreImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingRestoreImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'restore-input.jpg');
+                        if (url) {
+                          setRestoreImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setRestoreImage(null); // Reset if upload failed
+                        }
+                        setUploadingRestoreImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setRestoreImage(null);
+                    setRestoreImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
                     This tool will restore your image to its original quality.
@@ -2464,120 +2176,46 @@ export default function AIImageEditor() {
             {selectedModel === 'reimagine' && (
               <>
                 {/* Image Upload Section */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    Upload Image for Impossible Scenario
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="reimagine-image-upload"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const base64Data = event.target.result;
-                          setReimagineImage(base64Data);
-                          
-                          // Immediately upload to R2
-                          setUploadingReimagineImage(true);
-                          enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
-                          const url = await uploadImageToR2(base64Data, 'reimagine-input.jpg');
-                          if (url) {
-                            setReimagineImageUrl(url);
-                            enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
-                          } else {
-                            setReimagineImage(null); // Reset if upload failed
-                          }
-                          setUploadingReimagineImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="reimagine-image-upload">
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: reimagineImage ? 'auto' : '200px',
-                        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        },
-                      }}
-                    >
-                      {reimagineImage ? (
-                        <Box sx={{ position: 'relative', width: '100%' }}>
-                          <img
-                            src={reimagineImage}
-                            alt="Uploaded"
-                            style={{
-                              width: '100%',
-                              maxHeight: '300px',
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              opacity: uploadingReimagineImage ? 0.5 : 1,
-                            }}
-                          />
-                          {uploadingReimagineImage && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <CircularProgress />
-                            </Box>
-                          )}
-                          <IconButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setReimagineImage(null);
-                              setReimagineImageUrl(null);
-                            }}
-                            disabled={uploadingReimagineImage}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              bgcolor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.7)',
-                              },
-                              '&.Mui-disabled': {
-                                bgcolor: 'rgba(0,0,0,0.3)',
-                                color: 'rgba(255,255,255,0.5)',
-                              },
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-                          <Typography variant="body2" color="textSecondary">
-                            Click to upload an image for impossible scenario
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </label>
-                </Box>
-                
+                <ImageUploader
+                  title="Upload Image for Impossible Scenario"
+                  uploadedImage={reimagineImage}
+                  uploadingImage={uploadingReimagineImage}
+                  placeholderText="Click to upload an image for impossible scenario"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setReimagineImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingReimagineImage(true);
+                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'reimagine-input.jpg');
+                        if (url) {
+                          setReimagineImageUrl(url);
+                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                        } else {
+                          setReimagineImage(null); // Reset if upload failed
+                        }
+                        setUploadingReimagineImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setReimagineImage(null);
+                    setReimagineImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
                     This tool will place you in an impossible scenario that would be difficult or impossible to achieve in real life.
@@ -2593,304 +2231,169 @@ export default function AIImageEditor() {
                 <Grid container spacing={2}>
                   {/* First Image Upload */}
                   <Grid item xs={12} md={6}>
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                        Upload First Image
-                      </Typography>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        id="combine-image-1-upload"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (file && file.type.startsWith('image/')) {
-                            const reader = new FileReader();
-                            reader.onload = async (event) => {
-                              const base64Data = event.target.result;
-                              setCombineImage1(base64Data);
-                              
-                              // Immediately upload to R2
-                              setUploadingCombine1(true);
-                              enqueueSnackbar('Uploading first image...', { variant: 'info' });
-                              const url = await uploadImageToR2(base64Data, 'combine-image-1.jpg');
-                              if (url) {
-                                setCombineImage1Url(url);
-                                enqueueSnackbar('First image uploaded successfully!', { variant: 'success' });
-                              } else {
-                                setCombineImage1(null); // Reset if upload failed
-                              }
-                              setUploadingCombine1(false);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                      <label htmlFor="combine-image-1-upload">
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: combineImage1 ? 'auto' : '120px',
-                            border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                            borderRadius: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            bgcolor: alpha(theme.palette.primary.main, 0.05),
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              bgcolor: alpha(theme.palette.primary.main, 0.08),
-                            },
-                          }}
-                        >
-                          {combineImage1 ? (
-                            <Box sx={{ position: 'relative', width: '100%' }}>
-                              <img
-                                src={combineImage1}
-                                alt="First Image"
-                                style={{
-                                  width: '100%',
-                                  maxHeight: '150px',
-                                  objectFit: 'contain',
-                                  borderRadius: '8px',
-                                  opacity: uploadingCombine1 ? 0.5 : 1,
-                                }}
-                              />
-                              {uploadingCombine1 && (
-                                <Box
-                                  sx={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                  }}
-                                >
-                                  <CircularProgress size={20} />
-                                </Box>
-                              )}
-                              <IconButton
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCombineImage1(null);
-                                  setCombineImage1Url(null);
-                                }}
-                                disabled={uploadingCombine1}
-                                sx={{
-                                  position: 'absolute',
-                                  top: 4,
-                                  right: 4,
-                                  bgcolor: 'rgba(0,0,0,0.5)',
-                                  color: 'white',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(0,0,0,0.7)',
-                                  },
-                                  '&.Mui-disabled': {
-                                    bgcolor: 'rgba(0,0,0,0.3)',
-                                    color: 'rgba(255,255,255,0.5)',
-                                  },
-                                }}
-                              >
-                                <CloseIcon />
-                              </IconButton>
-                            </Box>
-                          ) : (
-                            <Box sx={{ textAlign: 'center' }}>
-                              <CloudUploadIcon sx={{ fontSize: 30, color: theme.palette.primary.main, mb: 1 }} />
-                              <Typography variant="body2" color="textSecondary" fontSize="12px">
-                                Upload first image
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </label>
-                    </Box>
+                    <ImageUploader
+                      title="Upload First Image"
+                      uploadedImage={combineImage1}
+                      uploadingImage={uploadingCombine1}
+                      placeholderText="Click to upload first image"
+                      height="120px"
+                      onImageUpload={async (e) => {
+                        const file = e.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                          const reader = new FileReader();
+                          reader.onload = async (event) => {
+                            const base64Data = event.target.result;
+                            setCombineImage1(base64Data);
+
+                            // Immediately upload to R2
+                            setUploadingCombine1(true);
+                            enqueueSnackbar('Uploading first image...', { variant: 'info' });
+                            const url = await uploadImageToR2(base64Data, 'combine-image-1.jpg');
+                            if (url) {
+                              setCombineImage1Url(url);
+                              enqueueSnackbar('First image uploaded successfully!', { variant: 'success' });
+                            } else {
+                              setCombineImage1(null); // Reset if upload failed
+                            }
+                            setUploadingCombine1(false);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      onImageRemove={() => {
+                        setCombineImage1(null);
+                        setCombineImage1Url(null);
+                      }}
+                      isDragging={isDragging}
+                      isLoading={isLoading}
+                      error={error}
+                      handleDragOver={handleDragOver}
+                      handleDragLeave={handleDragLeave}
+                      handleDrop={handleDrop}
+                    />
                   </Grid>
 
                   {/* Second Image Upload */}
                   <Grid item xs={12} md={6}>
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                        Upload Second Image
-                      </Typography>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        id="combine-image-2-upload"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (file && file.type.startsWith('image/')) {
-                            const reader = new FileReader();
-                            reader.onload = async (event) => {
-                              const base64Data = event.target.result;
-                              setCombineImage2(base64Data);
-                              
-                              // Immediately upload to R2
-                              setUploadingCombine2(true);
-                              enqueueSnackbar('Uploading second image...', { variant: 'info' });
-                              const url = await uploadImageToR2(base64Data, 'combine-image-2.jpg');
-                              if (url) {
-                                setCombineImage2Url(url);
-                                enqueueSnackbar('Second image uploaded successfully!', { variant: 'success' });
-                              } else {
-                                setCombineImage2(null); // Reset if upload failed
-                              }
-                              setUploadingCombine2(false);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                      <label htmlFor="combine-image-2-upload">
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: combineImage2 ? 'auto' : '120px',
-                            border: `2px dashed ${alpha(theme.palette.secondary.main, 0.3)}`,
-                            borderRadius: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            bgcolor: alpha(theme.palette.secondary.main, 0.05),
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              borderColor: theme.palette.secondary.main,
-                              bgcolor: alpha(theme.palette.secondary.main, 0.08),
-                            },
-                          }}
-                        >
-                          {combineImage2 ? (
-                            <Box sx={{ position: 'relative', width: '100%' }}>
-                              <img
-                                src={combineImage2}
-                                alt="Second Image"
-                                style={{
-                                  width: '100%',
-                                  maxHeight: '150px',
-                                  objectFit: 'contain',
-                                  borderRadius: '8px',
-                                  opacity: uploadingCombine2 ? 0.5 : 1,
-                                }}
-                              />
-                              {uploadingCombine2 && (
-                                <Box
-                                  sx={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                  }}
-                                >
-                                  <CircularProgress size={20} />
-                                </Box>
-                              )}
-                              <IconButton
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCombineImage2(null);
-                                  setCombineImage2Url(null);
-                                }}
-                                disabled={uploadingCombine2}
-                                sx={{
-                                  position: 'absolute',
-                                  top: 4,
-                                  right: 4,
-                                  bgcolor: 'rgba(0,0,0,0.5)',
-                                  color: 'white',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(0,0,0,0.7)',
-                                  },
-                                  '&.Mui-disabled': {
-                                    bgcolor: 'rgba(0,0,0,0.3)',
-                                    color: 'rgba(255,255,255,0.5)',
-                                  },
-                                }}
-                              >
-                                <CloseIcon />
-                              </IconButton>
-                            </Box>
-                          ) : (
-                            <Box sx={{ textAlign: 'center' }}>
-                              <CloudUploadIcon sx={{ fontSize: 30, color: theme.palette.secondary.main, mb: 1 }} />
-                              <Typography variant="body2" color="textSecondary" fontSize="12px">
-                                Upload second image
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </label>
-                    </Box>
+                    <ImageUploader
+                      title="Upload Second Image"
+                      uploadedImage={combineImage2}
+                      uploadingImage={uploadingCombine2}
+                      placeholderText="Click to upload second image"
+                      height="120px"
+                      borderColor="secondary"
+                      onImageUpload={async (e) => {
+                        const file = e.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                          const reader = new FileReader();
+                          reader.onload = async (event) => {
+                            const base64Data = event.target.result;
+                            setCombineImage2(base64Data);
+
+                            // Immediately upload to R2
+                            setUploadingCombine2(true);
+                            enqueueSnackbar('Uploading second image...', { variant: 'info' });
+                            const url = await uploadImageToR2(base64Data, 'combine-image-2.jpg');
+                            if (url) {
+                              setCombineImage2Url(url);
+                              enqueueSnackbar('Second image uploaded successfully!', { variant: 'success' });
+                            } else {
+                              setCombineImage2(null); // Reset if upload failed
+                            }
+                            setUploadingCombine2(false);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      onImageRemove={() => {
+                        setCombineImage2(null);
+                        setCombineImage2Url(null);
+                      }}
+                      isDragging={isDragging}
+                      isLoading={isLoading}
+                      error={error}
+                      handleDragOver={handleDragOver}
+                      handleDragLeave={handleDragLeave}
+                      handleDrop={handleDrop}
+                    />
                   </Grid>
                 </Grid>
               </>
             )}
 
+
+
             {/* Image Display Area */}
-            <GeneratedImages
-              images={generatedImages}
-              isLoading={isLoading}
-              numOutputs={numOutputs}
+            <Box ref={imageGenerationRef}>
+              <GeneratedImages
+                images={generatedImages}
+                isLoading={isLoading}
+                numOutputs={numOutputs}
+                selectedModel={selectedModel}
+                handlePreview={handlePreview}
+                handleDownload={handleDownload}
+                removeImage={removeImage}
+                canCompare={canCompareImages()}
+                handleComparePreview={handleComparePreview}
+              />
+            </Box>
+
+            {/* Example Images Masonry */}
+            <ExampleMasonry
               selectedModel={selectedModel}
-              handlePreview={handlePreview}
-              handleDownload={handleDownload}
-              removeImage={removeImage}
+              selectedGender={selectedGender}
+              onImageClick={handleExampleImageClick}
+              onPromptUse={handlePromptUse}
             />
           </MainEditor>
         </Box>
 
-        {/* Preview Modal */}
-        <Dialog
+        {/* Enhanced Preview Modal */}
+        <ImagePreviewModal
           open={previewOpen}
           onClose={handlePreviewClose}
-          maxWidth="lg"
-          fullWidth
-          sx={{
-            '& .MuiDialog-paper': {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              backdropFilter: 'blur(10px)',
-            },
-          }}
-        >
-          <DialogTitle sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            color: 'white',
-            pb: 1
-          }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Image Preview
-            </Typography>
-            <IconButton
-              onClick={handlePreviewClose}
-              sx={{
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
-            {previewImage && (
-              <img
-                src={previewImage}
-                alt="Preview"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '80vh',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
+          images={previewType === 'generated' ? generatedImages : exampleImages.map(img => img.url)}
+          currentIndex={currentImageIndex}
+          onImageChange={handleImageChange}
+          selectedModel={selectedModel}
+          imageInfo={
+            previewType === 'example' && exampleImageInfo ? exampleImageInfo : {
+              title: `Generated Image ${currentImageIndex + 1}`,
+              prompt: inputPrompt || (selectedModel === 'generate-image' ? 'AI Generated Image' : getModelDisplayName(selectedModel)),
+              // created: new Date().toLocaleDateString(),
+              resolution: 'High Quality',
+              format: previewImage?.startsWith('data:') ? 'Base64' : 'JPEG',
+              selectedHairStyle: selectedModel === 'hair-style' ? selectedHairStyle : null,
+              selectedScenario: selectedModel === 'reimagine' ? selectedScenario : null
+            }
+          }
+          canCompare={canCompareImages()}
+          beforeImage={
+            selectedModel === 'hair-style' ? uploadedImage :
+            selectedModel === 'text-removal' ? textRemovalImage :
+            selectedModel === 'cartoonify' ? cartoonifyImage :
+            selectedModel === 'headshot' ? headshotImage :
+            selectedModel === 'restore-image' ? restoreImage :
+            selectedModel === 'reimagine' ? reimagineImage :
+            selectedModel === 'combine-image' ? combineImage1 :
+            selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2 
+              ? generatedImages.filter(img => img !== null)[0] : null
+          }
+          afterImage={
+            selectedModel === 'hair-style' ? generatedImages[0] :
+            selectedModel === 'text-removal' ? generatedImages[0] :
+            selectedModel === 'cartoonify' ? generatedImages[0] :
+            selectedModel === 'headshot' ? generatedImages[0] :
+            selectedModel === 'restore-image' ? generatedImages[0] :
+            selectedModel === 'reimagine' ? generatedImages[0] :
+            selectedModel === 'combine-image' ? generatedImages[0] :
+            selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2 
+              ? generatedImages.filter(img => img !== null)[1] : null
+          }
+          beforeLabel={getComparisonLabels().before}
+          afterLabel={getComparisonLabels().after}
+          autoOpenComparison={autoOpenComparison}
+        />
       </StyledPaper>
     </>
   );
