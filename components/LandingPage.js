@@ -5,6 +5,7 @@ import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slide
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { Container, Icon } from '@mui/material';
 import AllModelsContainer from './AllModelsContainer';
+import CommunityGallery from './CommunityGallery';
 import { useRouter } from 'next/router';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
@@ -186,6 +187,11 @@ function LandingPage() {
 
       <div className='allModelCards'>
         <AllModelsContainer />
+      </div>
+
+      {/* Community Gallery Section */}
+      <div className='communityGallerySection'>
+        <CommunityGallery />
       </div>
 
     </>

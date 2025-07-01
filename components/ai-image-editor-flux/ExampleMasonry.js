@@ -11,7 +11,9 @@ import {
   IconButton,
   Tooltip,
   Skeleton,
-  CircularProgress
+  CircularProgress,
+  ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -29,6 +31,11 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
   const [s3Images, setS3Images] = useState([]);
   const [loadingS3Images, setLoadingS3Images] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState({});
+  
+  // Community images state
+  const [communityImages, setCommunityImages] = useState([]);
+  const [loadingCommunityImages, setLoadingCommunityImages] = useState(false);
+  const [showCommunity, setShowCommunity] = useState(false);
 
   // Comparison modal states
   const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
@@ -40,6 +47,11 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
   const cacheKey = useMemo(() => {
     return `${selectedModel}-${selectedGender || 'all'}`;
   }, [selectedModel, selectedGender]);
+
+  // Create cache key for community images
+  const communityCacheKey = useMemo(() => {
+    return `community-${selectedModel}`;
+  }, [selectedModel]);
 
 
   const fetchS3Images = useCallback(async () => {
@@ -108,10 +120,64 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
     }
   }, [selectedModel, selectedGender, cacheKey]);
 
+  const fetchCommunityImages = useCallback(async () => {
+    try {
+      // Check cache first
+      if (imageCache.has(communityCacheKey)) {
+        const cachedImages = imageCache.get(communityCacheKey);
+        setCommunityImages(cachedImages);
+        setLoadingCommunityImages(false);
+        return;
+      }
+
+      setLoadingCommunityImages(true);
+
+      const response = await fetch('/api/images/getCommunityImages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          model: selectedModel,
+          limit: 12 
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Community images data:", data);
+        if (data.success) {
+          // Cache the results
+          imageCache.set(communityCacheKey, data.images);
+          setCommunityImages(data.images);
+
+          // Initialize loading states for new images
+          const loadingStates = {};
+          data.images.forEach(image => {
+            loadingStates[image.id] = true;
+          });
+          setImageLoadingStates(prev => ({ ...prev, ...loadingStates }));
+        } else {
+          console.error('Error fetching community images:', data.error);
+          setCommunityImages([]);
+        }
+      } else {
+        console.error('Failed to fetch community images');
+        setCommunityImages([]);
+      }
+    } catch (error) {
+      console.error('Error fetching community images:', error);
+      setCommunityImages([]);
+    } finally {
+      setTimeout(() => setLoadingCommunityImages(false), 100);
+    }
+  }, [selectedModel, communityCacheKey]);
 
   useEffect(() => {
+    if (showCommunity) {
+      fetchCommunityImages();
+    } else {
     fetchS3Images();
-  }, [fetchS3Images]);
+    }
+  }, [showCommunity, fetchS3Images, fetchCommunityImages]);
 
   // Handle individual image loading states
   const handleImageLoad = useCallback((imageId) => {
@@ -128,20 +194,91 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
     }));
   }, []);
 
+  // Helper function to generate model configuration text
+  const generateModelConfigText = (model, image, modelParams) => {
+    const config = modelConfigurations[model];
+    if (!config) return null;
+
+    const configParts = [];
+
+    // Add specific configuration based on model type
+    switch (model) {
+      case 'hair-style':
+        if (modelParams?.hairStyle && modelParams.hairStyle !== 'No change') {
+          configParts.push(`${modelParams.hairStyle} hairstyle`);
+        }
+        if (modelParams?.hairColor && modelParams.hairColor !== 'No change') {
+          configParts.push(`${modelParams.hairColor.toLowerCase()} hair color`);
+        }
+        if (modelParams?.gender && modelParams.gender !== 'None') {
+          configParts.push(`${modelParams.gender.toLowerCase()} styling`);
+        }
+        break;
+        
+      case 'headshot':
+        if (modelParams?.background && modelParams.background !== 'None') {
+          configParts.push(`${modelParams.background.toLowerCase()} background`);
+        }
+        if (modelParams?.gender && modelParams.gender !== 'None') {
+          configParts.push(`${modelParams.gender.toLowerCase()} professional headshot`);
+        }
+        break;
+        
+      case 'reimagine':
+        if (modelParams?.scenario && modelParams.scenario !== 'Random') {
+          configParts.push(modelParams.scenario);
+        }
+        if (modelParams?.gender && modelParams.gender !== 'None') {
+          configParts.push(`${modelParams.gender.toLowerCase()} scenario`);
+        }
+        break;
+        
+      case 'text-removal':
+        configParts.push('Text and watermark removal');
+        break;
+        
+      case 'cartoonify':
+        configParts.push('Cartoon style transformation');
+        break;
+        
+      case 'restore-image':
+        configParts.push('Image restoration and enhancement');
+        break;
+        
+      default:
+        if (config.name) {
+          configParts.push(config.name);
+        }
+    }
+
+    // Add aspect ratio if available
+    if (modelParams?.aspectRatio) {
+      configParts.push(`${modelParams.aspectRatio} aspect ratio`);
+    }
+
+    return configParts.length > 0 ? configParts.join(', ') : null;
+  };
+
   const handleImagePreview = (image, index) => {
     if (onImageClick) {
+      // Generate model configuration text for images without prompts
+      const modelConfigText = !image.prompt && image.modelParams 
+        ? generateModelConfigText(selectedModel, image, image.modelParams)
+        : null;
+
       onImageClick({
         url: image.url,
         index: index,
         images: displayImages,
         imageInfo: {
-          title: image.title || `Example Image ${index + 1}`,
-          prompt: image.prompt || 'AI generated example image',
+          title: image.title || (image.isCommunity ? 'Community Image' : `Example Image ${index + 1}`),
+          prompt: image.prompt || null,
+          modelConfig: modelConfigText,
           model: selectedModel,
-          // created: 'Example Image',
+          createdAt: image.createdAt || null,
           resolution: 'High Quality',
           format: 'JPEG',
-          type: 'example'
+          type: image.isCommunity ? 'community' : 'example'
         }
       });
     }
@@ -154,7 +291,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
   };
 
   const handleComparisonOpen = (image, index) => {
-    if (image.hasComparison && image.url && image.outputUrl) {
+    if (image.hasComparison && image.inputUrl && image.outputUrl) {
       // Get model-specific labels
       const getComparisonLabels = (model) => {
         switch (model) {
@@ -168,6 +305,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
             return { before: 'Damaged Photo', after: 'Restored Photo' };
           case 'hair-style':
             return { before: 'Original Hair', after: 'New Hair Style' };
+          case 're-imagine':
+            return { before: 'Original Photo', after: 'Reimagined Scenario' };
           default:
             return { before: 'Before', after: 'After' };
         }
@@ -181,6 +320,11 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       setComparisonImages([image.outputUrl]);
       setComparisonCurrentIndex(0);
 
+      // Generate model configuration text for comparison
+      const modelConfigText = !image.prompt && image.modelParams 
+        ? generateModelConfigText(selectedModel, image, image.modelParams)
+        : null;
+
       // Set comparison data
       setComparisonData({
         beforeImage: image.inputUrl,
@@ -189,11 +333,14 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         afterLabel: labels.after,
         title: `${modelName} - Before vs After`,
         imageInfo: {
-          title: `${modelName} Result`,
+          title: image.title || `${modelName} Result`,
+          prompt: image.prompt || null,
+          modelConfig: modelConfigText,
           model: selectedModel,
+          createdAt: image.createdAt || null,
           resolution: 'High Quality',
           format: 'JPEG',
-          type: 'comparison'
+          type: image.isCommunity ? 'community-comparison' : 'example-comparison'
         }
       });
 
@@ -279,12 +426,13 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       });
   };
 
-  // Use S3 images if available, otherwise use hardcoded images
-  const displayImages = s3Images.length > 0 && s3Images;
-  console.log("displayImages", displayImages);
+  // Use either static examples or community images based on toggle
+  const displayImages = showCommunity ? communityImages : (s3Images.length > 0 ? s3Images : []);
+  console.log("displayImages", displayImages, "showCommunity:", showCommunity);
 
   // Show loading skeleton when fetching images
-  if (loadingS3Images && (!displayImages || displayImages.length === 0)) {
+  const isLoading = showCommunity ? loadingCommunityImages : loadingS3Images;
+  if (isLoading && (!displayImages || displayImages.length === 0)) {
     return (
       <Box sx={{ mt: 1 }}>
         <Box sx={{ mb: 3, textAlign: 'center' }}>
@@ -371,8 +519,45 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
   return (
     <Box sx={{ mt: 1 }}>
+      {/* Toggle between Examples and Community */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {showCommunity ? 'Community Images' : 'Example Images'}
+        </Typography>
+        
+        <ToggleButtonGroup
+          value={showCommunity ? 'community' : 'examples'}
+          exclusive
+          onChange={(e, value) => {
+            if (value !== null) {
+              setShowCommunity(value === 'community');
+            }
+          }}
+          size="small"
+          sx={{ 
+            '& .MuiToggleButton-root': {
+              px: 2,
+              py: 0.5,
+              fontSize: '12px',
+              borderRadius: '20px',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              '&.Mui-selected': {
+                backgroundColor: theme.palette.primary.main,
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark,
+                }
+              }
+            }
+          }}
+        >
+          <ToggleButton value="examples">Examples</ToggleButton>
+          <ToggleButton value="community">Community</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
       {/* Show loading indicator when switching between cached images */}
-      {loadingS3Images && displayImages && displayImages.length > 0 && (
+      {isLoading && displayImages && displayImages.length > 0 && (
         <Box sx={{ mb: 2, textAlign: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
             <Skeleton variant="circular" width={16} height={16} animation="wave" />
@@ -391,7 +576,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         sx={{
           width: '100%',
           margin: 0,
-          opacity: loadingS3Images ? 0.7 : 1,
+          opacity: isLoading ? 0.7 : 1,
           transition: 'opacity 0.3s ease',
         }}
       >
@@ -434,8 +619,21 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
                 />
               )}
 
-              {/* Comparison Available Badge */}
-
+              {/* Community Badge */}
+              {image.isCommunity && (
+                <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                  <Chip 
+                    label="Community" 
+                    size="small" 
+                    sx={{
+                      backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                      color: 'white',
+                      fontSize: '10px',
+                      height: 20
+                    }}
+                  />
+                </Box>
+              )}
 
               <CardMedia
                 component="img"
@@ -492,7 +690,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
                   </Tooltip>
 
                   {/* Comparison button - only show if comparison is available */}
-                  {image.hasComparison && (
+                  {image.hasComparison && image.inputUrl && image.outputUrl && (
                     <Tooltip title="Compare Before/After">
                       <IconButton
                         size="small"
@@ -535,16 +733,37 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
                 {/* Bottom content */}
                 <Box sx={{ p: 1 }}>
+                  {/* Community image title */}
+                  {image.isCommunity && image.title && (
                   <Typography
                     variant="subtitle2"
                     sx={{
                       color: 'white',
                       fontWeight: 600,
                       mb: 1,
+                        fontSize: '12px'
                     }}
                   >
-                    {/* {image.title} */}
+                      {image.title}
+                    </Typography>
+                  )}
+                  
+                  {/* Author info for community images */}
+                  {image.isCommunity && image.author && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha('#ffffff', 0.8),
+                        fontSize: '10px',
+                        mb: 1,
+                        display: 'block'
+                      }}
+                    >
+                      by {image.author}
                   </Typography>
+                  )}
+                  
+                  {/* Prompt chip */}
                   {image.prompt && (
                     <Chip
                       label="Use this prompt"

@@ -151,23 +151,23 @@ export const getUseCaseImageUrl = [
         useCaseImages: [
             {
                 "id": 1,
-                "outputImage": "A cozy cabin in the snowy mountains under a starry night sky"
+                "outputImage": "A cozy cabin in the snowy mountains under a starry night sky.jpg"
             },
             {
                 "id": 2,
-                "outputImage": "A cute cartoon dog flying a rocket through space"
+                "outputImage": "A cute cartoon dog flying a rocket through space.jpg"
             },
             {
                 "id": 3,
-                "outputImage": "A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city"
+                "outputImage": "A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city.jpg"
             },
             {
                 "id": 4,
-                "outputImage": "A dreamy landscape with floating islands and glowing waterfalls"
+                "outputImage": "A dreamy landscape with floating islands and glowing waterfalls.jpg"
             },
             {
                 "id": 5,
-                "outputImage": "A fantasy castle floating above the clouds with dragons flying around"
+                "outputImage": "A fantasy castle floating above the clouds with dragons flying around.jpg"
             }
         ]
     },

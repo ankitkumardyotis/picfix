@@ -45,15 +45,16 @@ model History {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  image         String?
-  email         String    @unique
-  createdAt     DateTime  @default(now())
-  emailVerified DateTime? @map("verifiedAt")
-  sessions      Session[]
-  Account       Account[]
-  // Subscription  Subscription[]
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  image           String?
+  email           String           @unique
+  createdAt       DateTime         @default(now())
+  emailVerified   DateTime?        @map("verifiedAt")
+  sessions        Session[]
+  Account         Account[]
+  publishedImages PublishedImage[]
+  imageLikes      ImageLike[]
 
   @@map("users")
 }
@@ -126,4 +127,76 @@ model Project {
   backgroundMusicUrl  String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+}
+
+model PublishedImage {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  userName          String?
+  userEmail         String?
+  
+  // Store R2 paths/keys only (NOT URLs)
+  outputImagePath   String    // e.g., "community/hair-style/1703123456-output.jpg"
+  inputImagePaths   Json      // Array of input image path objects
+  
+  // Metadata
+  title             String?
+  prompt            String?
+  model             String
+  modelParams       Json?
+  aspectRatio       String?
+  
+  // Publishing info
+  isPublic          Boolean   @default(true)
+  isApproved        Boolean   @default(true)
+  
+  // Stats
+  likes             Int       @default(0)
+  downloads         Int       @default(0)
+  views             Int       @default(0)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageLikes        ImageLike[]
+  
+  @@index([model, isApproved, isPublic])
+  @@index([createdAt])
+  @@index([likes])
+}
+
+model ImageLike {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String         @db.ObjectId
+  publishedImageId  String?        @db.ObjectId // Optional for example images
+  exampleImageId    String?        // For example images (model + image path)
+  createdAt         DateTime       @default(now())
+  
+  // Relations
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publishedImage    PublishedImage? @relation(fields: [publishedImageId], references: [id], onDelete: Cascade)
+  
+  // Ensure one like per user per image
+  @@unique([userId, publishedImageId])
+  @@index([publishedImageId])
+  @@index([exampleImageId])
+  @@index([userId])
+}
+
+model ExampleImageStats {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  imageId        String    @unique // model + image path combination
+  model          String
+  imagePath      String
+  likes          Int       @default(0)
+  downloads      Int       @default(0)
+  views          Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  @@index([model])
+  @@index([likes])
 }

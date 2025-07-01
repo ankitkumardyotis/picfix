@@ -51,6 +51,7 @@ import ImageUploader from '../components/ai-image-editor-flux/ImageUploader';
 import ExampleMasonry from '../components/ai-image-editor-flux/ExampleMasonry';
 import ImagePreviewModal from '../components/ai-image-editor-flux/ImagePreviewModal';
 import modelConfigurations from '../constant/ModelConfigurations';
+import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -243,6 +244,8 @@ export default function AIImageEditor() {
   const [exampleImages, setExampleImages] = useState([]);
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [autoOpenComparison, setAutoOpenComparison] = useState(false);
+
+
 
   // Refs for smooth scrolling
   const imageGenerationRef = useRef(null);
@@ -458,7 +461,6 @@ export default function AIImageEditor() {
 
       const data = await response.json();
       setGeneratedImages(data);
-      setInputPrompt('');
       enqueueSnackbar('Images generated successfully!', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating images', { variant: 'error' });
@@ -563,7 +565,6 @@ export default function AIImageEditor() {
 
       const data = await response.json();
       setGeneratedImages([data]); // Combine image model returns single image
-      setInputPrompt('');
       enqueueSnackbar('Images combined successfully!', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar(err.message || 'Error combining images', { variant: 'error' });
@@ -1090,6 +1091,65 @@ export default function AIImageEditor() {
     return [];
   };
 
+  // Helper function to generate model configuration for generated images
+  const generateGeneratedImageConfig = () => {
+    const configParts = [];
+
+    switch (selectedModel) {
+      case 'hair-style':
+        if (selectedHairStyle && selectedHairStyle !== 'No change') {
+          configParts.push(`${selectedHairStyle} hairstyle`);
+        }
+        if (selectedHairColor && selectedHairColor !== 'No change') {
+          configParts.push(`${selectedHairColor.toLowerCase()} hair color`);
+        }
+        if (selectedGender && selectedGender !== 'None') {
+          configParts.push(`${selectedGender.toLowerCase()} styling`);
+        }
+        break;
+        
+      case 'headshot':
+        if (selectedHeadshotBackground && selectedHeadshotBackground !== 'None') {
+          configParts.push(`${selectedHeadshotBackground.toLowerCase()} background`);
+        }
+        if (selectedHeadshotGender && selectedHeadshotGender !== 'None') {
+          configParts.push(`${selectedHeadshotGender.toLowerCase()} professional headshot`);
+        }
+        break;
+        
+      case 'reimagine':
+        if (selectedScenario && selectedScenario !== 'Random') {
+          configParts.push(selectedScenario);
+        }
+        if (selectedReimagineGender && selectedReimagineGender !== 'None') {
+          configParts.push(`${selectedReimagineGender.toLowerCase()} scenario`);
+        }
+        break;
+        
+      case 'text-removal':
+        configParts.push('Text and watermark removal');
+        break;
+        
+      case 'cartoonify':
+        configParts.push('Cartoon style transformation');
+        break;
+        
+      case 'restore-image':
+        configParts.push('Image restoration and enhancement');
+        break;
+        
+      default:
+        break;
+    }
+
+    // Add aspect ratio if available
+    if (aspectRatio) {
+      configParts.push(`${aspectRatio} aspect ratio`);
+    }
+
+    return configParts.length > 0 ? configParts.join(', ') : null;
+  };
+
   const handlePreview = (imageUrl, imageIndex = 0) => {
     // Filter out null images to get valid images array
     const validImages = generatedImages.filter(img => img !== null);
@@ -1099,7 +1159,22 @@ export default function AIImageEditor() {
     setPreviewImage(imageUrl);
     setPreviewType('generated');
     setExampleImages([]);
-    setExampleImageInfo(null);
+    
+    // Generate model configuration for when there's no prompt
+    const modelConfigText = !inputPrompt || !inputPrompt.trim() 
+      ? generateGeneratedImageConfig()
+      : null;
+    
+    setExampleImageInfo({
+      title: `Generated Image ${validIndex + 1}`,
+      prompt: inputPrompt || null,
+      modelConfig: modelConfigText,
+      model: selectedModel,
+      createdAt: new Date().toISOString(),
+      resolution: 'High Quality',
+      format: 'JPEG',
+      type: 'generated'
+    });
     setAutoOpenComparison(false);
     setPreviewOpen(true);
   };
@@ -1112,7 +1187,22 @@ export default function AIImageEditor() {
     setPreviewImage(imageUrl);
     setPreviewType('generated');
     setExampleImages([]);
-    setExampleImageInfo(null);
+    
+    // Generate model configuration for when there's no prompt
+    const modelConfigText = !inputPrompt || !inputPrompt.trim() 
+      ? generateGeneratedImageConfig()
+      : null;
+    
+    setExampleImageInfo({
+      title: `Generated Image ${validIndex + 1}`,
+      prompt: inputPrompt || null,
+      modelConfig: modelConfigText,
+      model: selectedModel,
+      createdAt: new Date().toISOString(),
+      resolution: 'High Quality',
+      format: 'JPEG',
+      type: 'generated'
+    });
     setAutoOpenComparison(true);
     setPreviewOpen(true);
   };
@@ -1234,6 +1324,138 @@ export default function AIImageEditor() {
       return { before: 'Generated Image 1', after: 'Generated Image 2' };
     }
     return { before: 'Before', after: 'After' };
+  };
+
+  // Helper function to generate meaningful prompt/description based on model configuration
+  const generateModelPrompt = (model, currentState, userPrompt) => {
+    // If user provided a prompt, use it
+    if (userPrompt && userPrompt.trim()) {
+      return userPrompt.trim();
+    }
+
+    // Generate prompt based on model configuration
+    switch (model) {
+      case 'hair-style':
+        const hairParts = [];
+        if (currentState.selectedHairStyle && currentState.selectedHairStyle !== 'No change') {
+          hairParts.push(`${currentState.selectedHairStyle} hairstyle`);
+        }
+        if (currentState.selectedHairColor && currentState.selectedHairColor !== 'No change') {
+          hairParts.push(`${currentState.selectedHairColor.toLowerCase()} hair color`);
+        }
+        if (currentState.selectedGender && currentState.selectedGender !== 'None') {
+          hairParts.push(`${currentState.selectedGender.toLowerCase()} styling`);
+        }
+        return hairParts.length > 0 ? hairParts.join(', ') : 'Hair style transformation';
+
+      case 'headshot':
+        const headshotParts = [];
+        if (currentState.selectedHeadshotBackground && currentState.selectedHeadshotBackground !== 'None') {
+          headshotParts.push(`${currentState.selectedHeadshotBackground.toLowerCase()} background`);
+        }
+        if (currentState.selectedHeadshotGender && currentState.selectedHeadshotGender !== 'None') {
+          headshotParts.push(`${currentState.selectedHeadshotGender.toLowerCase()} professional headshot`);
+        }
+        return headshotParts.length > 0 ? headshotParts.join(', ') : 'Professional headshot';
+
+      case 'reimagine':
+        const reimagineParts = [];
+        if (currentState.selectedScenario && currentState.selectedScenario !== 'Random') {
+          reimagineParts.push(currentState.selectedScenario);
+        }
+        if (currentState.selectedReimagineGender && currentState.selectedReimagineGender !== 'None') {
+          reimagineParts.push(`${currentState.selectedReimagineGender.toLowerCase()} scenario`);
+        }
+        return reimagineParts.length > 0 ? reimagineParts.join(', ') : 'Reimagined scenario';
+
+      case 'text-removal':
+        return 'Text and watermark removal';
+
+      case 'cartoonify':
+        return 'Cartoon style transformation';
+
+      case 'restore-image':
+        return 'Image restoration and enhancement';
+
+      case 'combine-image':
+        return userPrompt && userPrompt.trim() ? userPrompt.trim() : 'Combined image creation';
+
+      case 'generate-image':
+        return userPrompt && userPrompt.trim() ? userPrompt.trim() : 'AI generated image';
+
+      default:
+        return 'AI image transformation';
+    }
+  };
+
+  // Handle image publishing
+  const handlePublishImage = async ({ imageUrl, imageIndex, title, description }) => {
+    try {
+      // Get current state for input images and model parameters
+      const currentState = {
+        uploadedImage,
+        combineImage1,
+        combineImage2,
+        textRemovalImage,
+        cartoonifyImage,
+        headshotImage,
+        restoreImage,
+        reimagineImage,
+        selectedHairStyle,
+        selectedHairColor,
+        selectedGender,
+        selectedHeadshotGender,
+        selectedHeadshotBackground,
+        selectedReimagineGender,
+        selectedScenario,
+        aspectRatio
+      };
+
+      // Collect input images based on model type
+      const inputImages = getModelInputImages(selectedModel, currentState);
+      
+      // Collect model parameters
+      const modelParams = getModelParameters(selectedModel, currentState);
+
+      // Generate meaningful prompt based on model configuration
+      const generatedPrompt = generateModelPrompt(selectedModel, currentState, inputPrompt);
+
+      console.log('Publishing image:', { 
+        model: selectedModel, 
+        title, 
+        prompt: generatedPrompt,
+        inputImages: inputImages.length,
+        modelParams 
+      });
+
+      // Publish the image
+      const response = await fetch('/api/images/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outputImage: imageUrl,
+          inputImages,
+          model: selectedModel,
+          title,
+          prompt: generatedPrompt,
+          modelParams,
+          aspectRatio
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        enqueueSnackbar('🎉 Image published to community successfully!', { variant: 'success' });
+        console.log('Published image:', result.image);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish image');
+      }
+
+    } catch (error) {
+      console.error('Publish error:', error);
+      enqueueSnackbar(`Failed to publish image: ${error.message}`, { variant: 'error' });
+    }
   };
 
   return (
@@ -2335,6 +2557,8 @@ export default function AIImageEditor() {
                 removeImage={removeImage}
                 canCompare={canCompareImages()}
                 handleComparePreview={handleComparePreview}
+                onPublish={handlePublishImage}
+                inputPrompt={inputPrompt}
               />
             </Box>
 

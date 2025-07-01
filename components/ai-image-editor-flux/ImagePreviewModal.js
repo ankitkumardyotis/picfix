@@ -212,16 +212,18 @@ const ImagePreviewModal = ({
       return {
         ...imageInfo,
         // Use provided title or fallback to default
-        title: imageInfo.title || `Generated Image ${currentImageData?.originalIndex + 1}`,
-        model: imageInfo.model ? getModelDisplayName(imageInfo.model) : getModelDisplayName(selectedModel)
+        title: imageInfo.title || `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
+        model: imageInfo.model ? getModelDisplayName(imageInfo.model) : getModelDisplayName(selectedModel),
+        // Format created date properly if it exists
+        createdAt: imageInfo.createdAt ? imageInfo.createdAt : null
       };
     }
     
     return {
-      title: `Generated Image ${currentImageData?.originalIndex + 1}`,
+      title: `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
       model: getModelDisplayName(selectedModel),
       resolution: 'High Quality',
-      // created: new Date().toLocaleDateString(),
+      createdAt: new Date().toISOString(),
       format: 'JPEG'
     };
   };
@@ -576,19 +578,27 @@ const ImagePreviewModal = ({
                 </Typography>
               </Box>
 
-              {/* <Box>
-                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
-                  Created
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {info.created}
-                </Typography>
-              </Box> */}
+              {info.createdAt && (
+                <Box>
+                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Created
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {new Date(info.createdAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </Typography>
+                </Box>
+              )}
 
               {info.prompt && (
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Prompt Used
+                    {info.type === 'example' ? 'Configuration Used' : 'Prompt Used'}
                   </Typography>
                   <Typography variant="body2" sx={{ 
                     fontWeight: 400,
@@ -599,6 +609,25 @@ const ImagePreviewModal = ({
                     fontSize: '0.8rem'
                   }}>
                     "{info.prompt}"
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Show model configuration when there's no prompt */}
+              {!info.prompt && info.modelConfig && (
+                <Box>
+                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Configuration Used
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    fontWeight: 400,
+                    fontStyle: 'italic',
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                    padding: 1,
+                    borderRadius: 1,
+                    fontSize: '0.8rem'
+                  }}>
+                    {info.modelConfig}
                   </Typography>
                 </Box>
               )}

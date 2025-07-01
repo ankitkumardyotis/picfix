@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,9 +13,27 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CompareIcon from '@mui/icons-material/Compare';
+import PublishIcon from '@mui/icons-material/Publish';
+import PublishDialog from './PublishDialog';
 
-const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handlePreview, handleDownload, removeImage, canCompare, handleComparePreview }) => {
+const GeneratedImages = ({ 
+  images, 
+  isLoading, 
+  numOutputs, 
+  selectedModel, 
+  handlePreview, 
+  handleDownload, 
+  removeImage, 
+  canCompare, 
+  handleComparePreview,
+  // New props for publishing
+  onPublish,
+  inputPrompt,
+  currentState
+}) => {
   const theme = useTheme();
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [selectedImageForPublish, setSelectedImageForPublish] = useState({ url: null, index: null });
   
   console.log("GeneratedImages component received:", { 
     images, 
@@ -24,12 +42,34 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
     selectedModel,
     hasImages: images.some(img => img !== null)
   });
+
+  const handlePublishClick = (imageUrl, index) => {
+    setSelectedImageForPublish({ url: imageUrl, index });
+    setPublishDialogOpen(true);
+  };
+
+  const handlePublishSubmit = async (publishData) => {
+    if (onPublish && selectedImageForPublish.url) {
+      await onPublish({
+        imageUrl: selectedImageForPublish.url,
+        imageIndex: selectedImageForPublish.index,
+        title: publishData.title,
+        description: publishData.description
+      });
+    }
+  };
+
+  const handlePublishDialogClose = () => {
+    setPublishDialogOpen(false);
+    setSelectedImageForPublish({ url: null, index: null });
+  };
   
   if (!isLoading && !images.some(img => img !== null)) {
     return null;
   }
   
   return (
+    <>
     <Box sx={{ mt: 3, mb: 6 }}>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
         Generated Images
@@ -37,7 +77,7 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
       <Grid container spacing={3}>
         {isLoading ? (
           // Loading placeholders
-          Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' ? 1 : numOutputs).fill(null).map((_, index) => (
+            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' ? 1 : numOutputs).fill(null).map((_, index) => (
             <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
               <Box
                 sx={{
@@ -93,9 +133,11 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 2,
+                        gap: 1,
                       opacity: 0,
                       transition: 'opacity 0.3s ease',
+                        flexWrap: 'wrap',
+                        padding: 1
                     }}
                   >
                     <Tooltip title="Preview Image">
@@ -112,6 +154,7 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
+                      
                     {canCompare && handleComparePreview && (
                       <Tooltip title="Compare Images">
                         <IconButton
@@ -128,6 +171,24 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                         </IconButton>
                       </Tooltip>
                     )}
+                      
+                      <Tooltip title="Publish to Community">
+                        <IconButton
+                          onClick={() => handlePublishClick(image, index)}
+                          sx={{
+                            color: 'white',
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(102, 126, 234, 1)',
+                              transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <PublishIcon />
+                        </IconButton>
+                      </Tooltip>
+                      
                     <Tooltip title="Download Image">
                       <IconButton
                         onClick={() => handleDownload(image, index)}
@@ -142,6 +203,7 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
+                      
                     <Tooltip title="Delete Image">
                       <IconButton
                         onClick={() => removeImage(index)}
@@ -164,6 +226,17 @@ const GeneratedImages = ({ images, isLoading, numOutputs, selectedModel, handleP
         )}
       </Grid>
     </Box>
+
+      {/* Publish Dialog */}
+      <PublishDialog
+        open={publishDialogOpen}
+        onClose={handlePublishDialogClose}
+        imageUrl={selectedImageForPublish.url}
+        selectedModel={selectedModel}
+        prompt={inputPrompt}
+        onPublish={handlePublishSubmit}
+      />
+    </>
   );
 };
 

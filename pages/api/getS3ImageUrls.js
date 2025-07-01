@@ -46,10 +46,15 @@ export default async function handler(req, res) {
             const height = [300, 250, 275, 225, 325, 250, 300, 275, 250, 325, 250, 300]
             const imagePath = element.outputImage || element.path || element;
             const url = await generateSignedUrl(`picfix-usecase-image/${imagesPath.model}/${imagePath}`);
-            const inputUrl = await generateSignedUrl(`picfix-usecase-image/${imagesPath.model}/${element.imagePath}`);
             
-            // Handle both input and output images for comparison
+            // Generate URLs for both input and output images for comparison
+            let inputUrl = null;
             let outputUrl = null;
+            
+            if (element.imagePath) {
+                inputUrl = await generateSignedUrl(`picfix-usecase-image/${imagesPath.model}/${element.imagePath}`);
+            }
+            
             if (element.outputImage) {
                 console.log("outputImage", `picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
                 outputUrl = await generateSignedUrl(`picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
@@ -57,13 +62,13 @@ export default async function handler(req, res) {
             
             return {
                 id: element.id || null,
-                url: url,
-                outputUrl: imagePath,
-                inputUrl: inputUrl,
+                url: url, // Main display URL (output image)
+                outputUrl: outputUrl, // Actual output image URL for comparison
+                inputUrl: inputUrl, // Input image URL for comparison
                 prompt: imagePath,
                 height: height[idx] || null,
-                imagePath: imagePath,
-                outputImage: element.imagePath || null,
+                imagePath: element.imagePath || null, // Keep the original path
+                outputImage: element.outputImage || null, // Keep the original output path
                 hasComparison: !!(element.imagePath && element.outputImage)
             };
         });
