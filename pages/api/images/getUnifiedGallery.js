@@ -5,6 +5,9 @@ import { authOptions } from "../auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { getUseCaseImageUrl } from "@/constant/getUseCaseImageUrl";
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 const s3Client = new S3Client({
     region: "auto",
     endpoint: process.env.R2_ENDPOINT,

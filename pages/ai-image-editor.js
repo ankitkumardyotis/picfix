@@ -44,6 +44,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { FaCrown } from "react-icons/fa";
 import Head from 'next/head';
 import { useSnackbar } from 'notistack';
 import GeneratedImages from '../components/ai-image-editor-flux/GeneratedImages';
@@ -215,7 +216,7 @@ export default function AIImageEditor() {
   const [selectedHeadshotBackground, setSelectedHeadshotBackground] = useState('Neutral');
 
   // Restore image specific states
-  const [restoreImage, setRestoreImage] = useState(null);9
+  const [restoreImage, setRestoreImage] = useState(null); 9
   const [restoreImageUrl, setRestoreImageUrl] = useState(null);
   const [uploadingRestoreImage, setUploadingRestoreImage] = useState(false);
 
@@ -1008,10 +1009,10 @@ export default function AIImageEditor() {
   const generateFileName = (model, prompt = '', index = 0) => {
     const config = modelConfigurations[model];
     const usesPrompts = config?.type === 'prompts';
-    
+
     // Generate random string
     const randomString = Math.random().toString(36).substring(2, 8);
-    
+
     if (usesPrompts && prompt && prompt.trim()) {
       // Clean and format prompt for filename
       const cleanPrompt = prompt
@@ -1020,7 +1021,7 @@ export default function AIImageEditor() {
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 50); // Limit length to 50 characters
-      
+
       return `${cleanPrompt}-${randomString}.jpg`;
     } else if (model === 'hair-style' && selectedHairStyle && selectedHairStyle !== 'No change') {
       // Use selected hair style for hair-style model
@@ -1029,7 +1030,7 @@ export default function AIImageEditor() {
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 30); // Limit length to 30 characters
-      
+
       return `hair-style-${cleanStyle}-${randomString}.jpg`;
     } else if (model === 'reimagine' && selectedScenario && selectedScenario !== 'Random') {
       // Use selected scenario for reimagine model
@@ -1038,7 +1039,7 @@ export default function AIImageEditor() {
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 40); // Limit length to 40 characters
-      
+
       return `reimagine-${cleanScenario}-${randomString}.jpg`;
     } else {
       // Use model name with random string
@@ -1046,7 +1047,7 @@ export default function AIImageEditor() {
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-');
-      
+
       return `${modelName}-${randomString}.jpg`;
     }
   };
@@ -1054,7 +1055,7 @@ export default function AIImageEditor() {
   const handleDownload = (imageUrl, index) => {
     // Generate intelligent filename
     const filename = generateFileName(selectedModel, inputPrompt, index);
-    
+
     // For base64 images
     if (imageUrl.startsWith('data:')) {
       const link = document.createElement('a');
@@ -1107,7 +1108,7 @@ export default function AIImageEditor() {
           configParts.push(`${selectedGender.toLowerCase()} styling`);
         }
         break;
-        
+
       case 'headshot':
         if (selectedHeadshotBackground && selectedHeadshotBackground !== 'None') {
           configParts.push(`${selectedHeadshotBackground.toLowerCase()} background`);
@@ -1116,7 +1117,7 @@ export default function AIImageEditor() {
           configParts.push(`${selectedHeadshotGender.toLowerCase()} professional headshot`);
         }
         break;
-        
+
       case 'reimagine':
         if (selectedScenario && selectedScenario !== 'Random') {
           configParts.push(selectedScenario);
@@ -1125,19 +1126,19 @@ export default function AIImageEditor() {
           configParts.push(`${selectedReimagineGender.toLowerCase()} scenario`);
         }
         break;
-        
+
       case 'text-removal':
         configParts.push('Text and watermark removal');
         break;
-        
+
       case 'cartoonify':
         configParts.push('Cartoon style transformation');
         break;
-        
+
       case 'restore-image':
         configParts.push('Image restoration and enhancement');
         break;
-        
+
       default:
         break;
     }
@@ -1159,12 +1160,12 @@ export default function AIImageEditor() {
     setPreviewImage(imageUrl);
     setPreviewType('generated');
     setExampleImages([]);
-    
+
     // Generate model configuration for when there's no prompt
-    const modelConfigText = !inputPrompt || !inputPrompt.trim() 
+    const modelConfigText = !inputPrompt || !inputPrompt.trim()
       ? generateGeneratedImageConfig()
       : null;
-    
+
     setExampleImageInfo({
       title: `Generated Image ${validIndex + 1}`,
       prompt: inputPrompt || null,
@@ -1187,12 +1188,12 @@ export default function AIImageEditor() {
     setPreviewImage(imageUrl);
     setPreviewType('generated');
     setExampleImages([]);
-    
+
     // Generate model configuration for when there's no prompt
-    const modelConfigText = !inputPrompt || !inputPrompt.trim() 
+    const modelConfigText = !inputPrompt || !inputPrompt.trim()
       ? generateGeneratedImageConfig()
       : null;
-    
+
     setExampleImageInfo({
       title: `Generated Image ${validIndex + 1}`,
       prompt: inputPrompt || null,
@@ -1413,19 +1414,19 @@ export default function AIImageEditor() {
 
       // Collect input images based on model type
       const inputImages = getModelInputImages(selectedModel, currentState);
-      
+
       // Collect model parameters
       const modelParams = getModelParameters(selectedModel, currentState);
 
       // Generate meaningful prompt based on model configuration
       const generatedPrompt = generateModelPrompt(selectedModel, currentState, inputPrompt);
 
-      console.log('Publishing image:', { 
-        model: selectedModel, 
-        title, 
+      console.log('Publishing image:', {
+        model: selectedModel,
+        title,
         prompt: generatedPrompt,
         inputImages: inputImages.length,
-        modelParams 
+        modelParams
       });
 
       // Publish the image
@@ -1513,13 +1514,22 @@ export default function AIImageEditor() {
               >
                 {Object.entries(modelConfigurations).map(([key, config]) => (
                   <MenuItem key={key} value={key} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                    {config.name}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                        {config.name}
+                      </Typography>
+                      <FaCrown
+                        style={{
+                          fontSize: '16px',
+                          color: '#FFD700',
+                          filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.5))'
+                        }}
+                      />
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
-            {/* Aspect Ratio - Hide for restore-image model */}
             {selectedModel !== 'restore-image' && (
               <FormControl fullWidth variant="outlined">
                 <InputLabel>Aspect Ratio</InputLabel>
@@ -1819,7 +1829,7 @@ export default function AIImageEditor() {
               <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
                 Credits remaining: {context.creditPoints || 0}
               </Typography>
-              
+
 
               <Button
                 fullWidth
@@ -1918,17 +1928,17 @@ export default function AIImageEditor() {
                         <AppStyleCard
                           key={style.id}
                           onClick={() => setSelectedHairStyle(style.name)}
-                          sx={{ 
-                            minWidth: 80, 
+                          sx={{
+                            minWidth: 80,
                             flexShrink: 0,
                             userSelect: 'none', // Prevent text selection when dragging
                           }}
                         >
                           <AppStyleIcon className={selectedHairStyle === style.name ? 'selected' : ''}>
-                            <img 
-                              src={style.image} 
-                              alt={style.name} 
-                              height={100} 
+                            <img
+                              src={style.image}
+                              alt={style.name}
+                              height={100}
                               width={100}
                               draggable={false} // Prevent image drag
                             />
@@ -2594,25 +2604,25 @@ export default function AIImageEditor() {
           canCompare={canCompareImages()}
           beforeImage={
             selectedModel === 'hair-style' ? uploadedImage :
-            selectedModel === 'text-removal' ? textRemovalImage :
-            selectedModel === 'cartoonify' ? cartoonifyImage :
-            selectedModel === 'headshot' ? headshotImage :
-            selectedModel === 'restore-image' ? restoreImage :
-            selectedModel === 'reimagine' ? reimagineImage :
-            selectedModel === 'combine-image' ? combineImage1 :
-            selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2 
-              ? generatedImages.filter(img => img !== null)[0] : null
+              selectedModel === 'text-removal' ? textRemovalImage :
+                selectedModel === 'cartoonify' ? cartoonifyImage :
+                  selectedModel === 'headshot' ? headshotImage :
+                    selectedModel === 'restore-image' ? restoreImage :
+                      selectedModel === 'reimagine' ? reimagineImage :
+                        selectedModel === 'combine-image' ? combineImage1 :
+                          selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                            ? generatedImages.filter(img => img !== null)[0] : null
           }
           afterImage={
             selectedModel === 'hair-style' ? generatedImages[0] :
-            selectedModel === 'text-removal' ? generatedImages[0] :
-            selectedModel === 'cartoonify' ? generatedImages[0] :
-            selectedModel === 'headshot' ? generatedImages[0] :
-            selectedModel === 'restore-image' ? generatedImages[0] :
-            selectedModel === 'reimagine' ? generatedImages[0] :
-            selectedModel === 'combine-image' ? generatedImages[0] :
-            selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2 
-              ? generatedImages.filter(img => img !== null)[1] : null
+              selectedModel === 'text-removal' ? generatedImages[0] :
+                selectedModel === 'cartoonify' ? generatedImages[0] :
+                  selectedModel === 'headshot' ? generatedImages[0] :
+                    selectedModel === 'restore-image' ? generatedImages[0] :
+                      selectedModel === 'reimagine' ? generatedImages[0] :
+                        selectedModel === 'combine-image' ? generatedImages[0] :
+                          selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                            ? generatedImages.filter(img => img !== null)[1] : null
           }
           beforeLabel={getComparisonLabels().before}
           afterLabel={getComparisonLabels().after}
