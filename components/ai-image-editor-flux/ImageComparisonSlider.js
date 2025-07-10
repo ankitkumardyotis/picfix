@@ -234,7 +234,7 @@ const ImageComparisonSlider = ({
         onMouseLeave={() => !isActive && setShowHoverPrompt(false)}
       >
         {/* Before Image */}
-        <Image src={beforeImage} alt={beforeLabel} className={className} />
+        <Image src={beforeImage} alt={beforeLabel} className={className} referrerPolicy="no-referrer" />
         
         {/* After Image with clip-path */}
         <Box
@@ -248,7 +248,7 @@ const ImageComparisonSlider = ({
             transition: isDragging ? 'none' : 'clip-path 0.3s ease',
           }}
         >
-          <Image src={afterImage} alt={afterLabel} className={className} />
+          <Image src={afterImage} alt={afterLabel} className={className} referrerPolicy="no-referrer" />
         </Box>
 
         {/* Slider Handle */}

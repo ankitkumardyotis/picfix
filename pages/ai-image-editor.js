@@ -390,9 +390,11 @@ export default function AIImageEditor() {
 
     // Set number of outputs based on model
     if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'reimagine') {
+      console.log(`Setting model ${newModel} to 1 output`);
       setNumOutputs(1);
       setGeneratedImages([null]);
     } else {
+      console.log(`Setting model ${newModel} to 2 outputs`);
       setNumOutputs(2);
       setGeneratedImages([null, null]);
     }
@@ -434,25 +436,35 @@ export default function AIImageEditor() {
 
     setIsLoading(true);
     setError(null);
+    console.log('Setting up generatedImages array with numOutputs:', numOutputs);
     setGeneratedImages(Array(numOutputs).fill(null));
 
     // Smooth scroll to image generation section
     scrollToImageGeneration();
 
     try {
+      console.log('About to generate with:', {
+        selectedModel,
+        numOutputs,
+        aspectRatio,
+        promptLength: inputPrompt?.length
+      });
+      
+      const config = {
+        generate_flux_images: true,
+        prompt: inputPrompt,
+        aspect_ratio: aspectRatio,
+        num_outputs: numOutputs
+      };
+      
+      console.log('API Config being sent:', config);
+      
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          config: {
-            generate_flux_images: true,
-            prompt: inputPrompt,
-            aspect_ratio: aspectRatio,
-            num_outputs: numOutputs
-          }
-        }),
+        body: JSON.stringify({ config }),
       });
 
       if (!response.ok) {
@@ -461,7 +473,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      setGeneratedImages(data);
+      console.log('Frontend received data:', data);
+      console.log('Data type:', typeof data, 'Is array:', Array.isArray(data));
+      
+      // Handle new response format with historyId
+      if (Array.isArray(data) && data.length > 0 && data[0] && data[0].imageUrl) {
+        // New format: [{ imageUrl, historyId }, ...]
+        const imageUrls = data.map(item => item.imageUrl);
+        console.log('Extracted imageUrls:', imageUrls);
+        console.log('Current numOutputs when setting images:', numOutputs);
+        console.log('Setting generatedImages to:', imageUrls);
+        setGeneratedImages(imageUrls);
+        console.log('Images stored in history with IDs:', data.map(item => item.historyId));
+      } else {
+        // Fallback to old format
+        console.log('Using fallback format, setting data directly:', data);
+        console.log('Current numOutputs when setting fallback:', numOutputs);
+        setGeneratedImages(data);
+      }
+      
       enqueueSnackbar('Images generated successfully!', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating images', { variant: 'error' });
@@ -511,7 +541,17 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      setGeneratedImages([data]); // Hair style model returns single image
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Hair style image stored in history with ID:', data.historyId);
+      } else {
+        // Fallback to old format
+        setGeneratedImages([data]);
+      }
+      
       enqueueSnackbar('Hair style changed successfully!', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar(err.message || 'Error changing hair style', { variant: 'error' });
@@ -565,7 +605,17 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      setGeneratedImages([data]); // Combine image model returns single image
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Combined image stored in history with ID:', data.historyId);
+      } else {
+        // Fallback to old format
+        setGeneratedImages([data]);
+      }
+      
       enqueueSnackbar('Images combined successfully!', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar(err.message || 'Error combining images', { variant: 'error' });
@@ -615,16 +665,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      // Make sure we have a valid image URL or data URL
-      if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-        setGeneratedImages([data]); // Text removal model returns single image
-      } else if (Array.isArray(data) && data.length > 0) {
-        setGeneratedImages([data[0]]); // Take the first item if it's an array
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Text removal image stored in history with ID:', data.historyId);
       } else {
-        console.error("Unexpected text removal response format:", data);
-        enqueueSnackbar('Error processing text removal image', { variant: 'error' });
-        setGeneratedImages([null]);
+        // Fallback to old format - Make sure we have a valid image URL or data URL
+        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+          setGeneratedImages([data]); // Text removal model returns single image
+        } else if (Array.isArray(data) && data.length > 0) {
+          setGeneratedImages([data[0]]); // Take the first item if it's an array
+        } else {
+          console.error("Unexpected text removal response format:", data);
+          enqueueSnackbar('Error processing text removal image', { variant: 'error' });
+          setGeneratedImages([null]);
+        }
       }
+      
       console.log("Text removal response data:", data);
       enqueueSnackbar('Text removed successfully!', { variant: 'success' });
     } catch (err) {
@@ -675,16 +734,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      // Make sure we have a valid image URL or data URL
-      if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-        setGeneratedImages([data]); // Cartoonify model returns single image
-      } else if (Array.isArray(data) && data.length > 0) {
-        setGeneratedImages([data[0]]); // Take the first item if it's an array
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Cartoonify image stored in history with ID:', data.historyId);
       } else {
-        console.error("Unexpected cartoonify response format:", data);
-        enqueueSnackbar('Error processing cartoonified image', { variant: 'error' });
-        setGeneratedImages([null]);
+        // Fallback to old format - Make sure we have a valid image URL or data URL
+        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+          setGeneratedImages([data]); // Cartoonify model returns single image
+        } else if (Array.isArray(data) && data.length > 0) {
+          setGeneratedImages([data[0]]); // Take the first item if it's an array
+        } else {
+          console.error("Unexpected cartoonify response format:", data);
+          enqueueSnackbar('Error processing cartoonified image', { variant: 'error' });
+          setGeneratedImages([null]);
+        }
       }
+      
       console.log("Cartoonify response data:", data);
       enqueueSnackbar('Image cartoonified successfully!', { variant: 'success' });
     } catch (err) {
@@ -737,16 +805,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      // Make sure we have a valid image URL or data URL
-      if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-        setGeneratedImages([data]); // Headshot model returns single image
-      } else if (Array.isArray(data) && data.length > 0) {
-        setGeneratedImages([data[0]]); // Take the first item if it's an array
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Headshot image stored in history with ID:', data.historyId);
       } else {
-        console.error("Unexpected headshot response format:", data);
-        enqueueSnackbar('Error processing headshot image', { variant: 'error' });
-        setGeneratedImages([null]);
+        // Fallback to old format - Make sure we have a valid image URL or data URL
+        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+          setGeneratedImages([data]); // Headshot model returns single image
+        } else if (Array.isArray(data) && data.length > 0) {
+          setGeneratedImages([data[0]]); // Take the first item if it's an array
+        } else {
+          console.error("Unexpected headshot response format:", data);
+          enqueueSnackbar('Error processing headshot image', { variant: 'error' });
+          setGeneratedImages([null]);
+        }
       }
+      
       console.log("Headshot response data:", data);
       enqueueSnackbar('Professional headshot generated successfully!', { variant: 'success' });
     } catch (err) {
@@ -797,16 +874,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      // Make sure we have a valid image URL or data URL
-      if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-        setGeneratedImages([data]); // Restore image model returns single image
-      } else if (Array.isArray(data) && data.length > 0) {
-        setGeneratedImages([data[0]]); // Take the first item if it's an array
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Restore image stored in history with ID:', data.historyId);
       } else {
-        console.error("Unexpected restore image response format:", data);
-        enqueueSnackbar('Error processing restored image', { variant: 'error' });
-        setGeneratedImages([null]);
+        // Fallback to old format - Make sure we have a valid image URL or data URL
+        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+          setGeneratedImages([data]); // Restore image model returns single image
+        } else if (Array.isArray(data) && data.length > 0) {
+          setGeneratedImages([data[0]]); // Take the first item if it's an array
+        } else {
+          console.error("Unexpected restore image response format:", data);
+          enqueueSnackbar('Error processing restored image', { variant: 'error' });
+          setGeneratedImages([null]);
+        }
       }
+      
       console.log("Restore image response data:", data);
       enqueueSnackbar('Image restored successfully!', { variant: 'success' });
     } catch (err) {
@@ -859,16 +945,25 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      // Make sure we have a valid image URL or data URL
-      if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-        setGeneratedImages([data]); // ReImagine model returns single image
-      } else if (Array.isArray(data) && data.length > 0) {
-        setGeneratedImages([data[0]]); // Take the first item if it's an array
+      
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+        console.log('Reimagine image stored in history with ID:', data.historyId);
       } else {
-        console.error("Unexpected reimagine response format:", data);
-        enqueueSnackbar('Error processing reimagined image', { variant: 'error' });
-        setGeneratedImages([null]);
+        // Fallback to old format - Make sure we have a valid image URL or data URL
+        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+          setGeneratedImages([data]); // ReImagine model returns single image
+        } else if (Array.isArray(data) && data.length > 0) {
+          setGeneratedImages([data[0]]); // Take the first item if it's an array
+        } else {
+          console.error("Unexpected reimagine response format:", data);
+          enqueueSnackbar('Error processing reimagined image', { variant: 'error' });
+          setGeneratedImages([null]);
+        }
       }
+      
       console.log("ReImagine response data:", data);
       enqueueSnackbar('Impossible scenario generated successfully!', { variant: 'success' });
     } catch (err) {
@@ -984,6 +1079,12 @@ export default function AIImageEditor() {
   // Log when generatedImages changes
   useEffect(() => {
     console.log("generatedImages state updated:", generatedImages);
+    console.log("Valid images count:", generatedImages.filter(img => img !== null).length);
+    generatedImages.forEach((img, index) => {
+      if (img) {
+        console.log(`Image ${index + 1}:`, img.substring(0, 100) + '...');
+      }
+    });
   }, [generatedImages]);
 
 
@@ -1195,7 +1296,7 @@ export default function AIImageEditor() {
       : null;
 
     setExampleImageInfo({
-      title: `Generated Image ${validIndex + 1}`,
+      // title: `Generated Image ${validIndex + 1}`,
       prompt: inputPrompt || null,
       modelConfig: modelConfigText,
       model: selectedModel,

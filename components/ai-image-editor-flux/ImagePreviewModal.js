@@ -212,7 +212,7 @@ const ImagePreviewModal = ({
       return {
         ...imageInfo,
         // Use provided title or fallback to default
-        title: imageInfo.title || `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
+        // title: imageInfo.title || `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
         model: imageInfo.model ? getModelDisplayName(imageInfo.model) : getModelDisplayName(selectedModel),
         // Format created date properly if it exists
         createdAt: imageInfo.createdAt ? imageInfo.createdAt : null
@@ -220,7 +220,7 @@ const ImagePreviewModal = ({
     }
     
     return {
-      title: `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
+      // title: `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
       model: getModelDisplayName(selectedModel),
       resolution: 'High Quality',
       createdAt: new Date().toISOString(),
@@ -516,6 +516,7 @@ const ImagePreviewModal = ({
               <img
                 src={currentImage}
                 alt="Preview"
+                referrerPolicy="no-referrer"
                 style={{
                   maxWidth: '100%',
                   maxHeight: '100%',

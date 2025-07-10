@@ -1,35 +1,5 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import prisma from "@/lib/prisma";
-
-const s3Client = new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
-    credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
-});
-
-const BUCKET_NAME = process.env.R2_BUCKET_NAME;
-
-// Reuse the existing generateSignedUrl function pattern
-async function generateSignedUrl(imagePath) {
-    try {
-        const getUrl = await getSignedUrl(
-            s3Client,
-            new GetObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: imagePath,
-            }),
-            { expiresIn: 3600 } // 1 hour
-        );
-        return getUrl;
-    } catch (error) {
-        console.error('Error generating signed URL:', error);
-        throw error;
-    }
-}
+import { generatePublicUrl } from "@/lib/publicUrlUtils";
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -64,26 +34,24 @@ export default async function handler(req, res) {
 
         console.log(`Found ${communityImages.length} community images for model: ${model}`);
 
-        // Generate signed URLs for all images (following the existing pattern)
-        const imagePromises = communityImages.map(async (dbImage, idx) => {
+        // Generate public URLs for all images (instant loading)
+        const processedImages = communityImages.map((dbImage, idx) => {
             const height = [300, 250, 275, 225, 325, 250, 300, 275, 250, 325, 250, 300];
             
             try {
-                // Generate signed URL for output image
-                const outputUrl = await generateSignedUrl(dbImage.outputImagePath);
+                // Generate public URL for output image (instant, no API calls)
+                const outputUrl = generatePublicUrl(dbImage.outputImagePath);
                 
-                // Generate signed URLs for input images
+                // Generate public URLs for input images
                 const inputUrls = [];
                 for (const inputImg of dbImage.inputImagePaths) {
                     if (inputImg.path) {
-                        try {
-                            const inputUrl = await generateSignedUrl(inputImg.path);
+                        const inputUrl = generatePublicUrl(inputImg.path);
+                        if (inputUrl) {
                             inputUrls.push({
                                 ...inputImg,
                                 url: inputUrl
                             });
-                        } catch (error) {
-                            console.error(`Error generating URL for input image ${inputImg.path}:`, error);
                         }
                     }
                 }
@@ -114,8 +82,6 @@ export default async function handler(req, res) {
                 return null; // Skip this image if URL generation fails
             }
         });
-
-        const processedImages = await Promise.all(imagePromises);
         
         // Filter out any null images (failed to process)
         const validImages = processedImages.filter(img => img !== null);

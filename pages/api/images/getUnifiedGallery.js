@@ -1,41 +1,11 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { getUseCaseImageUrl } from "@/constant/getUseCaseImageUrl";
+import { generatePublicUrl, getModelDisplayName as getModelName } from "@/lib/publicUrlUtils";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
-
-const s3Client = new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
-    credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
-});
-
-const BUCKET_NAME = process.env.R2_BUCKET_NAME;
-
-// Generate signed URL for R2 images
-async function generateSignedUrl(imagePath) {
-    try {
-        const getUrl = await getSignedUrl(
-            s3Client,
-            new GetObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: imagePath,
-            }),
-            { expiresIn: 3600 } // 1 hour
-        );
-        return getUrl;
-    } catch (error) {
-        console.error('Error generating signed URL:', error);
-        throw error;
-    }
-}
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -51,14 +21,27 @@ export default async function handler(req, res) {
 
         console.log('Fetching unified gallery (community + example images)');
 
-        // 1. Fetch community images
+        // Calculate pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const take = parseInt(limit);
+        
+        // Get total count for community images
+        const totalCommunityImages = await prisma.publishedImage.count({
+            where: {
+                isPublic: true,
+                isApproved: true
+            }
+        });
+
+        // 1. Fetch community images with pagination
         const communityImages = await prisma.publishedImage.findMany({
             where: {
                 isPublic: true,
                 isApproved: true
             },
             orderBy: { [sortBy]: 'desc' },
-            take: parseInt(limit / 2), // Take half the limit for community images
+            skip: Math.floor(skip / 2), // Split pagination between community and examples
+            take: Math.ceil(take / 2), // Take half the limit for community images
             include: {
                 user: {
                     select: { name: true, image: true }
@@ -119,34 +102,34 @@ export default async function handler(req, res) {
          
          console.log(`Total example images collected: ${allExampleImages.length}`);
 
-        // 3. Sort example images by likes (descending) and take portion
+        // 3. Sort example images by likes (descending) and apply pagination
         allExampleImages.sort((a, b) => b.likes - a.likes);
-        const selectedExampleImages = allExampleImages.slice(0, parseInt(limit / 2));
+        const totalExampleImages = allExampleImages.length;
+        const exampleSkip = Math.ceil(skip / 2);
+        const exampleTake = Math.floor(take / 2);
+        const selectedExampleImages = allExampleImages.slice(exampleSkip, exampleSkip + exampleTake);
 
-        // 4. Process community images with signed URLs
-        const processedCommunityImages = await Promise.all(
-            communityImages.map(async (dbImage, idx) => {
-                const height = [300, 250, 275, 225, 325, 250, 300, 275, 250, 325];
+        // 4. Process community images with public URLs (instant loading)
+        const processedCommunityImages = communityImages.map((dbImage, idx) => {
+            const height = [300, 250, 275, 225, 325, 250, 300, 275, 250, 325];
+            
+            try {
+                // Generate public URL for output image (instant, no API calls)
+                const outputUrl = generatePublicUrl(dbImage.outputImagePath);
                 
-                try {
-                    // Generate signed URL for output image
-                    const outputUrl = await generateSignedUrl(dbImage.outputImagePath);
-                    
-                    // Generate signed URLs for input images
-                    const inputUrls = [];
-                    for (const inputImg of dbImage.inputImagePaths) {
-                        if (inputImg.path) {
-                            try {
-                                const inputUrl = await generateSignedUrl(inputImg.path);
-                                inputUrls.push({
-                                    ...inputImg,
-                                    url: inputUrl
-                                });
-                            } catch (error) {
-                                console.error(`Error generating URL for input image ${inputImg.path}:`, error);
-                            }
+                // Generate public URLs for input images
+                const inputUrls = [];
+                for (const inputImg of dbImage.inputImagePaths) {
+                    if (inputImg.path) {
+                        const inputUrl = generatePublicUrl(inputImg.path);
+                        if (inputUrl) {
+                            inputUrls.push({
+                                ...inputImg,
+                                url: inputUrl
+                            });
                         }
                     }
+                }
                     
                     return {
                         id: `community-${dbImage.id}`,
@@ -172,78 +155,71 @@ export default async function handler(req, res) {
                         userLiked: currentUserId ? dbImage.imageLikes.length > 0 : false,
                         isLoggedIn: !!currentUserId
                     };
-                } catch (error) {
-                    console.error(`Error processing community image ${dbImage.id}:`, error);
-                    return null;
+            } catch (error) {
+                console.error(`Error processing community image ${dbImage.id}:`, error);
+                return null;
+            }
+        });
+
+        // 5. Process example images with public URLs (instant loading)
+        console.log(`Processing ${selectedExampleImages.length} selected example images`);
+        const processedExampleImages = selectedExampleImages.map((exampleImg, idx) => {
+            try {
+                const height = [280, 260, 290, 240, 310, 270, 320, 250, 300, 330];
+                const model = exampleImg.model;
+                const imageData = exampleImg.imageData;
+                
+                console.log(`Processing example image ${idx + 1}: ${model}/${imageData.outputImage}`);
+                
+                // Generate public URLs for example images (instant, no API calls)
+                const outputUrl = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.outputImage}`);
+                
+                let inputUrl = null;
+                if (imageData.imagePath) {
+                    inputUrl = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.imagePath}`);
                 }
-            })
-        );
 
-                 // 5. Process example images with signed URLs
-         console.log(`Processing ${selectedExampleImages.length} selected example images`);
-         const processedExampleImages = await Promise.all(
-             selectedExampleImages.map(async (exampleImg, idx) => {
-                 try {
-                     const height = [280, 260, 290, 240, 310, 270, 320, 250, 300, 330];
-                     const model = exampleImg.model;
-                     const imageData = exampleImg.imageData;
-                     
-                     console.log(`Processing example image ${idx + 1}: ${model}/${imageData.outputImage}`);
-                     
-                     // Generate signed URLs for example images (correct path structure)
-                     const outputUrl = await generateSignedUrl(`picfix-usecase-image/${model}/${imageData.outputImage}`);
-                     
-                     let inputUrl = null;
-                     if (imageData.imagePath) {
-                         try {
-                             inputUrl = await generateSignedUrl(`picfix-usecase-image/${model}/${imageData.imagePath}`);
-                         } catch (error) {
-                             console.error(`Error generating input URL for ${imageData.imagePath}:`, error);
-                         }
-                     }
+                // Create prompt from image name for text-based models
+                let prompt = null;
+                if (['generate-image', 'combine-image'].includes(model)) {
+                    prompt = imageData.outputImage.replace(/\.(jpg|png|jpeg)$/i, '');
+                }
 
-                     // Create prompt from image name for text-based models
-                     let prompt = null;
-                     if (['generate-image', 'combine-image'].includes(model)) {
-                         prompt = imageData.outputImage.replace(/\.(jpg|png|jpeg)$/i, '');
-                     }
-
-                     const processedImage = {
-                         id: exampleImg.id,
-                         url: outputUrl,
-                         outputUrl: outputUrl,
-                         inputUrl: inputUrl,
-                         title: `${getModelDisplayName(model)} Example`,
-                         prompt: prompt,
-                         height: height[idx % height.length],
-                         isCommunity: false,
-                         isExample: true,
-                         author: 'PicFix.AI',
-                         authorImage: null,
-                         likes: exampleImg.likes,
-                         downloads: exampleImg.downloads,
-                         views: exampleImg.views,
-                         hasComparison: !!inputUrl,
-                         modelParams: null,
-                         aspectRatio: null,
-                         createdAt: exampleImg.createdAt,
-                         exampleImageId: exampleImg.exampleImageId,
-                         model: model,
-                         userLiked: exampleImg.userLiked,
-                         isLoggedIn: !!currentUserId
-                     };
-                     
-                     console.log(`Successfully processed example image: ${processedImage.id}`);
-                     return processedImage;
-                 } catch (error) {
-                     console.error(`Error processing example image ${idx + 1}:`, error, {
-                         model: exampleImg.model,
-                         imageData: exampleImg.imageData
-                     });
-                     return null;
-                 }
-             })
-         );
+                const processedImage = {
+                    id: exampleImg.id,
+                    url: outputUrl,
+                    outputUrl: outputUrl,
+                    inputUrl: inputUrl,
+                    title: `${getModelName(model)} Example`,
+                    prompt: prompt,
+                    height: height[idx % height.length],
+                    isCommunity: false,
+                    isExample: true,
+                    author: 'PicFix.AI',
+                    authorImage: null,
+                    likes: exampleImg.likes,
+                    downloads: exampleImg.downloads,
+                    views: exampleImg.views,
+                    hasComparison: !!inputUrl,
+                    modelParams: null,
+                    aspectRatio: null,
+                    createdAt: exampleImg.createdAt,
+                    exampleImageId: exampleImg.exampleImageId,
+                    model: model,
+                    userLiked: exampleImg.userLiked,
+                    isLoggedIn: !!currentUserId
+                };
+                
+                console.log(`Successfully processed example image: ${processedImage.id}`);
+                return processedImage;
+            } catch (error) {
+                console.error(`Error processing example image ${idx + 1}:`, error, {
+                    model: exampleImg.model,
+                    imageData: exampleImg.imageData
+                });
+                return null;
+            }
+        });
          
          const validExampleImages = processedExampleImages.filter(img => img !== null);
          console.log(`Successfully processed ${validExampleImages.length} example images`);
@@ -269,16 +245,25 @@ export default async function handler(req, res) {
         const validCommunityCount = processedCommunityImages.filter(img => img !== null).length;
         const validExampleCount = processedExampleImages.filter(img => img !== null).length;
         
-        console.log(`Unified gallery response: ${validCommunityCount} community + ${validExampleCount} example = ${allImages.length} total images`);
+        // Calculate totals and pagination info
+        const grandTotal = totalCommunityImages + totalExampleImages;
+        const currentTotal = skip + allImages.length;
+        const hasMore = currentTotal < grandTotal;
+        
+        console.log(`Unified gallery response (page ${page}): ${validCommunityCount} community + ${validExampleCount} example = ${allImages.length} images, hasMore: ${hasMore}`);
 
         res.status(200).json({
             success: true,
             images: allImages,
-            total: allImages.length,
+            total: grandTotal,
+            currentCount: allImages.length,
             communityCount: validCommunityCount,
             exampleCount: validExampleCount,
+            totalCommunityCount: totalCommunityImages,
+            totalExampleCount: totalExampleImages,
             page: parseInt(page),
-            limit: parseInt(limit)
+            limit: parseInt(limit),
+            hasMore: hasMore
         });
 
     } catch (error) {

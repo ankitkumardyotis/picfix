@@ -36,12 +36,37 @@ model PaymentHistory {
 }
 
 model History {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  replicateId String
-  model       String
-  status      String
-  createdAt   DateTime
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  replicateId       String?   // Make optional since we'll generate images directly
+  model             String
+  status            String
+  
+  // Image storage fields
+  outputImagePath   String?   // R2 path for generated image
+  inputImagePaths   Json?     // Array of input image paths
+  publicUrl         String?   // Public URL for the generated image
+  
+  // Enhanced metadata
+  prompt            String?
+  modelParams       Json?
+  aspectRatio       String?
+  
+  // Status tracking
+  isPublished       Boolean   @default(false)
+  publishedImageId  String?   @db.ObjectId // Reference to PublishedImage if published
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publishedImage    PublishedImage? @relation(fields: [publishedImageId], references: [id])
+  
+  @@index([userId, createdAt])
+  @@index([model, userId])
+  @@index([status])
 }
 
 model User {
@@ -55,6 +80,7 @@ model User {
   Account         Account[]
   publishedImages PublishedImage[]
   imageLikes      ImageLike[]
+  history         History[]
 
   @@map("users")
 }
@@ -155,6 +181,9 @@ model PublishedImage {
   downloads         Int       @default(0)
   views             Int       @default(0)
   
+  // Reference to original history record
+  historyId         String?   @db.ObjectId // Reference to History record
+  
   // Timestamps
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -162,10 +191,12 @@ model PublishedImage {
   // Relations
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   imageLikes        ImageLike[]
+  history           History[]
   
   @@index([model, isApproved, isPublic])
   @@index([createdAt])
   @@index([likes])
+  @@index([historyId])
 }
 
 model ImageLike {

@@ -45,22 +45,18 @@ const CommunityGallery = () => {
 
   const IMAGES_PER_PAGE = 12;
 
-  // Store all images in state for efficient pagination
-  const [allCommunityImages, setAllCommunityImages] = useState([]);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-
-  // Fetch all community images once using optimized API
-  const fetchAllCommunityImages = async () => {
+  // Fetch community images with server-side pagination
+  const fetchCommunityImages = async (page = 1, append = false) => {
     try {
       setLoading(true);
 
-      // Use the unified API that fetches both community and example images
+      // Use the unified API with proper pagination
       const response = await fetch('/api/images/getUnifiedGallery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          page: 1,
-          limit: 200, // Get more images in one call
+          page: page,
+          limit: IMAGES_PER_PAGE, // Only fetch 12 images per page
           sortBy: 'createdAt'
         })
       });
@@ -68,98 +64,93 @@ const CommunityGallery = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          const allImages = data.images;
+          const newImages = data.images;
           
-          console.log('Unified gallery fetched successfully:', {
-            total: allImages.length,
+          console.log('Community gallery page fetched:', {
+            page: page,
+            count: newImages.length,
+            total: data.total,
+            hasMore: data.hasMore,
             communityCount: data.communityCount,
-            exampleCount: data.exampleCount,
-            firstImage: allImages[0],
-            hasLikeData: allImages[0]?.userLiked !== undefined
-          });
-
-          // Debug: Log the first few images to see their types
-          console.log('First 5 images details:', allImages.slice(0, 5).map(img => ({
-            id: img.id,
-            isCommunity: img.isCommunity,
-            isExample: img.isExample,
-            model: img.model,
-            url: img.url ? img.url.substring(0, 100) + '...' : 'No URL'
-          })));
-
-          // Debug: Count image types
-          const communityImages = allImages.filter(img => img.isCommunity);
-          const exampleImages = allImages.filter(img => img.isExample);
-          console.log('Image breakdown:', {
-            totalImages: allImages.length,
-            communityImages: communityImages.length,
-            exampleImages: exampleImages.length,
-            exampleModels: exampleImages.map(img => img.model)
+            exampleCount: data.exampleCount
           });
           
-          setAllCommunityImages(allImages);
-          setTotalImages(allImages.length);
-          setImagesLoaded(true);
+          // Update images (append for pagination, replace for initial load)
+          if (append) {
+            setCommunityImages(prev => [...prev, ...newImages]);
+          } else {
+            setCommunityImages(newImages);
+            setTotalImages(data.total || newImages.length);
+          }
           
-          // Set initial page
-          const initialImages = allImages.slice(0, IMAGES_PER_PAGE);
-          setCommunityImages(initialImages);
-          setHasMore(allImages.length > IMAGES_PER_PAGE);
+          // Update pagination state
+          setHasMore(data.hasMore || (page * IMAGES_PER_PAGE < (data.total || newImages.length)));
           
-          // Initialize loading states for images
-          const loadingStates = {};
-          initialImages.forEach((image, index) => {
-            loadingStates[`community-${image.id || index}`] = true;
-          });
-          setImageLoadingStates(loadingStates);
+                     // Initialize loading states for new images
+           const loadingStates = {};
+           newImages.forEach((image, index) => {
+             const imageId = `community-${image.id || index}`;
+             loadingStates[imageId] = true; // Start with loading = true
+           });
+           
+           if (append) {
+             setImageLoadingStates(prev => ({ ...prev, ...loadingStates }));
+           } else {
+             setImageLoadingStates(loadingStates);
+           }
+           
+           // Set timeout to clear loading states after 10 seconds (prevents infinite loading)
+           setTimeout(() => {
+             setImageLoadingStates(prev => {
+               const updated = { ...prev };
+               Object.keys(loadingStates).forEach(imageId => {
+                 if (updated[imageId] === true) {
+                   console.log('Timeout: Clearing loading state for', imageId);
+                   updated[imageId] = false;
+                 }
+               });
+               return updated;
+             });
+           }, 10000);
         } else {
           console.error('Error fetching community images:', data.error);
-          setAllCommunityImages([]);
-          setCommunityImages([]);
-          setTotalImages(0);
+          if (!append) {
+            setCommunityImages([]);
+            setTotalImages(0);
+          }
         }
       } else {
         console.error('Failed to fetch community images');
-        setAllCommunityImages([]);
-        setCommunityImages([]);
-        setTotalImages(0);
+        if (!append) {
+          setCommunityImages([]);
+          setTotalImages(0);
+        }
       }
       
     } catch (error) {
       console.error('Error fetching community images:', error);
-      setAllCommunityImages([]);
-      setCommunityImages([]);
-      setTotalImages(0);
+      if (!append) {
+        setCommunityImages([]);
+        setTotalImages(0);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Paginate from loaded images
-  const loadMoreImages = () => {
-    const startIndex = currentPage * IMAGES_PER_PAGE;
-    const endIndex = startIndex + IMAGES_PER_PAGE;
-    const nextImages = allCommunityImages.slice(startIndex, endIndex);
-    
-    setCommunityImages(prev => [...prev, ...nextImages]);
-    setHasMore(endIndex < allCommunityImages.length);
-    
-    // Initialize loading states for new images
-    const newLoadingStates = {};
-    nextImages.forEach((image, index) => {
-      newLoadingStates[`community-${image.id || (startIndex + index)}`] = true;
-    });
-    setImageLoadingStates(prev => ({ ...prev, ...newLoadingStates }));
+  // Load more images from server
+  const loadMoreImages = async () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    await fetchCommunityImages(nextPage, true); // append = true
   };
 
   useEffect(() => {
-    fetchAllCommunityImages();
+    fetchCommunityImages(1, false); // page = 1, append = false
   }, []);
 
-  const handleShowMore = () => {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    loadMoreImages();
+  const handleShowMore = async () => {
+    await loadMoreImages();
   };
 
   // Image click handler (same pattern as ExampleMasonry)
@@ -237,12 +228,12 @@ const CommunityGallery = () => {
   };
 
   // Image loading state handlers (same as ExampleMasonry)
-  const handleImageLoad = (imageId) => {
-    setImageLoadingStates(prev => ({
-      ...prev,
-      [imageId]: false
-    }));
-  };
+  // const handleImageLoad = (imageId) => {
+  //   setImageLoadingStates(prev => ({
+  //     ...prev,
+  //     [imageId]: false
+  //   }));
+  // };
 
   const handleImageError = (imageId) => {
     setImageLoadingStates(prev => ({
@@ -298,7 +289,6 @@ const CommunityGallery = () => {
         };
 
         setCommunityImages(prev => prev.map(updateFunction));
-        setAllCommunityImages(prev => prev.map(updateFunction));
 
         enqueueSnackbar(
           action === 'like' ? '❤️ Liked!' : '💔 Unliked', 
@@ -367,7 +357,6 @@ const CommunityGallery = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
-      {/* Header Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography 
           variant="h3" 
@@ -393,7 +382,7 @@ const CommunityGallery = () => {
         
         {totalImages > 0 && (
           <Chip 
-            label={`${totalImages} community creations`}
+            label={`${totalImages} total images`}
             variant="outlined"
             sx={{ 
               fontSize: '0.9rem',
@@ -459,7 +448,7 @@ const CommunityGallery = () => {
               })}
             >
               {/* Loading overlay */}
-              {isLoading && (
+              {/* {isLoading && (
                 <Box
                   sx={{
                     position: 'absolute',
@@ -476,7 +465,7 @@ const CommunityGallery = () => {
                 >
                   <CircularProgress size={24} />
                 </Box>
-              )}
+              )} */}
 
                             {/* Model and Type Badges */}
               <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2, display: 'flex', gap: 0.5, flexDirection: 'column' }}>
@@ -525,6 +514,7 @@ const CommunityGallery = () => {
               <img
                 src={image.url}
                 alt={image.title || 'Community creation'}
+                referrerPolicy="no-referrer"
                 style={{
                   width: '100%',
                   height: `${image.height || 280}px`,
@@ -532,8 +522,14 @@ const CommunityGallery = () => {
                   display: 'block',
                   borderRadius: '8px',
                 }}
-                onLoad={() => handleImageLoad(imageId)}
-                onError={() => handleImageError(imageId)}
+                // onLoad={() => {
+                //   console.log('Image loaded:', imageId);
+                //   handleImageLoad(imageId);
+                // }}
+                onError={() => {
+                  console.log('Image error:', imageId);
+                  handleImageError(imageId);
+                }}
               />
 
               {/* Like button overlay (top-right) - Always visible */}
@@ -571,7 +567,7 @@ const CommunityGallery = () => {
                       }}
                     >
                       {!session ? (
-                        <LoginIcon fontSize="medium" />
+                        <FavoriteBorderIcon fontSize="medium" />
                       ) : image.userLiked ? (
                         <FavoriteIcon fontSize="medium" />
                       ) : (

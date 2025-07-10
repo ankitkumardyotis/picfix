@@ -43,6 +43,27 @@ const GeneratedImages = ({
     hasImages: images.some(img => img !== null)
   });
 
+  // Test image loading outside of the complex component structure
+  React.useEffect(() => {
+    const validImages = images.filter(img => img !== null);
+    if (validImages.length > 0) {
+      validImages.forEach((imageUrl, index) => {
+        console.log(`Testing direct image load for image ${index + 1}:`, imageUrl);
+        
+        // Create a test image element
+        const testImg = new Image();
+        testImg.onload = () => {
+          console.log(`✅ Direct test load successful for image ${index + 1}:`, imageUrl);
+          console.log(`Direct load dimensions:`, testImg.naturalWidth, 'x', testImg.naturalHeight);
+        };
+        testImg.onerror = (e) => {
+          console.error(`❌ Direct test load failed for image ${index + 1}:`, imageUrl, e);
+        };
+        testImg.src = imageUrl;
+      });
+    }
+  }, [images]);
+
   const handlePublishClick = (imageUrl, index) => {
     setSelectedImageForPublish({ url: imageUrl, index });
     setPublishDialogOpen(true);
@@ -107,19 +128,36 @@ const GeneratedImages = ({
                     borderRadius: 2,
                     overflow: 'hidden',
                     boxShadow: theme.shadows[4],
+                    // backgroundColor: '#f0f0f0', // Removed debug styling
+                    // border: '2px solid red', // Removed debug border
                     '&:hover .image-overlay': {
                       opacity: 1,
                     },
                   }}
+
                 >
                   <img
+                    key={`img-${image}-${index}`}
                     src={image}
                     alt={`Generated ${index + 1}`}
+                    referrerPolicy="no-referrer"
                     style={{
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
                     }}
+                    onLoad={(e) => {
+                      console.log(`✅ Image ${index + 1} loaded successfully:`, image);
+                      console.log(`Image natural dimensions:`, e.target.naturalWidth, 'x', e.target.naturalHeight);
+                      console.log(`Image display dimensions:`, e.target.width, 'x', e.target.height);
+                    }}
+                    onError={(e) => {
+                      console.error(`❌ Image ${index + 1} failed to load:`, image);
+                      console.error(`Error details:`, e);
+                      console.error(`Error type:`, e.type);
+                      console.error(`Target src:`, e.target.src);
+                    }}
+                    onLoadStart={() => console.log(`🔄 Image ${index + 1} loading started:`, image)}
                   />
                   <Box
                     className="image-overlay"

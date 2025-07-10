@@ -215,6 +215,7 @@ function ImageComponent(props) {
                                         <Image
                                             src={props.restoredPhoto}
                                             alt="Restored Image"
+                                            referrerPolicy="no-referrer"
                                             onLoadingComplete={(e) => {
                                                 setRestoreImageCompleteLoaded(true);
                                             }}

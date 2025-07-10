@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "../auth/[...nextauth]"
 import { getUserPlan } from "@/lib/userData";
+import { storeGeneratedImage, getModelType, getInputImagesFromConfig } from "@/lib/unifiedImageStorage";
 import Replicate from "replicate";
 
 export const maxDuration = 60;
@@ -74,7 +75,34 @@ export default async function handler(req, res) {
       // Ensure we return exactly the number of images requested
       const finalOutput = processedOutput.slice(0, config.num_outputs);
 
-      res.status(200).json(finalOutput);
+      // Store images in history
+      try {
+        const storedImages = [];
+        for (const imageData of finalOutput) {
+          const storedImage = await storeGeneratedImage({
+            imageData,
+            userId: session.user.id,
+            model: getModelType(config),
+            prompt: config.prompt,
+            modelParams: config,
+            aspectRatio: config.aspect_ratio,
+            inputImages: getInputImagesFromConfig(config)
+          });
+          
+          storedImages.push({
+            imageUrl: storedImage.publicUrl,
+            historyId: storedImage.historyId
+          });
+        }
+        
+        console.log(`Stored ${storedImages.length} images in history`);
+        console.log('API Response format:', JSON.stringify(storedImages, null, 2));
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing images in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(finalOutput);
+      }
     } else if (config.hair_style_change) {
       console.log("Changing hair style with config:", config);
       const input = {
@@ -114,7 +142,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store hair style image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Hair style doesn't use prompts
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Hair style image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing hair style image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.combine_images) {
       console.log("Combining images...");
       const input = {
@@ -150,7 +199,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store combined image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Combined image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing combined image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.text_removal) {
       console.log("Removing text from image...");
       const input = {
@@ -187,7 +257,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store text removal image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Text removal doesn't use prompts
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Text removal image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing text removal image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.cartoonify) {
       console.log("Cartoonifying image...");
       const input = {
@@ -232,7 +323,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store cartoonify image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Cartoonify doesn't use prompts
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Cartoonify image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing cartoonify image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.headshot) {
       console.log("Generating professional headshot...");
       const input = {
@@ -279,7 +391,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store headshot image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Headshot doesn't use prompts
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Headshot image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing headshot image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.restore_image) {
       console.log("Restoring image...");
       const input = {
@@ -324,7 +457,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store restore image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Restore image doesn't use prompts
+          modelParams: config,
+          aspectRatio: null, // Restore image preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Restore image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing restore image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else if (config.reimagine) {
       console.log("Generating impossible scenario...");
       const input = {
@@ -371,7 +525,28 @@ export default async function handler(req, res) {
         }
       }
 
-      res.status(200).json(processedOutput);
+      // Store reimagine image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Reimagine doesn't use prompts
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Reimagine image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing reimagine image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
     } else {
       res.status(400).json("Invalid request");
     }
