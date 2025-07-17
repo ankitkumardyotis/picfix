@@ -356,8 +356,8 @@ const CommunityGallery = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
+    <Container maxWidth="lg">
+      <Box sx={{ textAlign: 'center', mb: 1}}>
         <Typography 
           variant="h3" 
           component="h2" 
@@ -375,7 +375,7 @@ const CommunityGallery = () => {
         <Typography 
           variant="h6" 
           color="textSecondary" 
-          sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}
+          sx={{ mb: 2, maxWidth: 600, mx: 'auto' }}
         >
           Discover amazing AI-generated images from our community and curated examples
         </Typography>
@@ -411,7 +411,7 @@ const CommunityGallery = () => {
       {/* Community Images Masonry (same structure as ExampleMasonry) */}
       <Masonry
         columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
-        spacing={1}
+        spacing={0.5}
         sx={{
           width: '100%',
           margin: 0,
@@ -428,7 +428,7 @@ const CommunityGallery = () => {
               key={imageId}
               sx={{
                 position: 'relative',
-                borderRadius: 2,
+                borderRadius: 1,
                 overflow: 'hidden',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 cursor: 'pointer',

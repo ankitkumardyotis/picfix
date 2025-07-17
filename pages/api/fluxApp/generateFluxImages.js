@@ -32,11 +32,16 @@ export default async function handler(req, res) {
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_KEY,
   });
-  const planData = await getUserPlan(session.user.id)
-
-  if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
-    res.status(402).json("Please Subscribe to a plan to use this feature.");
-    return;
+  // Check if this is a free model
+  const isFreeModel = config.gfp_restore || config.background_removal;
+  
+  if (!isFreeModel) {
+    const planData = await getUserPlan(session.user.id)
+    
+    if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
+      res.status(402).json("Please Subscribe to a plan to use this feature.");
+      return;
+    }
   }
 
   try {
@@ -544,6 +549,198 @@ export default async function handler(req, res) {
         });
       } catch (error) {
         console.error('Error storing reimagine image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+    } else if (config.gfp_restore) {
+      console.log("Restoring image with GFP-GAN (Free)...");
+      const input = {
+        img: config.input_image
+      };
+
+      console.log("Restoring image with GFP-GAN config:", {
+        ...input,
+        img: input.img.startsWith('data:') ? '[BASE64_DATA]' : input.img
+      });
+
+      const output = await replicate.run("tencentarc/gfpgan:0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c", { input });
+
+      // Process the output - GFP restore model returns single image
+      console.log("Raw GFP restore output type:", typeof output, Array.isArray(output) ? "is array" : "not array");
+      if (Array.isArray(output)) {
+        console.log("GFP restore output array length:", output.length);
+        if (output.length > 0) {
+          console.log("First item type:", typeof output[0]);
+        }
+      }
+      
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store GFP restore image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // GFP restore doesn't use prompts
+          modelParams: config,
+          aspectRatio: null, // GFP restore preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('GFP restore image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing GFP restore image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+    } else if (config.home_designer) {
+      console.log("Generating home design...");
+      const input = {
+        image: config.input_image,
+        prompt: config.prompt
+      };
+
+      console.log("Generating home design with config:", {
+        ...input,
+        image: input.image.startsWith('data:') ? '[BASE64_DATA]' : input.image
+      });
+
+      const output = await replicate.run("jagilley/controlnet-hough:854e8727697a057c525cdb45ab037f64ecca770a1769cc52287c2e56472a247b", { input });
+
+      // Process the output - home designer model returns single image
+      console.log("Raw home designer output type:", typeof output, Array.isArray(output) ? "is array" : "not array");
+      if (Array.isArray(output)) {
+        console.log("Home designer output array length:", output.length);
+        if (output.length > 0) {
+          console.log("First item type:", typeof output[1]);
+        }
+      }
+      
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[1];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store home designer image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Home designer image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing home designer image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+    } else if (config.remove_object) {
+      console.log("Removing object...");
+      const input = {
+        mask: config.mask_image,
+        image: config.input_image
+      };
+
+      console.log("Removing object with config:", {
+        ...input,
+        mask: input.mask.startsWith('data:') ? '[BASE64_DATA]' : input.mask,
+        image: input.image.startsWith('data:') ? '[BASE64_DATA]' : input.image
+      });
+
+      const output = await replicate.run("allenhooo/lama:cdac78a1bec5b23c07fd29692fb70baa513ea403a39e643c48ec5edadb15fe72", { input });
+
+      // Process the output - remove object model returns single image
+      console.log("Raw remove object output type:", typeof output, Array.isArray(output) ? "is array" : "not array");
+      if (Array.isArray(output)) {
+        console.log("Remove object output array length:", output.length);
+        if (output.length > 0) {
+          console.log("First item type:", typeof output[0]);
+        }
+      }
+      
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store remove object image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null, // Remove object doesn't use prompts
+          modelParams: config,
+          aspectRatio: null, // Remove object preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+        
+        console.log('Remove object image stored in history:', storedImage.historyId);
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing remove object image in history:', error);
         // Fallback to original behavior if storage fails
         res.status(200).json(processedOutput);
       }

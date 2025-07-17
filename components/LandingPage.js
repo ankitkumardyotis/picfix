@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Typewriter } from 'react-simple-typewriter'
 import Image from 'next/image';
 import Head from 'next/head';
+import HeroSection from './updated_landing_page/Hero_section';
 
 
 
@@ -181,6 +182,7 @@ function LandingPage() {
           </div>
         </div>
       </div>
+    
       <div id='All-AI-Models' className={styles.blankSpace}>
 
       </div>

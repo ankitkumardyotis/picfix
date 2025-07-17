@@ -5,6 +5,11 @@ import { useRouter } from "next/router";
 import Head from 'next/head'
 import LandingPage from '@/components/LandingPage';
 import Script from 'next/script';
+// import PicFixHero from "@/components/updated_landing_page/Hero_section";
+import PhotoAIHero from "@/components/updated_landing_page/Hero_section";
+import ModelCards from "@/components/updated_landing_page/ModelCards";
+import MiniBlog from "@/components/updated_landing_page/MiniBlog";
+import Gallery from "@/components/updated_landing_page/gallery";
 
 export default function Home({ open, setOpen }) {
   const { data: session } = useSession()
@@ -28,7 +33,6 @@ export default function Home({ open, setOpen }) {
         id={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}
         dangerouslySetInnerHTML={{
           __html: `
-
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
@@ -41,8 +45,13 @@ export default function Home({ open, setOpen }) {
       />
 
       <main   >
-        <LandingPage open={open} setOpen={setOpen} />
+        {/* <LandingPage open={open} setOpen={setOpen} /> */}
         {/* <Footer /> */}
+        <PhotoAIHero/>
+        <ModelCards/>
+        <Gallery/>
+        <MiniBlog/>
+        
       </main>
 
   

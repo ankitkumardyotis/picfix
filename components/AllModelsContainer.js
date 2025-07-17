@@ -30,11 +30,7 @@ export default function AllModelsContainer() {
     context.setFileUrl("");
     localStorage.setItem("path", "/restorePhoto");
   };
-  const handleBlurImage = () => {
-    context.setFileUrl("");
-    router.push("/imageColorization");
-    localStorage.setItem("path", "/imageColorization");
-  };
+
   const handleRemoveBG = () => {
     context.setFileUrl("");
     router.push("/backgroundRemoval");
@@ -154,40 +150,7 @@ export default function AllModelsContainer() {
             </div>
           </Zoom>
         )}
-        {inView && (
-          <Zoom
-            in={checked}
-            style={{ transitionDelay: checked ? "150ms" : "0ms" }}
-          >
-            <div
-              className="card"
-              style={{ position: "relative" }}
-              onClick={handleBlurImage}
-            >
-              <div className="ribbon right">
-                <h6 style={{ fontSize: "28px" }}>Free</h6>
-              </div>
-              <div className="card-img">
-                <Image
-                  style={imageStyle}
-                  src="/assets/Hedy lammar image-colorization 1200X300.jpg"
-                  alt="Picture of the author"
-                  width={400}
-                  height={300}
-                />
-              </div>
-              <div className="card-info">
-                <h2>Image Colorization</h2>
-                <br />
-                <p>
-                  Revive old memories with vibrant colors using AI colorization.
-                  Transform photographs into vivid representations, preserving
-                  beauty and nostalgia.
-                </p>
-              </div>
-            </div>
-          </Zoom>
-        )}
+     
         {inView && matches && (
           <Zoom
             in={checked}

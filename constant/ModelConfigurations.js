@@ -90,6 +90,40 @@ const modelConfigurations = {
     type: 'restore-image'
     // No aspect ratios needed for restore-image
   },
+  'gfp-restore': {
+    name: 'Restore Image',
+    type: 'gfp-restore',
+    free: true
+    // No aspect ratios needed for gfp-restore
+  },
+  'home-designer': {
+    name: 'Home Designer',
+    type: 'prompts',
+    options: [
+      'a cheerful modernist bedroom',
+      'a cozy living room with fireplace',
+      'a minimalist kitchen design',
+      'a luxurious bathroom with marble',
+      'a contemporary dining room',
+      'a rustic home office',
+      'a modern apartment interior',
+      'a traditional family room'
+    ],
+    aspectRatios: [
+      "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
+    ]
+  },
+  'background-removal': {
+    name: 'Remove Background',
+    type: 'background-removal',
+    free: true
+    // No aspect ratios needed for background removal
+  },
+  'remove-object': {
+    name: 'Remove Object',
+    type: 'remove-object'
+    // No aspect ratios needed for remove object
+  },
   're-imagine': {
     name: 'ReImagine',
     type: 're-imagine',

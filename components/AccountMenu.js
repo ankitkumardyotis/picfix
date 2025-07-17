@@ -29,6 +29,7 @@ import Image from "next/image";
 import newBadge from "../assets/new-badge.gif";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { ImageSearch } from "@mui/icons-material";
 
 export default function AccountMenu() {
   // logout
@@ -48,10 +49,9 @@ export default function AccountMenu() {
   React.useEffect(() => {
     fetchUserPlan();
   }, [session]);
-  React.useEffect(() => {}, [plan]);
+  React.useEffect(() => { }, [plan]);
 
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.up("md"));
 
   React.useEffect(() => {
     setInterval(() => setRefresh(!refresh), 2000);
@@ -127,7 +127,7 @@ export default function AccountMenu() {
             aria-expanded={open ? "true" : undefined}
             sx={{ cursor: "pointer" }}
             fontSize="large"
-            // cursor="pointer"
+          // cursor="pointer"
           >
             <WidgetsIcon fontSize="large" />
             {/* < Avatar alt={session ? session?.user.name : "jhbhb"} src={session && session?.user.image} /> */}
@@ -208,69 +208,7 @@ export default function AccountMenu() {
           </>
         )}
 
-        <MenuItem
-          onClick={() => {
-            context.setFileUrl("");
-            router.push("/restorePhoto");
-            localStorage.setItem("path", "/restorePhoto");
-          }}
-        >
-          <ListItemIcon>
-            <BrokenImageIcon fontSize="small" />
-          </ListItemIcon>
-          Restore Photos
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            context.setFileUrl("");
-            router.push("/imageColorization");
-            localStorage.setItem("path", "/imageColorization");
-          }}
-        >
-          <ListItemIcon>
-            <ColorizeIcon fontSize="small" />
-          </ListItemIcon>
-          Image Colorization
-        </MenuItem>
-        {matches && (
-          <MenuItem
-            onClick={() => {
-              context.setFileUrl("");
-              router.push("/backgroundRemoval");
-              localStorage.setItem("path", "/backgroundRemoval");
-            }}
-          >
-            <ListItemIcon>
-              <TransformIcon fontSize="small" />
-            </ListItemIcon>
-            Background Removal
-          </MenuItem>
-        )}
-        <MenuItem
-          onClick={() => {
-            context.setFileUrl("");
-            router.push("/removeObject");
-            localStorage.setItem("path", "/removeObject");
-          }}
-        >
-          <ListItemIcon>
-            <WhatshotIcon fontSize="small" />
-          </ListItemIcon>
-          Remove Objects
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            context.setFileUrl("");
-            router.push("/aiHomeMakeover");
-            localStorage.setItem("path", "/aiHomeMakeover");
-            // context.setFileUrl('')
-          }}
-        >
-          <ListItemIcon>
-            <BrushIcon fontSize="small" />
-          </ListItemIcon>
-          AI Home Makeover
-        </MenuItem>
+
         <MenuItem
           onClick={() => {
             context.setFileUrl("");
@@ -282,24 +220,19 @@ export default function AccountMenu() {
           <ListItemIcon>
             <BrushIcon fontSize="small" />
           </ListItemIcon>
-          AI Image Editor
+          AI Studio
         </MenuItem>
         <MenuItem
           onClick={() => {
-            router.push("/textToVideo");
-            localStorage.setItem("path", "/textToVideo");
-            // context.setFileUrl('')
+            context.setFileUrl("");
+            router.push("/gallery");
+            localStorage.setItem("path", "/gallery");
           }}
         >
           <ListItemIcon>
-            <OndemandVideoIcon fontSize="small" />
+            <ImageSearch fontSize="small" />
           </ListItemIcon>
-          Text to Video
-          <Image
-            style={{ position: "absolute", right: "10%" }}
-            src={newBadge}
-            width={35}
-          />
+          Gallery
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -325,14 +258,7 @@ export default function AccountMenu() {
           </ListItemIcon>
           Blog
         </MenuItem>
-        {/* <MenuItem onClick={() => {
-                    router.push('/AIModels/removeObject')
-                }}>
-                    <ListItemIcon>
-                        <RemoveCircleIcon fontSize="small" />
-                    </ListItemIcon>
-                    Remove Object
-                </MenuItem> */}
+
         {!session && (
           <>
             {" "}

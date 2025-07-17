@@ -88,7 +88,7 @@ function ExplorePageContainer(props) {
                                 <Typography variant={matches ? 'h3' : 'h4'} sx={{ lineHeight: '1em' }}><b>  {props.heading} </b> </Typography>
                             </Box>
                             <Box >
-                                <Typography variant='p' sx={{ fontSize: matches ? '20px' : '16px' }} >{props.description}</Typography>
+                                <Typography variant='body1' sx={{ fontSize: matches ? '20px' : '16px' }} >{props.description}</Typography>
                             </Box>
                             {
                                 !matches &&

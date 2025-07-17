@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import styles from "./CreditPlanCard.module.css";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import {  useMediaQuery, useTheme } from "@mui/material";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { priceStructure } from "../../constant/Constant";
+import { Typography } from "@mui/material";
+
 function CreditPlanCard() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -11,7 +13,6 @@ function CreditPlanCard() {
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
-
 
   useEffect(() => {
     const Price = priceStructure.filter((item) => item.country === "Others Country");
@@ -30,7 +31,7 @@ function CreditPlanCard() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ amount: price}),
+          body: JSON.stringify({ amount: price }),
         });
         const { order } = await response.json();
 
@@ -55,118 +56,100 @@ function CreditPlanCard() {
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
-      // Handle error if necessary
     }
   };
+
+  const getPlanBadge = (planName) => {
+    switch (planName) {
+      case "standard":
+        return { label: "BASIC PLAN", color: "#4ecdc4" };
+      case "popular":
+        return { label: "PROFESSIONAL PLAN", color: "#3a1c71" };
+      case "premium":
+        return { label: "PREMIUM PLAN", color: "#d76d77" };
+      default:
+        return { label: "BASIC PLAN", color: "#4ecdc4" };
+    }
+  };
+
+  const getFeatures = (item) => [
+    `${item.creditPoints - item.extraCreditPoints} Photo Credits`,
+    ...(item.extraCreditPoints != 0 ? [`+${item.extraCreditPoints} Credits Extra`] : []),
+    "Free Remove Background",
+    "1 Credit used per model",
+    "Access of all Models",
+    "Credits will expire in 1 year"
+  ];
+
   return (
     <div className={styles.creditCardPlan}>
-      <div className={styles.cardTitle} style={{ paddingTop: "6em" }}>
-        <span>Credit Plans</span>
-        <p style={{ marginTop: "3em", padding: "0.3rem 1.5rem" }}>
+      <div className={styles.cardTitle}>
+        <h2 className={styles.mainTitle}>
+          Credit <span className={styles.accentText}>Plans</span>
+        </h2>
+        <Typography 
+          component="div" 
+          className={styles.subtitle}
+        >
           Whether you're an individual looking to enhance your photos, or a
           business seeking comprehensive image solutions,
-          {matches && <br />}{" "}our pricing options
+      our pricing options
           are designed to accommodate your specific needs.
-
-
-        </p>
+        </Typography>
       </div>
-      <div
-        className={styles.cardContainer}
-        style={{
-          flexDirection: !matches && "column",
-          padding: !matches && "0.3rem 1rem",
-        }}
-      >
+
+      <div className={styles.cardContainer}>
         {priceDetails.map((item, idx) => {
+          const badge = getPlanBadge(item.name);
+          const features = getFeatures(item);
+          const isPopular = item.name === "popular";
+
           return (
             <div
               key={idx}
-              className={styles.card}
-              style={{
-                border: "1px solid teal",
-              }}
+              className={`${styles.card} ${isPopular ? styles.popularCard : ''}`}
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
-              <h1>{item.creditPoints} Credits</h1>
-              <br />
-
-              {item.name === "standard" && (
-                <div className={styles.ribbon}>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {" "}
-                    <span>⭐</span>
-                    <span>Basic</span>{" "}
-                  </div>
-                </div>
-              )}
-
-              {item.name === "premium" && (
-                <div className={styles.ribbon}>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {" "}
-                    <span>⭐⭐⭐</span>
-                    <span>Premium</span>{" "}
-                  </div>
-                </div>
-              )}
-              {item.name === "popular" && (
-                <div className={styles.ribbon}>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {" "}
-                    <span>⭐⭐</span>
-                    <span>Popular</span>{" "}
-                  </div>
-                </div>
-              )}
-              {/* {item.attributes.name === 'Premium' && <div className={styles.ribbon}> Premium</div>} */}
-
-              <br />
-
-              <hr />
-              <br />
-              <ul>
-                <li>
-                  {item.creditPoints - item.extraCreditPoints} Photo Credits
-                </li>
-                {item.extraCreditPoints != 0 && (
-                  <li>+{item.extraCreditPoints} Credits Extra</li>
-                )}
-                {item.extraCreditPoints == 0 && (
-                  <>
-                    <li>No Extra Credits</li>
-                  </>
-                )}
-                <li> Free Remove Background </li>
-                <li>1 Credit used per model</li>
-                <li>Access of all Models</li>
-                <li>Credits will expire in 1 year</li>
-    
-              </ul>
-              <hr />
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  paddingTop: "10px",
-                }}
+              {/* Badge */}
+              <div 
+                className={styles.planBadge}
+                style={{ backgroundColor: badge.color }}
               >
-                <span className={styles.price}>
-                  {/* {countryLocation === 'IN' ? <h1>₹{(item.attributes.price / 100) * conversionRate}</h1> : <h1>${item.attributes.price / 100}</h1>} */}
-                  <h1>
-                    {item.country === "IN" ? "₹" : "$"}
-                    {item.price}
-                  </h1>
-                  {/* <p>(Incl. 18% GST)</p> */}
-                </span>
-
-                <button
-                  className={styles.paymentbtn}
-                  onClick={() => successPaymentHandler(item.price)}
-                >
-                  Get Started
-                </button>
+                {badge.label}
               </div>
+
+              {/* Price */}
+              <div className={styles.priceSection}>
+                <span className={styles.currency}>
+                  {item.country === "IN" ? "₹" : "$"}
+                </span>
+                <span className={styles.price}>{item.price}</span>
+              </div>
+
+              {/* Description */}
+              <p className={styles.planDescription}>
+                Perfect for {item.name === 'standard' ? 'individuals getting started' : item.name === 'popular' ? 'professionals and businesses' : 'power users and agencies'} with comprehensive image editing needs.
+              </p>
+
+              {/* Features */}
+              <ul className={styles.featuresList}>
+                {features.map((feature, featureIdx) => (
+                  <li key={featureIdx} className={styles.featureItem}>
+                    <svg className={styles.checkIcon} viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA Button */}
+              <button
+                className={styles.ctaButton}
+                onClick={() => successPaymentHandler(item.price)}
+              >
+                Click here to get started
+              </button>
             </div>
           );
         })}

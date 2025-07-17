@@ -1,72 +1,79 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Sora&display=swap'); */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "roboto", sans-serif;
+  font-family: "Roboto", sans-serif;
 }
+
+/* h1 , h2{
+  font-family: "Sora", sans-serif;
+
+}
+p{
+  font-family: "Inter", sans-serif;
+} */
+
 .outerContent {
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 0.5) 0%,
-    rgba(242, 212, 159, 0.5) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 0.5) 0%,
+      rgba(242, 212, 159, 0.5) 100%);
 }
+
 .innerContent {
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%);
 }
+
 /* Navbar CSS StyleSheet Here */
 
 /* Add this at the top of your CSS */
-@font-face {
-  font-family: "Roboto" sans-serif;
-  src: url("/fonts/Roboto-Regular.woff2") format("woff2"),
-    url("/fonts/Roboto-Regular.woff") format("woff");
-  /* font-weight: 400; */
-  /* font-style: normal; */
-  /* font-display: swap; */
-}
+
 
 .navbar {
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
   position: fixed;
   top: 0;
   z-index: 1002;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 0.3em 1.5rem;
+  padding: 0.3em 0;
   overflow-x: hidden;
+  transition: all 0.3s ease;
+  background: transparent;
 }
+
+.navbar.scrolled {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .gradient {
   background: rgb(100, 214, 207);
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%);
 }
+
 .flex-container {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .flex-row {
   flex-direction: row;
 }
+
 .flex-column {
   flex-direction: column;
 }
+
 /* Buttons */
-.submit-btn > button {
+.submit-btn>button {
   background-color: #000;
   border: none;
   color: #fff;
@@ -77,7 +84,8 @@
   margin-bottom: "30px";
   width: 150px;
 }
-.buttons > button {
+
+.buttons>button {
   background-color: #000;
   border: none;
   color: #fff;
@@ -88,10 +96,12 @@
   margin-bottom: "30px";
   width: 150px;
 }
+
 .upload-download-button {
   flex-wrap: wrap !important;
 }
-.upload-download-button > button {
+
+.upload-download-button>button {
   background-color: #000;
   font-weight: 400;
   font-size: 1.1em;
@@ -115,12 +125,11 @@
   padding-bottom: 50px;
   /* height: 110%; */
   background: rgb(100, 214, 207);
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%);
 }
+
 /* Toggle button Container */
 .toggleButton {
   margin-bottom: 5px;
@@ -146,6 +155,7 @@
   width: 100%;
   height: 100%;
 }
+
 .restoredImageContainer {
   width: 100%;
   height: 100%;
@@ -165,6 +175,7 @@
   padding: 0px 50px 0px 50px;
   gap: 20px;
 }
+
 .allCardContainer {
   flex-wrap: wrap;
   margin-top: 50px;
@@ -185,6 +196,7 @@
   border-radius: 5px;
   cursor: pointer;
 }
+
 .card:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   transform: scale(1.01);
@@ -196,19 +208,23 @@
   /* background-color: aqua; */
   padding: 30px 20px 30px 20px;
 }
-.card-info > h3 {
+
+.card-info>h3 {
   font-size: 1.3em;
   font-weight: 700;
   letter-spacing: 0.4px;
 }
-.card-info > p {
+
+.card-info>p {
   min-height: 70px;
 }
+
 .card-img {
   width: 100%;
   height: 100%;
 }
-.card-img > img {
+
+.card-img>img {
   width: 100%;
   height: 100%;
   /* object-fit: cover; */
@@ -218,16 +234,19 @@
 *::-webkit-scrollbar {
   width: 10px;
 }
+
 *::-webkit-scrollbar-track {
   box-shadow: inset 0 0 3px grey;
   border-radius: 0px;
 }
+
 *::-webkit-scrollbar-thumb {
   background: gray;
   border: 3px solid rgba(0, 0, 0, 0);
   background-clip: padding-box;
   border-radius: 20px;
 }
+
 *::-webkit-scrollbar-thumb:hover {
   background-clip: padding-box;
   border-radius: 20px;
@@ -239,19 +258,24 @@
   border: 2px dotted black;
   border-radius: 5px;
 }
+
 /* Ai Model Container */
 @media (max-width: 768px) {
+
   /* for card in all AI pages */
   .navbar {
     padding: 5px 1em;
   }
+
   .box-container {
     display: flex;
     flex-direction: column;
   }
+
   .allModelCards {
     margin: 30px 0px;
   }
+
   .allCardContainer {
     padding: 0px;
     display: flex;
@@ -259,19 +283,23 @@
     height: 100%;
     gap: 20px;
   }
+
   .card {
     width: 100%;
   }
+
   .allModelCards {
     width: 100%;
     justify-content: center;
     padding: 0px 1em 0px 1em;
     gap: 20px;
   }
+
   .uploader-custom-border {
     width: 100%;
   }
-  .upload-download-button > button {
+
+  .upload-download-button>button {
     background-color: #000;
     font-weight: 400;
     font-size: 1.1em;
@@ -292,22 +320,27 @@
 
 .before-after-badge {
   position: absolute;
-  top: 20px; /* Adjust the position as needed */
-  left: -4px; /*Adjust the position as needed*/
+  top: 20px;
+  /* Adjust the position as needed */
+  left: -4px;
+  /*Adjust the position as needed*/
   width: 100px;
   text-align: center;
-  background: linear-gradient(
-    -59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 0.3) 100%
-  );
+  background: linear-gradient(-59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 0.3) 100%);
   /* Adjust the background color */
-  color: #000; /* Adjust the text color */
-  padding: 5px 10px; /* Adjust the padding */
-  font-size: 20px; /* Adjust the font size */
-  border-radius: 0px 5px 5px 0px; /* Adjust the border radius */
+  color: #000;
+  /* Adjust the text color */
+  padding: 5px 10px;
+  /* Adjust the padding */
+  font-size: 20px;
+  /* Adjust the font size */
+  border-radius: 0px 5px 5px 0px;
+  /* Adjust the border radius */
   /* transform: rotate(-45deg); Adjust the rotation angle */
 }
+
 .creditUsageContainer {
   box-shadow: 0 0.5px 0 #ccc, 0 1px 0 #c9c9c9, 0 1.5px 0 #bbb, 0 2px 0 #b9b9b9,
     0 2.5px 0 #aaa, 0 3px 0.5px rgba(0, 0, 0, 0.1), 0 0 2.5px rgba(0, 0, 0, 0.1),
@@ -316,7 +349,7 @@
     0 10px 10px rgba(0, 0, 0, 0.15);
 }
 
-.modelInformation > h1 {
+.modelInformation>h1 {
   font-weight: 700;
   font-size: 3rem;
   line-height: 1;
@@ -327,7 +360,8 @@
     Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
-.modelInformation > p {
+
+.modelInformation>p {
   font-weight: 400;
   margin-top: 30px;
   font-size: 1rem;
@@ -337,19 +371,17 @@
     Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
+
 .modelCarouselOne {
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%);
 }
+
 .modelCarouselTwo {
-  background: linear-gradient(
-    59deg,
-    rgba(100, 214, 207, 1) 0%,
-    rgba(242, 212, 159, 1) 100%
-  );
+  background: linear-gradient(59deg,
+      rgba(100, 214, 207, 1) 0%,
+      rgba(242, 212, 159, 1) 100%);
 }
 
 /*Only For Model CWJBW */
@@ -361,7 +393,8 @@
   width: 150px;
   justify-content: center;
 }
-.coloredImage > img {
+
+.coloredImage>img {
   border-radius: 5px;
 }
 
@@ -377,7 +410,7 @@
   justify-content: center; */
 }
 
-.footerLogo > img {
+.footerLogo>img {
   border-radius: 4px;
   cursor: pointer;
 }
@@ -386,16 +419,17 @@
   from {
     transform: translate(-5vw, 4vw);
   }
+
   to {
-    transform: translate(
-      1,
-      -3vh
-    ); /* Adjust the distance based on your preference */
+    transform: translate(1,
+        -3vh);
+    /* Adjust the distance based on your preference */
   }
 }
 
 .rocket {
-  animation: flyRocket 1s linear normal; /* Adjust duration and timing function as needed */
+  animation: flyRocket 1s linear normal;
+  /* Adjust duration and timing function as needed */
 }
 
 #upload-button {
@@ -411,20 +445,25 @@
   font-size: 18px;
   cursor: pointer;
 }
+
 #upload {
   display: none;
 }
+
 svg {
   pointer-events: none;
 }
+
 #example {
   font-size: 14px;
   text-decoration: underline;
   cursor: pointer;
 }
+
 #example:hover {
   color: teal;
 }
+
 /* canvas {
   position: absolute;
   width: 100%;
@@ -462,13 +501,13 @@ svg {
   position: relative;
   background: radial-gradient(10px, currentColor 94%, #0000);
 }
+
 .custom-loader:before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(9px at bottom right, #0000 94%, currentColor) top
-      left,
+  background: radial-gradient(9px at bottom right, #0000 94%, currentColor) top left,
     radial-gradient(9px at bottom left, #0000 94%, currentColor) top right,
     radial-gradient(9px at top right, #0000 94%, currentColor) bottom left,
     radial-gradient(9px at top left, #0000 94%, currentColor) bottom right;
@@ -476,15 +515,18 @@ svg {
   background-repeat: no-repeat;
   animation: sp8 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
 }
+
 @keyframes sp8 {
   33% {
     inset: -10px;
     transform: rotate(0deg);
   }
+
   66% {
     inset: -10px;
     transform: rotate(90deg);
   }
+
   100% {
     inset: 0;
     transform: rotate(90deg);
@@ -492,24 +534,24 @@ svg {
 }
 
 .ribbon {
-  --f: 0.5em; /*control the folded part*/
+  --f: 0.5em;
+  /*control the folded part*/
   position: absolute;
   top: 0;
   color: #fff;
   padding: 0.1em 3em;
   background: var(--c, #bd1550);
   border-bottom: var(--f) solid #0007;
-  clip-path: polygon(
-    100% calc(100% - var(--f)),
-    100% 100%,
-    calc(100% - var(--f)) calc(100% - var(--f)),
-    var(--f) calc(100% - var(--f)),
-    0 100%,
-    0 calc(100% - var(--f)),
-    999px calc(100% - var(--f) - 999px),
-    calc(100% - 999px) calc(100% - var(--f) - 999px)
-  );
+  clip-path: polygon(100% calc(100% - var(--f)),
+      100% 100%,
+      calc(100% - var(--f)) calc(100% - var(--f)),
+      var(--f) calc(100% - var(--f)),
+      0 100%,
+      0 calc(100% - var(--f)),
+      999px calc(100% - var(--f) - 999px),
+      calc(100% - 999px) calc(100% - var(--f) - 999px));
 }
+
 .right {
   right: 0;
   transform: translate(calc((1 - cos(45deg)) * 100%), -100%) rotate(45deg);
@@ -521,11 +563,13 @@ svg {
   -moz-box-shadow: 0px 0px 10px 9px rgba(74, 179, 168, 0.76);
   box-shadow: 0px 0px 10px 2px rgba(74, 179, 168, 0.76);
 }
+
 .bg-glow-border {
   -webkit-box-shadow: 0px 0px 10px 9px rgba(33, 104, 97, 0.76);
   -moz-box-shadow: 0px 0px 10px 9px rgba(45, 107, 101, 0.76);
   box-shadow: 0px 0px 10px 2px rgba(39, 56, 54, 0.76);
 }
+
 .cursor {
   pointer-events: none;
 
@@ -550,9 +594,12 @@ svg {
   background: #93dfb8;
   color: #000;
   text-align: center;
-  padding: 0.5em 1.5em; /* Adjust to suit */
-  margin: 2em auto 3em; /* Based on 24px vertical rhythm. 48px bottom margin - normally 24 but the ribbon 'graphics' take up 24px themselves so we double it. */
+  padding: 0.5em 1.5em;
+  /* Adjust to suit */
+  margin: 2em auto 3em;
+  /* Based on 24px vertical rhythm. 48px bottom margin - normally 24 but the ribbon 'graphics' take up 24px themselves so we double it. */
 }
+
 .ribbonHeading:before,
 .ribbonHeading:after {
   content: "";
@@ -562,16 +609,19 @@ svg {
   border: 1.5em solid #7ac69f;
   z-index: -1;
 }
+
 .ribbonHeading:before {
   left: -2em;
   border-right-width: 1.5em;
   border-left-color: transparent;
 }
+
 .ribbonHeading:after {
   right: -2em;
   border-left-width: 1.5em;
   border-right-color: transparent;
 }
+
 .ribbonHeading-content:before,
 .ribbonHeading-content:after {
   content: "";
@@ -581,26 +631,33 @@ svg {
   border-color: #60ac85 transparent transparent transparent;
   bottom: -1em;
 }
+
 .ribbonHeading-content:before {
   left: 0;
   border-width: 1em 0 0 1em;
 }
+
 .ribbonHeading-content:after {
   right: 0;
   border-width: 1em 1em 0 0;
 }
 
 .custom-loader-text-to-video {
-  width:100px;
-  height:100px;
-  --c:radial-gradient(farthest-side,#dee2e6 92%,#0000);
-  background: 
+  width: 100px;
+  height: 100px;
+  --c: radial-gradient(farthest-side, #dee2e6 92%, #0000);
+  background:
     var(--c) 50% 0,
     var(--c) 50% 100%,
     var(--c) 100% 50%,
-    var(--c) 0    50%;
-  background-size:24px 24px;
-  background-repeat:no-repeat;
-  animation:s7 1s infinite;
+    var(--c) 0 50%;
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  animation: s7 1s infinite;
 }
-@keyframes s7 {to{transform: rotate(.5turn)}}
+
+@keyframes s7 {
+  to {
+    transform: rotate(.5turn)
+  }
+}

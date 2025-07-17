@@ -74,7 +74,6 @@ export default function App({
         >
           <ThemeProvider theme={theme}>
             <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
-              <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
               {useMemo(() => <Component {...pageProps} />, [fileUrl,
                 path,
                 open,

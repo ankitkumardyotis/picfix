@@ -62,9 +62,7 @@ export default async function handler(req, res) {
              
              // Skip reimagine model (map to 'reimagine' instead of 're-imagine')
              const modelKey = model === 're-imagine' ? 'reimagine' : model;
-             
-             console.log(`Processing model: ${model} -> ${modelKey}, images: ${modelData.useCaseImages.length}`);
-             
+
              for (const imageData of modelData.useCaseImages) {
                  const exampleImageId = `${modelKey}::${imageData.outputImage}`;
                  
@@ -250,7 +248,6 @@ export default async function handler(req, res) {
         const currentTotal = skip + allImages.length;
         const hasMore = currentTotal < grandTotal;
         
-        console.log(`Unified gallery response (page ${page}): ${validCommunityCount} community + ${validExampleCount} example = ${allImages.length} images, hasMore: ${hasMore}`);
 
         res.status(200).json({
             success: true,
@@ -274,18 +271,3 @@ export default async function handler(req, res) {
         });
     }
 }
-
-// Helper function to get model display name
-function getModelDisplayName(model) {
-    const modelNames = {
-        'generate-image': 'AI Image Generator',
-        'hair-style': 'Hair Style Changer',
-        'headshot': 'Professional Headshot',
-        'cartoonify': 'Cartoonify',
-        'restore-image': 'Image Restoration',
-        'text-removal': 'Text/Watermark Removal',
-        'reimagine': 'ReImagine Scenarios',
-        'combine-image': 'Image Combiner'
-    };
-    return modelNames[model] || model;
-} 

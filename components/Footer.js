@@ -56,11 +56,7 @@ function Footer() {
                         Restore Photos
                     </Typography>
                 </Box>
-                <Box sx={buttonSX} onClick={() => { router.push('/imageColorization'), context.setFileUrl("") }} >
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Image Colorization
-                    </Typography>
-                </Box>
+
                 {matches && <Box sx={buttonSX} onClick={() => { router.push('/backgroundRemoval'), context.setFileUrl("") }} >
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         Background Removal
