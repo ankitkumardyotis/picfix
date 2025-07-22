@@ -22,7 +22,7 @@ export default function App({
   const [timerForRunModel, setTimerForRunModel] = useState(0)
   const [creditPoints, setCreditPoints] = useState(0)
 
-  const router=useRouter()
+  const router = useRouter()
 
   const theme = createTheme({
     // palette: {
@@ -74,14 +74,15 @@ export default function App({
         >
           <ThemeProvider theme={theme}>
             <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
-            <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+              {router.pathname != '/ai-image-editor' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+              }
               {useMemo(() => <Component {...pageProps} />, [fileUrl,
                 path,
                 open,
                 removeImageFromTransformerJs,
                 pageProps,
                 timerForRunModel])}
-              {router.pathname!='/ai-image-editor' && <Footer />}
+              {router.pathname != '/ai-image-editor' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
