@@ -110,7 +110,27 @@ const ScrollContainer = styled(Box)(({ theme }) => ({
     '&::-webkit-scrollbar': {
         display: 'none', // Hide scrollbar Chrome, Safari, Opera
     },
+    // CSS Animation for auto-scroll
+    '&:hover .scroll-content': {
+        animationPlayState: 'paused',
+    },
 }));
+
+const ScrollContent = styled(Box)({
+    display: 'inline-flex',
+    gap: '32px', // Consistent spacing between cards
+    // Animation applied to content, not container
+    animation: 'autoScroll 40s linear infinite',
+    // Define the keyframes for auto-scroll
+    '@keyframes autoScroll': {
+        '0%': {
+            transform: 'translateX(0)',
+        },
+        '100%': {
+            transform: 'translateX(calc(-250px * 11 - 32px * 10))', // Move by exact width of all original cards plus gaps
+        },
+    },
+});
 
 const NavigationContainer = styled(Box)({
     display: 'flex',
@@ -152,7 +172,7 @@ const ModelCard = styled(motion(Card))(({ theme, gradient }) => ({
     display: 'inline-block',
     width: '250px',
     height: '300px',
-    margin: theme.spacing(0, 2),
+    margin: 0, // Remove margin, use gap instead
     padding: theme.spacing(0),
     background: gradient,
     borderRadius: theme.spacing(2),
@@ -163,6 +183,7 @@ const ModelCard = styled(motion(Card))(({ theme, gradient }) => ({
     cursor: 'pointer',
     boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
+    flexShrink: 0, // Prevent cards from shrinking
 
     '&::before': {
         content: '""',
@@ -244,7 +265,7 @@ const ModelCards = () => {
         const handleWheel = (e) => {
             if (e.deltaY !== 0) {
                 e.preventDefault();
-                container.scrollLeft += e.deltaY; // Increased scroll speed multiplier
+                container.scrollLeft += e.deltaY;
             }
         };
 
@@ -310,46 +331,88 @@ const ModelCards = () => {
                 </Typography>
 
                 <ScrollContainer ref={scrollContainerRef}>
-                    {aiModels.map((model) => (
-                        <ModelCard
-                            key={model.id}
-                            gradient={model.gradient}
-                            component={motion.div}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <CardImage
-                                src={model.image}
-                                alt={model.title}
-                                loading="lazy"
-                                referrerPolicy='no-referrer'
-                            />
-                            <CardContent className="card-content">
-
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        color: 'white',
-                                        // mb: 2,
-                                        fontWeight: 600,
-                                        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                    }}
-                                >
-                                    {model.title}
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        color: 'rgba(255,255,255,0.8)',
-                                        fontSize: '.9rem',
-                                        lineHeight: 1.4,
-                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                    }}
-                                >
-                                    {model.description}
-                                </Typography>
-                            </CardContent>
-                        </ModelCard>
-                    ))}
+                    <ScrollContent className="scroll-content">
+                        {/* First set of cards */}
+                        {aiModels.map((model) => (
+                            <ModelCard
+                                key={model.id}
+                                gradient={model.gradient}
+                                component={motion.div}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <CardImage
+                                    src={model.image}
+                                    alt={model.title}
+                                    loading="lazy"
+                                    referrerPolicy='no-referrer'
+                                />
+                                <CardContent className="card-content">
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            color: 'white',
+                                            // mb: 2,
+                                            fontWeight: 600,
+                                            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                        }}
+                                    >
+                                        {model.title}
+                                    </Typography>
+                                    <Typography
+                                        sx={{
+                                            color: 'rgba(255,255,255,0.8)',
+                                            fontSize: '.9rem',
+                                            lineHeight: 1.4,
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        }}
+                                    >
+                                        {model.description}
+                                    </Typography>
+                                </CardContent>
+                            </ModelCard>
+                        ))}
+                        {/* Duplicate set for seamless loop */}
+                        {aiModels.map((model) => (
+                            <ModelCard
+                                key={`duplicate-${model.id}`}
+                                gradient={model.gradient}
+                                component={motion.div}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <CardImage
+                                    src={model.image}
+                                    alt={model.title}
+                                    loading="lazy"
+                                    referrerPolicy='no-referrer'
+                                />
+                                <CardContent className="card-content">
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            color: 'white',
+                                            // mb: 2,
+                                            fontWeight: 600,
+                                            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                        }}
+                                    >
+                                        {model.title}
+                                    </Typography>
+                                    <Typography
+                                        sx={{
+                                            color: 'rgba(255,255,255,0.8)',
+                                            fontSize: '.9rem',
+                                            lineHeight: 1.4,
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        }}
+                                    >
+                                        {model.description}
+                                    </Typography>
+                                </CardContent>
+                            </ModelCard>
+                        ))}
+                    </ScrollContent>
                 </ScrollContainer>
 
                 <NavigationContainer>

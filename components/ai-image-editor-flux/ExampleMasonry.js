@@ -645,8 +645,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
             }
           }}
         >
-          <ToggleButton value="history">History</ToggleButton>
           <ToggleButton value="examples">Examples</ToggleButton>
+          <ToggleButton value="history">History</ToggleButton>
           <ToggleButton value="community">Community</ToggleButton>
         </ToggleButtonGroup>
       </Box>
@@ -984,8 +984,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
                         </Typography>
                       )}
 
-                      {/* Prompt chip */}
-                      {image.prompt && (
+                      {/* Prompt chip - Only show for models that use prompts */}
+                      {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
                         <Chip
                           label="Use this prompt"
                           size="small"

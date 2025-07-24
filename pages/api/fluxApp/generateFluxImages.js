@@ -553,12 +553,12 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
     } else if (config.gfp_restore) {
-      console.log("Restoring image with GFP-GAN (Free)...");
+      console.log("Restoring image with   (Free)...");
       const input = {
         img: config.input_image
       };
 
-      console.log("Restoring image with GFP-GAN config:", {
+      console.log("Restoring image with   config:", {
         ...input,
         img: input.img.startsWith('data:') ? '[BASE64_DATA]' : input.img
       });

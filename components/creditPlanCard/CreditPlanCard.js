@@ -83,17 +83,17 @@ function CreditPlanCard() {
 
   return (
     <div className={styles.creditCardPlan}>
-      <div className={styles.cardTitle}>
-        <h2 className={styles.mainTitle}>
+      <div className={styles.cardTitle}  >
+        <h2 className={styles.mainTitle} style={{ marginTop: matches ? '0px' : '50px' }}>
           Credit <span className={styles.accentText}>Plans</span>
         </h2>
-        <Typography 
-          component="div" 
+        <Typography
+          component="div"
           className={styles.subtitle}
         >
           Whether you're an individual looking to enhance your photos, or a
           business seeking comprehensive image solutions,
-      our pricing options
+          our pricing options
           are designed to accommodate your specific needs.
         </Typography>
       </div>
@@ -111,7 +111,7 @@ function CreditPlanCard() {
               style={{ animationDelay: `${idx * 0.1}s` }}
             >
               {/* Badge */}
-              <div 
+              <div
                 className={styles.planBadge}
                 style={{ backgroundColor: badge.color }}
               >

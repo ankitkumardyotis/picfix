@@ -7,7 +7,8 @@ import {
   Tooltip,
   CircularProgress,
   alpha,
-  useTheme
+  useTheme,
+  styled
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -15,6 +16,76 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CompareIcon from '@mui/icons-material/Compare';
 import PublishIcon from '@mui/icons-material/Publish';
 import PublishDialog from './PublishDialog';
+
+// Styled components for responsive design
+const ResponsiveImageContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '300px',
+  borderRadius: theme.spacing(2),
+  overflow: 'hidden',
+  boxShadow: theme.shadows[4],
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
+    '& .image-overlay': {
+      opacity: 1,
+    },
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: '250px',
+    borderRadius: theme.spacing(1.5),
+  },
+}));
+
+const ResponsiveImageOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+  opacity: 0,
+  transition: 'opacity 0.3s ease',
+  flexWrap: 'wrap',
+  padding: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.5),
+    // Show overlay on mobile by default with reduced opacity
+    opacity: 0.8,
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)',
+  },
+}));
+
+const ResponsiveActionButton = styled(IconButton)(({ theme, variant }) => ({
+  color: 'white',
+  backgroundColor: variant === 'publish' 
+    ? 'rgba(102, 126, 234, 0.8)' 
+    : 'rgba(255,255,255,0.2)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: variant === 'publish' 
+      ? 'rgba(102, 126, 234, 1)' 
+      : 'rgba(255,255,255,0.3)',
+    transform: 'scale(1.1)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: 36,
+    height: 36,
+    '& .MuiSvgIcon-root': {
+      fontSize: '1.1rem',
+    },
+  },
+}));
 
 const GeneratedImages = ({ 
   images, 
@@ -92,10 +163,18 @@ const GeneratedImages = ({
   return (
     <>
     <Box sx={{ mt: 3, mb: 6 }}>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 2, 
+          fontWeight: 600,
+          fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          color: theme.palette.text.primary
+        }}
+      >
         Generated Images
       </Typography>
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
         {isLoading ? (
           // Loading placeholders
             Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' ? 1 : numOutputs).fill(null).map((_, index) => (
@@ -103,16 +182,17 @@ const GeneratedImages = ({
               <Box
                 sx={{
                   width: '100%',
-                  height: '300px',
-                  borderRadius: 2,
+                  height: { xs: '250px', sm: '300px' },
+                  borderRadius: { xs: 1.5, sm: 2 },
                   overflow: 'hidden',
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                 }}
               >
-                <CircularProgress />
+                <CircularProgress size={{ xs: 32, sm: 40 }} />
               </Box>
             </Grid>
           ))
@@ -120,22 +200,7 @@ const GeneratedImages = ({
           images.map((image, index) => (
             image && (
               <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '300px',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: theme.shadows[4],
-                    // backgroundColor: '#f0f0f0', // Removed debug styling
-                    // border: '2px solid red', // Removed debug border
-                    '&:hover .image-overlay': {
-                      opacity: 1,
-                    },
-                  }}
-
-                >
+                <ResponsiveImageContainer>
                   <img
                     key={`img-${image}-${index}`}
                     src={image}
@@ -159,105 +224,51 @@ const GeneratedImages = ({
                     }}
                     onLoadStart={() => console.log(`🔄 Image ${index + 1} loading started:`, image)}
                   />
-                  <Box
-                    className="image-overlay"
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: 'rgba(0,0,0,0.5)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                        gap: 1,
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                        flexWrap: 'wrap',
-                        padding: 1
-                    }}
-                  >
+                  <ResponsiveImageOverlay className="image-overlay">
                     <Tooltip title="Preview Image">
-                      <IconButton
+                      <ResponsiveActionButton
                         onClick={() => handlePreview(image, index)}
-                        sx={{
-                          color: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                          },
-                        }}
                       >
                         <VisibilityIcon />
-                      </IconButton>
+                      </ResponsiveActionButton>
                     </Tooltip>
                       
                     {canCompare && handleComparePreview && (
                       <Tooltip title="Compare Images">
-                        <IconButton
+                        <ResponsiveActionButton
                           onClick={() => handleComparePreview(image, index)}
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.2)',
-                            },
-                          }}
                         >
                           <CompareIcon />
-                        </IconButton>
+                        </ResponsiveActionButton>
                       </Tooltip>
                     )}
                       
                       <Tooltip title="Publish to Community">
-                        <IconButton
+                        <ResponsiveActionButton
+                          variant="publish"
                           onClick={() => handlePublishClick(image, index)}
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(102, 126, 234, 1)',
-                              transform: 'scale(1.1)',
-                            },
-                            transition: 'all 0.2s ease',
-                          }}
                         >
                           <PublishIcon />
-                        </IconButton>
+                        </ResponsiveActionButton>
                       </Tooltip>
                       
                     <Tooltip title="Download Image">
-                      <IconButton
+                      <ResponsiveActionButton
                         onClick={() => handleDownload(image, index)}
-                        sx={{
-                          color: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                          },
-                        }}
                       >
                         <DownloadIcon />
-                      </IconButton>
+                      </ResponsiveActionButton>
                     </Tooltip>
                       
                     <Tooltip title="Delete Image">
-                      <IconButton
+                      <ResponsiveActionButton
                         onClick={() => removeImage(index)}
-                        sx={{
-                          color: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                          },
-                        }}
                       >
                         <DeleteIcon />
-                      </IconButton>
+                      </ResponsiveActionButton>
                     </Tooltip>
-                  </Box>
-                </Box>
+                  </ResponsiveImageOverlay>
+                </ResponsiveImageContainer>
               </Grid>
             )
           ))

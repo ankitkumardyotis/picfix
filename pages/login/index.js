@@ -52,7 +52,7 @@ function Home() {
     }
 
     return (
-        <div style={{ width: '100vw', minHeight: '100vh', background: 'linear-gradient(59deg,#64d6cf,#f2d49f)', display: 'flex', justifyContent: 'center', alignItems: 'center', }} >
+        <div style={{ width: '100vw', minHeight: '100vh', background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', }} >
             {status != 'loading' ?
                 <div style={{ width: matches ? '70vw' : '90vw', height: matches ? '70vh' : 'vh', backgroundColor: 'white', borderRadius: '20px', display: 'flex', flexDirection: matches ? 'row' : 'column', justifyContent: 'center', alignItems: 'center', gap: matches ? '' : '2em', paddingTop: !matches && '1em', paddingBottom: !matches && '3em' }}>
                     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>

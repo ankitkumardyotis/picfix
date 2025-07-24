@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import AppContext from '../components/AppContext';
 import {
   Box,
@@ -75,7 +76,7 @@ const SidePanel = styled(Box)(({ theme }) => ({
   background: alpha(theme.palette.background.paper, 0.95),
   backdropFilter: 'blur(10px)',
   borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  padding: theme.spacing(2,3),
+  padding: theme.spacing(1,3),
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
@@ -274,6 +275,149 @@ export default function AIImageEditor() {
   const [exampleImages, setExampleImages] = useState([]);
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [autoOpenComparison, setAutoOpenComparison] = useState(false);
+
+  // Authentication and state management
+  const { data: session, status } = useSession();
+
+  // State restoration after login
+  useEffect(() => {
+    if (session && status === 'authenticated') {
+      const savedState = localStorage.getItem('aiEditorState');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          
+          // Check if state is not too old (24 hours)
+          const stateAge = Date.now() - (state.timestamp || 0);
+          const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+          
+          if (stateAge > maxAge) {
+            localStorage.removeItem('aiEditorState');
+            return;
+          }
+          
+          // Restore state based on what was saved
+          if (state.selectedModel) setSelectedModel(state.selectedModel);
+          if (state.inputPrompt) setInputPrompt(state.inputPrompt);
+          if (state.uploadedImageUrl) setUploadedImageUrl(state.uploadedImageUrl);
+          if (state.aspectRatio) setAspectRatio(state.aspectRatio);
+          if (state.numOutputs) setNumOutputs(state.numOutputs);
+          if (state.selectedHairStyle) setSelectedHairStyle(state.selectedHairStyle);
+          if (state.selectedHairColor) setSelectedHairColor(state.selectedHairColor);
+          if (state.selectedGender) setSelectedGender(state.selectedGender);
+          
+          // Restore model-specific image URLs
+          if (state.textRemovalImageUrl) setTextRemovalImageUrl(state.textRemovalImageUrl);
+          if (state.cartoonifyImageUrl) setCartoonifyImageUrl(state.cartoonifyImageUrl);
+          if (state.headshotImageUrl) setHeadshotImageUrl(state.headshotImageUrl);
+          if (state.restoreImageUrl) setRestoreImageUrl(state.restoreImageUrl);
+          if (state.gfpRestoreImageUrl) setGfpRestoreImageUrl(state.gfpRestoreImageUrl);
+          if (state.homeDesignerImageUrl) setHomeDesignerImageUrl(state.homeDesignerImageUrl);
+          if (state.backgroundRemovalImageUrl) setBackgroundRemovalImageUrl(state.backgroundRemovalImageUrl);
+          if (state.removeObjectImageUrl) setRemoveObjectImageUrl(state.removeObjectImageUrl);
+          if (state.reimagineImageUrl) setReimagineImageUrl(state.reimagineImageUrl);
+          if (state.combineImage1Url) setCombineImage1Url(state.combineImage1Url);
+          if (state.combineImage2Url) setCombineImage2Url(state.combineImage2Url);
+          
+          // Restore model-specific image data (base64)
+          if (state.uploadedImage) setUploadedImage(state.uploadedImage);
+          if (state.textRemovalImage) setTextRemovalImage(state.textRemovalImage);
+          if (state.cartoonifyImage) setCartoonifyImage(state.cartoonifyImage);
+          if (state.headshotImage) setHeadshotImage(state.headshotImage);
+          if (state.restoreImage) setRestoreImage(state.restoreImage);
+          if (state.gfpRestoreImage) setGfpRestoreImage(state.gfpRestoreImage);
+          if (state.homeDesignerImage) setHomeDesignerImage(state.homeDesignerImage);
+          if (state.backgroundRemovalImage) setBackgroundRemovalImage(state.backgroundRemovalImage);
+          if (state.removeObjectImage) setRemoveObjectImage(state.removeObjectImage);
+          if (state.reimagineImage) setReimagineImage(state.reimagineImage);
+          if (state.combineImage1) setCombineImage1(state.combineImage1);
+          if (state.combineImage2) setCombineImage2(state.combineImage2);
+          
+          // Restore model-specific configurations
+          if (state.selectedHeadshotGender) setSelectedHeadshotGender(state.selectedHeadshotGender);
+          if (state.selectedHeadshotBackground) setSelectedHeadshotBackground(state.selectedHeadshotBackground);
+          if (state.selectedReimagineGender) setSelectedReimagineGender(state.selectedReimagineGender);
+          if (state.selectedScenario) setSelectedScenario(state.selectedScenario);
+          
+          // Clear the saved state after restoration
+          localStorage.removeItem('aiEditorState');
+          enqueueSnackbar('Welcome back! Your previous work has been restored.', { variant: 'success' });
+          
+          // Force refresh of example masonry by triggering a re-render
+          // The key prop on ExampleMasonry will force it to re-mount and clear its cache
+          setTimeout(() => {
+            // Force a re-render by updating a state that triggers the masonry refresh
+            setSelectedModel(prev => {
+              const newModel = prev;
+              return newModel;
+            });
+          }, 100);
+        } catch (error) {
+          console.error('Error restoring state:', error);
+          localStorage.removeItem('aiEditorState');
+        }
+      }
+    }
+  }, [session, status, enqueueSnackbar]);
+
+  // Function to save current state and redirect to login
+  const saveStateAndRedirect = () => {
+    const currentState = {
+      selectedModel,
+      inputPrompt,
+      uploadedImageUrl,
+      aspectRatio,
+      numOutputs,
+      selectedHairStyle,
+      selectedHairColor,
+      selectedGender,
+      // Model-specific image URLs
+      textRemovalImageUrl,
+      cartoonifyImageUrl,
+      headshotImageUrl,
+      restoreImageUrl,
+      gfpRestoreImageUrl,
+      homeDesignerImageUrl,
+      backgroundRemovalImageUrl,
+      removeObjectImageUrl,
+      reimagineImageUrl,
+      combineImage1Url,
+      combineImage2Url,
+      // Model-specific image data (base64)
+      uploadedImage,
+      textRemovalImage,
+      cartoonifyImage,
+      headshotImage,
+      restoreImage,
+      gfpRestoreImage,
+      homeDesignerImage,
+      backgroundRemovalImage,
+      removeObjectImage,
+      reimagineImage,
+      combineImage1,
+      combineImage2,
+      // Model-specific configurations
+      selectedHeadshotGender,
+      selectedHeadshotBackground,
+      selectedReimagineGender,
+      selectedScenario,
+      // Timestamp for state freshness
+      timestamp: Date.now()
+    };
+    localStorage.setItem('aiEditorState', JSON.stringify(currentState));
+    localStorage.setItem('path', '/ai-image-editor');
+    router.push('/login');
+  };
+
+  // Function to check authentication before API calls
+  const checkAuthBeforeAction = () => {
+    if (!session) {
+      enqueueSnackbar('Please login to use this feature', { variant: 'warning' });
+      saveStateAndRedirect();
+      return false;
+    }
+    return true;
+  };
 
 
 
@@ -609,6 +753,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     console.log('Setting up generatedImages array with numOutputs:', numOutputs);
@@ -682,6 +831,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setGeneratedImages([null]); // Hair style model returns only 1 image
@@ -747,6 +901,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setGeneratedImages([null]); // Combine image model returns only 1 image
@@ -803,6 +962,11 @@ export default function AIImageEditor() {
   const generateTextRemovalImage = async () => {
     if (!textRemovalImageUrl) {
       enqueueSnackbar('Please upload an image first', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
       return;
     }
 
@@ -875,6 +1039,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setNumOutputs(1); // Ensure only 1 output for cartoonify
@@ -941,6 +1110,11 @@ export default function AIImageEditor() {
   const generateHeadshotImage = async () => {
     if (!headshotImageUrl) {
       enqueueSnackbar('Please upload an image first', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
       return;
     }
 
@@ -1015,6 +1189,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setNumOutputs(1); // Ensure only 1 output for restore image
@@ -1084,6 +1263,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setNumOutputs(1); // Ensure only 1 output for GFP restore
@@ -1093,7 +1277,7 @@ export default function AIImageEditor() {
     scrollToImageGeneration();
 
     try {
-      enqueueSnackbar('Restoring image with GFP-GAN (Free)...', { variant: 'info' });
+      enqueueSnackbar('Restoring image    (Free)...', { variant: 'info' });
 
       // Send the stored URL to Replicate
       const response = await fetch('/api/fluxApp/generateFluxImages', {
@@ -1111,7 +1295,7 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to restore image with GFP-GAN');
+        throw new Error(errorData?.detail || errorData || 'Failed to restore image with  ');
       }
 
       const data = await response.json();
@@ -1135,10 +1319,10 @@ export default function AIImageEditor() {
       }
 
       console.log("GFP restore response data:", data);
-      enqueueSnackbar('Image restored successfully with GFP-GAN!', { variant: 'success' });
+      enqueueSnackbar('Image restored successfully', { variant: 'success' });
     } catch (err) {
-      enqueueSnackbar(err.message || 'Error restoring image with GFP-GAN', { variant: 'error' });
-      console.error('Error restoring image with GFP-GAN:', err);
+      enqueueSnackbar(err.message || 'Error restoring image with  ', { variant: 'error' });
+      console.error('Error restoring image with  :', err);
     } finally {
       setIsLoading(false);
     }
@@ -1152,6 +1336,11 @@ export default function AIImageEditor() {
 
     if (!inputPrompt.trim()) {
       enqueueSnackbar('Please enter a design prompt', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
       return;
     }
 
@@ -1223,6 +1412,11 @@ export default function AIImageEditor() {
       return;
     }
 
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
     if (backgroundRemovalStatus !== 'Ready') {
       enqueueSnackbar('Background removal model is still loading...', { variant: 'warning' });
       return;
@@ -1270,6 +1464,11 @@ export default function AIImageEditor() {
 
     if (!removeObjectMask || !hasMaskDrawn) {
       enqueueSnackbar('Please draw on the image to mark objects for removal', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
       return;
     }
 
@@ -1349,6 +1548,11 @@ export default function AIImageEditor() {
   const generateReimagineImage = async () => {
     if (!reimagineImageUrl) {
       enqueueSnackbar('Please upload an image first', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
       return;
     }
 
@@ -1672,7 +1876,7 @@ export default function AIImageEditor() {
         break;
 
       case 'gfp-restore':
-        configParts.push('GFP-GAN image restoration (Free)');
+        configParts.push('  image restoration (Free)');
         break;
 
       case 'home-designer':
@@ -2097,32 +2301,75 @@ export default function AIImageEditor() {
                 }}
               >
                 {Object.entries(modelConfigurations).map(([key, config]) => (
-                  <MenuItem key={key} value={key} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                      {config.type != 'gfp-restore' && config.type != 'background-removal' && <FaCrown
-                        style={{
-                          fontSize: '16px',
-                          color: '#FFD700',
-                          filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.5))'
+                  <MenuItem 
+                    key={key} 
+                    value={key} 
+                    sx={{ 
+                      fontSize: '12px', 
+                      fontWeight: 400,
+                      '&:hover .free-pro-label': {
+                        opacity: 1,
+                        transform: 'translateX(0)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {config.type != 'gfp-restore' && config.type != 'background-removal' && <FaCrown
+                          style={{
+                            fontSize: '16px',
+                            color: '#FFD700',
+                            filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.5))'
+                          }}
+                        />}
+                        {config.type == 'gfp-restore' && <FaGift
+                          style={{
+                            fontSize: '16px',
+                            color: 'green',
+                            // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
+                          }}
+                        />}
+                        {config.type == 'background-removal' && <FaGift
+                          style={{
+                            fontSize: '16px',
+                            color: 'green',
+                            // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
+                          }}
+                        />}
+                        <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                          {config.name}
+                        </Typography>
+                      </Box>
+                      {/* Free/Pro Label - Hidden by default, shown on hover */}
+                      <Box
+                        className="free-pro-label"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '40px',
+                          height: '18px',
+                          borderRadius: '10px',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          opacity: 0,
+                          transform: 'translateX(10px)',
+                          transition: 'all 0.2s ease-in-out',
+                          ...(config.free ? {
+                            backgroundColor: '#e8f5e8',
+                            color: '#2e7d32',
+                            border: '1px solid #4caf50'
+                          } : {
+                            backgroundColor: '#fff3e0',
+                            color: '#f57c00',
+                            border: '1px solid #ff9800'
+                          })
                         }}
-                      />}
-                      {config.type == 'gfp-restore' && <FaGift
-                        style={{
-                          fontSize: '16px',
-                          color: 'green',
-                          // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
-                        }}
-                      />}
-                      {config.type == 'background-removal' && <FaGift
-                        style={{
-                          fontSize: '16px',
-                          color: 'green',
-                          // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
-                        }}
-                      />}
-                      <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
-                        {config.name}
-                      </Typography>
+                      >
+                        {config.free ? 'Free' : 'Pro'}
+                      </Box>
                     </Box>
                   </MenuItem>
                 ))}
@@ -2807,6 +3054,33 @@ export default function AIImageEditor() {
                   handleDrop={handleDrop}
                 />
 
+                {/* Generate Button for Hair Style */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateHairStyleImages}
+                    disabled={!uploadedImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Changing Hair Style...' : 'Change Hair Style'}
+                  </Button>
+                </Box>
 
               </>
             )}
@@ -2860,6 +3134,34 @@ export default function AIImageEditor() {
                     This tool will automatically remove text from your image while preserving the background.
                   </Typography>
                 </Box>
+
+                {/* Generate Button for Text Removal */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateTextRemovalImage}
+                    disabled={!textRemovalImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Removing Text...' : 'Remove Text'}
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -2911,6 +3213,34 @@ export default function AIImageEditor() {
                   <Typography variant="body2" color="textSecondary">
                     This tool will transform your photo into a cartoon-style image.
                   </Typography>
+                </Box>
+
+                {/* Generate Button for Cartoonify */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateCartoonifyImage}
+                    disabled={!cartoonifyImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Cartoonifying...' : 'Cartoonify Image'}
+                  </Button>
                 </Box>
               </>
             )}
@@ -2964,6 +3294,34 @@ export default function AIImageEditor() {
                     This tool will transform your photo into a professional headshot with the selected background.
                   </Typography>
                 </Box>
+
+                {/* Generate Button for Headshot */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateHeadshotImage}
+                    disabled={!headshotImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Generating Headshot...' : 'Generate Headshot'}
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -3016,6 +3374,34 @@ export default function AIImageEditor() {
                     This tool will restore your image to its original quality.
                   </Typography>
                 </Box>
+
+                {/* Generate Button for Restore Image */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateRestoreImage}
+                    disabled={!restoreImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Restoring Image...' : 'Restore Image'}
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -3026,7 +3412,7 @@ export default function AIImageEditor() {
                 <ImageUploader
                   uploadedImage={gfpRestoreImage}
                   uploadingImage={uploadingGfpRestoreImage}
-                  placeholderText="Click to upload an image to restore with GFP-GAN"
+                  placeholderText="Click to upload an image to restore with  "
                   onImageUpload={async (e) => {
                     const file = e.target.files[0];
                     if (file && file.type.startsWith('image/')) {
@@ -3064,8 +3450,36 @@ export default function AIImageEditor() {
 
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
-                    🎉 Free GFP-GAN restoration tool! Enhance your old or low-quality images without using credits.
+                    🎉 Free   restoration tool! Enhance your old or low-quality images without using credits.
                   </Typography>
+                </Box>
+
+                {/* Generate Button for GFP Restore */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateGfpRestoreImage}
+                    disabled={!gfpRestoreImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Restoring Image...' : 'Restore Image (Free)'}
+                  </Button>
                 </Box>
               </>
             )}
@@ -3165,6 +3579,38 @@ export default function AIImageEditor() {
                   )}
                 </Box>
 
+                {/* Generate Button for Background Removal */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (backgroundRemovalImage) {
+                        setProcessingBackgroundRemoval(true);
+                      }
+                    }}
+                    disabled={!backgroundRemovalImage || processingBackgroundRemoval || backgroundRemovalStatus !== 'Ready'}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={processingBackgroundRemoval ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {processingBackgroundRemoval ? 'Removing Background...' : 'Remove Background (Free)'}
+                  </Button>
+                </Box>
+
                 {/* Background Removal Processor - Hidden component that handles the processing */}
                 {selectedModel === 'background-removal' && (
                   <BackgroundRemovalProcessor
@@ -3243,6 +3689,34 @@ export default function AIImageEditor() {
                     </Typography>
                   )}
                 </Box>
+
+                {/* Generate Button for Remove Object */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateRemoveObjectImage}
+                    disabled={!removeObjectImageUrl || !hasMaskDrawn || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Removing Objects...' : 'Remove Objects'}
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -3294,6 +3768,31 @@ export default function AIImageEditor() {
                   <Typography variant="body2" color="textSecondary">
                     This tool will place you in an impossible scenario that would be difficult or impossible to achieve in real life.
                   </Typography>
+                </Box>
+
+                {/* Generate Button for ReImagine */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateReimagineImage}
+                    disabled={!reimagineImageUrl || isLoading}
+                    sx={{
+                      py: 1.5,
+                      px: 3,
+                      borderRadius: 2,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Generating Impossible Scenario...' : 'Generate Impossible Scenario'}
+                  </Button>
                 </Box>
               </>
             )}
@@ -3416,6 +3915,7 @@ export default function AIImageEditor() {
 
             {/* Example Images Masonry */}
             <ExampleMasonry
+              key={`${selectedModel}-${selectedGender}-${session?.user?.id || 'guest'}`}
               selectedModel={selectedModel}
               selectedGender={selectedGender}
               onImageClick={handleExampleImageClick}
