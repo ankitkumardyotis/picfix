@@ -208,7 +208,7 @@ const ImageUploader = ({
   return (
     <Box sx={sx}>
       {title && (
-        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+        <Typography variant="subtitle2" sx={{ mb: 1.5,mt:2, fontWeight: 600 }}>
           {title}
         </Typography>
       )}

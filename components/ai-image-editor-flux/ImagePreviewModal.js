@@ -158,18 +158,14 @@ const ImagePreviewModal = ({
         link.click();
         document.body.removeChild(link);
       } else {
-        fetch(currentImage)
-          .then(response => response.blob())
-          .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          });
+        // Use the download API to avoid CORS issues
+        const downloadUrl = `/api/download-image?url=${encodeURIComponent(currentImage)}&filename=${encodeURIComponent(filename)}`;
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
     }
   };
@@ -205,6 +201,87 @@ const ImagePreviewModal = ({
       'combine-image': 'Image Combiner'
     };
     return names[model] || model;
+  };
+
+  // Function to generate detailed configuration display from modelParams
+  const generateDetailedConfigDisplay = (model, modelParams) => {
+    if (!modelParams) return null;
+
+    const configParts = [];
+
+    switch (model) {
+      case 'hair-style':
+        if (modelParams.hair_style && modelParams.hair_style !== 'No change' && modelParams.hair_style !== 'Random') {
+          configParts.push(`Hair Style: ${modelParams.hair_style}`);
+        }
+        if (modelParams.hair_color && modelParams.hair_color !== 'No change') {
+          configParts.push(`Hair Color: ${modelParams.hair_color}`);
+        }
+        if (modelParams.gender && modelParams.gender !== 'None') {
+          configParts.push(`Gender: ${modelParams.gender}`);
+        }
+        break;
+
+      case 'headshot':
+        if (modelParams.background && modelParams.background !== 'None') {
+          configParts.push(`Background: ${modelParams.background}`);
+        }
+        if (modelParams.gender && modelParams.gender !== 'None') {
+          configParts.push(`Gender: ${modelParams.gender}`);
+        }
+        break;
+
+      case 'reimagine':
+        if (modelParams.scenario && modelParams.scenario !== 'Random') {
+          configParts.push(`Scenario: ${modelParams.scenario}`);
+        }
+        if (modelParams.gender && modelParams.gender !== 'None') {
+          configParts.push(`Gender: ${modelParams.gender}`);
+        }
+        break;
+
+      case 'text-removal':
+        configParts.push('Text and Watermark Removal');
+        break;
+
+      case 'cartoonify':
+        configParts.push('Cartoon Style Transformation');
+        break;
+
+      case 'restore-image':
+        configParts.push('Image Restoration and Enhancement');
+        break;
+
+      case 'gfp-restore':
+        configParts.push('GFP Image Restoration');
+        break;
+
+      case 'home-designer':
+        configParts.push('Interior Design Transformation');
+        break;
+
+      case 'background-removal':
+        configParts.push('AI Background Removal');
+        break;
+
+      case 'remove-object':
+        configParts.push('AI Object Removal');
+        break;
+
+      case 'combine-image':
+        configParts.push('Image Combination');
+        break;
+
+      default:
+        configParts.push(getModelDisplayName(model));
+    }
+
+    // Add aspect ratio if available and not default
+    if (modelParams.aspect_ratio && modelParams.aspect_ratio !== 'match_input_image') {
+      configParts.push(`Aspect Ratio: ${modelParams.aspect_ratio}`);
+    }
+
+    return configParts.length > 0 ? configParts.join('\n') : null;
   };
 
   const formatImageInfo = () => {
@@ -372,12 +449,12 @@ const ImagePreviewModal = ({
                 className="modal-comparison"
               />
               
-              {/* Exit Comparison Button */}
+              {/* Exit Comparison Button - Top Left Corner */}
               <Box
                 sx={{
                   position: 'absolute',
-                  bottom: 16,
-                  left: 16,
+                  top: 25,
+                  right: 80,
                   zIndex: 1000,
                 }}
               >
@@ -400,17 +477,42 @@ const ImagePreviewModal = ({
           ) : (
             /* Normal Image View */
             <>
-              {/* Zoom Controls */}
+              {/* Toolbar - Top Right Corner */}
               <Box
                 sx={{
                   position: 'absolute',
-                  bottom: 16,
-                  left: 16,
+                  top: 16,
+                  right: 16,
                   display: 'flex',
                   gap: 1,
                   zIndex: 1000,
                 }}
               >
+                {/* Comparison Mode Toggle - First */}
+                {canCompare && beforeImage && afterImage && (
+                  <Tooltip title={comparisonMode ? "Switch to Normal View" : "Switch to Comparison View"}>
+                    <IconButton
+                      onClick={toggleComparisonMode}
+                      sx={{
+                        backgroundColor: comparisonMode 
+                          ? alpha(theme.palette.primary.main, 0.9)
+                          : alpha(theme.palette.background.paper, 0.9),
+                        color: comparisonMode 
+                          ? 'white'
+                          : theme.palette.text.primary,
+                        '&:hover': {
+                          backgroundColor: comparisonMode 
+                            ? theme.palette.primary.dark
+                            : theme.palette.background.paper,
+                        },
+                      }}
+                    >
+                      {comparisonMode ? <ViewModuleIcon /> : <CompareIcon />}
+                    </IconButton>
+                  </Tooltip>
+                )}
+                
+                {/* Zoom Controls */}
                 <Tooltip title="Zoom In">
                   <IconButton
                     onClick={handleZoomIn}
@@ -456,47 +558,21 @@ const ImagePreviewModal = ({
                     <RestartAltIcon />
                   </IconButton>
                 </Tooltip>
-                
-                {/* Comparison Mode Toggle */}
-                {canCompare && beforeImage && afterImage && (
-                  <Tooltip title={comparisonMode ? "Switch to Normal View" : "Switch to Comparison View"}>
-                    <IconButton
-                      onClick={toggleComparisonMode}
-                      sx={{
-                        backgroundColor: comparisonMode 
-                          ? alpha(theme.palette.primary.main, 0.9)
-                          : alpha(theme.palette.background.paper, 0.9),
-                        color: comparisonMode 
-                          ? 'white'
-                          : theme.palette.text.primary,
-                        '&:hover': {
-                          backgroundColor: comparisonMode 
-                            ? theme.palette.primary.dark
-                            : theme.palette.background.paper,
-                        },
-                      }}
-                    >
-                      {comparisonMode ? <ViewModuleIcon /> : <CompareIcon />}
-                    </IconButton>
-                  </Tooltip>
-                )}
               </Box>
 
               {/* Zoom Level Indicator */}
-              {zoom !== 1 && (
-                <Chip
-                  label={`${Math.round(zoom * 100)}%`}
-                  size="small"
-                  sx={{
-                    position: 'absolute',
-                    bottom: 16,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                    color: theme.palette.text.primary,
-                  }}
-                />
-              )}
+              <Chip
+                label={`${Math.round(zoom * 100)}%`}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                  color: theme.palette.text.primary,
+                }}
+              />
 
               {/* Image Counter */}
               {totalImages > 1 && (
@@ -596,10 +672,10 @@ const ImagePreviewModal = ({
                 </Box>
               )}
 
-              {info.prompt && (
+              {info.prompt && modelConfigurations[info.model]?.type === 'prompts' && (
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
-                    {info.type === 'example' ? 'Configuration Used' : 'Prompt Used'}
+                    Prompt Used
                   </Typography>
                   <Typography variant="body2" sx={{ 
                     fontWeight: 400,
@@ -615,7 +691,7 @@ const ImagePreviewModal = ({
               )}
 
               {/* Show model configuration when there's no prompt */}
-              {!info.prompt && info.modelConfig && (
+              {!info.prompt && (info.modelConfig || info.modelParams) && (
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
                     Configuration Used
@@ -626,9 +702,13 @@ const ImagePreviewModal = ({
                     backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                     padding: 1,
                     borderRadius: 1,
-                    fontSize: '0.8rem'
+                    fontSize: '0.8rem',
+                    whiteSpace: 'pre-line'
                   }}>
-                    {info.modelConfig}
+                    {info.modelParams 
+                      ? generateDetailedConfigDisplay(info.model, info.modelParams)
+                      : info.modelConfig
+                    }
                   </Typography>
                 </Box>
               )}
@@ -653,56 +733,6 @@ const ImagePreviewModal = ({
               >
                 Download Image
               </Button>
-              
-              {canCompare && beforeImage && afterImage && (
-                <Button
-                  fullWidth
-                  variant={comparisonMode ? "contained" : "outlined"}
-                  startIcon={comparisonMode ? <ViewModuleIcon /> : <CompareIcon />}
-                  onClick={toggleComparisonMode}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    backgroundColor: comparisonMode 
-                      ? theme.palette.primary.main 
-                      : 'transparent',
-                    color: comparisonMode 
-                      ? 'white' 
-                      : theme.palette.primary.main,
-                    borderColor: theme.palette.primary.main,
-                    '&:hover': {
-                      backgroundColor: comparisonMode 
-                        ? theme.palette.primary.dark 
-                        : alpha(theme.palette.primary.main, 0.04),
-                    },
-                  }}
-                >
-                  {comparisonMode ? 'Exit Comparison' : 'Compare Images'}
-                </Button>
-              )}
-              
-              {/* <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<ShareIcon />}
-                sx={{
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
-                onClick={() => {
-                  if (navigator.share && currentImage) {
-                    navigator.share({
-                      title: info.title,
-                      text: `Check out this ${info.model} generated image!`,
-                      url: window.location.href
-                    });
-                  }
-                }}
-              >
-                Share
-              </Button> */}
             </Stack>
           </Box>
         </Paper>

@@ -288,11 +288,11 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
     switch (model) {
       case 'hair-style':
-        if (modelParams?.hairStyle && modelParams.hairStyle !== 'No change') {
-          configParts.push(`${modelParams.hairStyle} hairstyle`);
+        if (modelParams?.hair_style && modelParams.hair_style !== 'No change' && modelParams.hair_style !== 'Random') {
+          configParts.push(`${modelParams.hair_style} hairstyle`);
         }
-        if (modelParams?.hairColor && modelParams.hairColor !== 'No change') {
-          configParts.push(`${modelParams.hairColor.toLowerCase()} hair color`);
+        if (modelParams?.hair_color && modelParams.hair_color !== 'No change') {
+          configParts.push(`${modelParams.hair_color.toLowerCase()} hair color`);
         }
         if (modelParams?.gender && modelParams.gender !== 'None') {
           configParts.push(`${modelParams.gender.toLowerCase()} styling`);
@@ -329,6 +329,26 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         configParts.push('Image restoration and enhancement');
         break;
 
+      case 'gfp-restore':
+        configParts.push('GFP image restoration');
+        break;
+
+      case 'home-designer':
+        configParts.push('Interior design transformation');
+        break;
+
+      case 'background-removal':
+        configParts.push('AI background removal');
+        break;
+
+      case 'remove-object':
+        configParts.push('AI object removal');
+        break;
+
+      case 'combine-image':
+        configParts.push('Image combination');
+        break;
+
       default:
         if (config.name) {
           configParts.push(config.name);
@@ -336,8 +356,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
     }
 
     // Add aspect ratio if available
-    if (modelParams?.aspectRatio) {
-      configParts.push(`${modelParams.aspectRatio} aspect ratio`);
+    if (modelParams?.aspect_ratio && modelParams.aspect_ratio !== 'match_input_image') {
+      configParts.push(`${modelParams.aspect_ratio} aspect ratio`);
     }
 
     return configParts.length > 0 ? configParts.join(', ') : null;
@@ -349,6 +369,31 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       const modelConfigText = !image.prompt && image.modelParams
         ? generateModelConfigText(selectedModel, image, image.modelParams)
         : null;
+
+      // Check if comparison data is available for this image
+      const hasComparison = image.hasComparison && image.inputUrl && image.outputUrl;
+      
+      // Get comparison labels if available
+      const getComparisonLabels = (model) => {
+        switch (model) {
+          case 'headshot':
+            return { before: 'Original Photo', after: 'Professional Headshot' };
+          case 'text-removal':
+            return { before: 'With Text', after: 'Text Removed' };
+          case 'cartoonify':
+            return { before: 'Original Photo', after: 'Cartoonified' };
+          case 'restore-image':
+            return { before: 'Damaged Photo', after: 'Restored Photo' };
+          case 'hair-style':
+            return { before: 'Original Hair', after: 'New Hair Style' };
+          case 're-imagine':
+            return { before: 'Original Photo', after: 'Reimagined Scenario' };
+          default:
+            return { before: 'Before', after: 'After' };
+        }
+      };
+
+      const labels = hasComparison ? getComparisonLabels(selectedModel) : null;
 
       onImageClick({
         url: image.url,
@@ -362,11 +407,18 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           prompt: image.prompt || null,
           modelConfig: modelConfigText,
           model: selectedModel,
+          modelParams: image.modelParams || null,
           createdAt: image.createdAt || null,
           resolution: 'High Quality',
           format: 'JPEG',
           type: image.isCommunity ? 'community' : 'example'
-        }
+        },
+        // Add comparison data if available
+        canCompare: hasComparison,
+        beforeImage: hasComparison ? image.inputUrl : null,
+        afterImage: hasComparison ? image.outputUrl : null,
+        beforeLabel: hasComparison ? labels.before : null,
+        afterLabel: hasComparison ? labels.after : null
       });
     }
   };

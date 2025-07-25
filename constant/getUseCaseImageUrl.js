@@ -153,7 +153,7 @@ export const getUseCaseImageUrl = [
                 "id": 1,
                 "outputImage": "A cozy cabin in the snowy mountains under a starry night sky.jpg"
             },
-           
+
         ]
     },
     {
@@ -234,8 +234,8 @@ export const getUseCaseImageUrl = [
         useCaseImages: [
             {
                 "id": 1,
-                "imagePath": "cartoonify-before-1.jpg",
-                "outputImage": "cartoonify-after-1.jpg"
+                "imagePath": "portrait-of-men-in-village.jpg",
+                "outputImage": "cartoonify-portrait-of-men-in-village.jpg"
             },
             {
                 "id": 2,
@@ -284,5 +284,91 @@ export const getUseCaseImageUrl = [
                 "outputImage": "random.png"
             },
         ]
+    },
+    {
+        id: 8,
+        model: 'restore-image',
+        useCaseImages: [
+            {
+                "id": 1,
+                "imagePath": "Twin-dogs-original.jpg",
+                "outputImage": "Twin-dogs.jpg"
+            },
+            {
+                "id": 2,
+                "imagePath": "birds-original.jpg",
+                "outputImage": "birds-restore.jpg"
+            },
+            {
+                id: 3,
+                "imagePath": "couple-original-image.png",
+                "outputImage": "couple-enhanced-restore-image.jpg"
+            },
+            {
+                id: 4,
+                "imagePath": "white-cat-original.jpg",
+                "outputImage": "white-cat-enhanced-restore-image.jpg"
+            }
+        ]
+    },
+    {
+        id: 9,
+        model: 'gfp-restore',
+        useCaseImages: [
+            {
+                id: 1,
+                "imagePath": "white-cat-original.jpg",
+                "outputImage": "white-cat-enhanced-restore-image.jpg"
+            },
+            {
+                id: 2,
+                "imagePath": "girl-porttrait-image.jpg",
+                "outputImage": "girl-portrait-free.jpg"
+            }
+        ]
+    },
+    {
+        id: 10,
+        model: 'background-removal',
+        useCaseImages: [
+            {
+                id: 1,
+                "imagePath": "professional-headshot-of-girl.jpg",
+                "outputImage": "Girl-portrait-removed-bg.jpg"
+            },
+            {
+                id: 2,
+                "imagePath": "couple-original.jpg",
+                "outputImage": "couple-removed-background.jpg"
+            },
+            {
+                id: 3,
+                "imagePath": "camera-canon-original.avif",
+                "outputImage": "camera-canon-bg-removed.jpg"
+            },
+        ]
+    },
+    {
+        id: 11,
+        model: 'remove-object',
+        useCaseImages: [
+            {
+                id: 1,
+                "imagePath": "bottle-in-beach-before.jpg",
+                "outputImage": "bottle-in-beach-after.jpg"
+            }
+        ]
+    },
+    {
+        id:12,
+        model:'home-designer',
+        useCaseImages: [
+            {
+                id:1,
+                "imagePath": "poor-interior-design.jpg",
+                "outputImage": "enhanced-Home-design.jpg"
+            }
+        ]
     }
+
 ]
