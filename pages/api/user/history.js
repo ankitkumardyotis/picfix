@@ -41,24 +41,35 @@ export default async function handler(req, res) {
     console.log(`Found ${history.length} history records for user ${session.user.id}`);
     
     // Transform data for frontend
-    const transformedHistory = history.map(record => ({
-      id: record.id,
-      url: record.publicUrl || generatePublicUrl(record.outputImagePath), // Use stored public URL or generate
-      model: record.model,
-      prompt: record.prompt,
-      modelParams: record.modelParams,
-      aspectRatio: record.aspectRatio,
-      isPublished: record.isPublished,
-      publishedData: record.publishedImage,
-      createdAt: record.createdAt,
-      // Include input images for comparison
-      inputImages: record.inputImagePaths?.map(input => ({
-        ...input,
-        // Generate public URL for input images
-        url: generatePublicUrl(input.path)
-      })) || [],
-      hasComparison: record.inputImagePaths && record.inputImagePaths.length > 0
-    }));
+    const transformedHistory = history.map(record => {
+      const baseRecord = {
+        id: record.id,
+        url: record.publicUrl || generatePublicUrl(record.outputImagePath), // Use stored public URL or generate
+        model: record.model,
+        prompt: record.prompt,
+        modelParams: record.modelParams,
+        aspectRatio: record.aspectRatio,
+        isPublished: record.isPublished,
+        publishedData: record.publishedImage,
+        createdAt: record.createdAt,
+        // Include input images for comparison
+        inputImages: record.inputImagePaths?.map(input => ({
+          ...input,
+          // Generate public URL for input images
+          url: generatePublicUrl(input.path)
+        })) || [],
+        hasComparison: record.inputImagePaths && record.inputImagePaths.length > 0
+      };
+
+      // Special handling for combine-image model
+      if (record.model === 'combine-image' && record.inputImagePaths && record.inputImagePaths.length >= 2) {
+        baseRecord.inputImage1 = generatePublicUrl(record.inputImagePaths[0].path);
+        baseRecord.inputImage2 = generatePublicUrl(record.inputImagePaths[1].path);
+        baseRecord.outputImage = baseRecord.url;
+      }
+
+      return baseRecord;
+    });
     
     res.status(200).json({
       success: true,

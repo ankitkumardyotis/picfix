@@ -26,6 +26,10 @@ export default async function handler(req, res) {
             let inputUrl = null;
             let outputUrl = null;
             
+            // Special handling for combine-image model
+            let inputImage1Url = null;
+            let inputImage2Url = null;
+            
             if (element.imagePath) {
                 inputUrl = generatePublicUrl(`picfix-usecase-image/${imagesPath.model}/${element.imagePath}`);
             }
@@ -33,6 +37,16 @@ export default async function handler(req, res) {
             if (element.outputImage) {
                 console.log("outputImage", `picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
                 outputUrl = generatePublicUrl(`picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
+            }
+            
+            // Handle combine-image specific properties
+            if (imagesPath.model === 'combine-image') {
+                if (element.inputImage1) {
+                    inputImage1Url = generatePublicUrl(`picfix-usecase-image/${imagesPath.model}/${element.inputImage1}`);
+                }
+                if (element.inputImage2) {
+                    inputImage2Url = generatePublicUrl(`picfix-usecase-image/${imagesPath.model}/${element.inputImage2}`);
+                }
             }
             
             return {
@@ -44,7 +58,12 @@ export default async function handler(req, res) {
                 height: height[idx] || null,
                 imagePath: element.imagePath || null, 
                 outputImage: element.outputImage || null, 
-                hasComparison: !!(element.imagePath && element.outputImage)
+                hasComparison: !!(element.imagePath && element.outputImage),
+                // Add combine-image specific properties
+                inputImage1: inputImage1Url,
+                inputImage2: inputImage2Url,
+                inputImage1Path: element.inputImage1 || null,
+                inputImage2Path: element.inputImage2 || null
             };
         });
 

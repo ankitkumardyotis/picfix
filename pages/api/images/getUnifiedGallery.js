@@ -129,7 +129,7 @@ export default async function handler(req, res) {
                     }
                 }
                     
-                    return {
+                    const baseResult = {
                         id: `community-${dbImage.id}`,
                         url: outputUrl,
                         outputUrl: outputUrl,
@@ -153,6 +153,15 @@ export default async function handler(req, res) {
                         userLiked: currentUserId ? dbImage.imageLikes.length > 0 : false,
                         isLoggedIn: !!currentUserId
                     };
+
+                    // Special handling for combine-image model
+                    if (dbImage.model === 'combine-image' && inputUrls.length >= 2) {
+                        baseResult.inputImage1 = inputUrls[0]?.url;
+                        baseResult.inputImage2 = inputUrls[1]?.url;
+                        baseResult.outputImage = outputUrl;
+                    }
+
+                    return baseResult;
             } catch (error) {
                 console.error(`Error processing community image ${dbImage.id}:`, error);
                 return null;
@@ -175,6 +184,18 @@ export default async function handler(req, res) {
                 let inputUrl = null;
                 if (imageData.imagePath) {
                     inputUrl = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.imagePath}`);
+                }
+
+                // Handle combine-image specific properties
+                let inputImage1Url = null;
+                let inputImage2Url = null;
+                if (model === 'combine-image') {
+                    if (imageData.inputImage1) {
+                        inputImage1Url = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.inputImage1}`);
+                    }
+                    if (imageData.inputImage2) {
+                        inputImage2Url = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.inputImage2}`);
+                    }
                 }
 
                 // Create prompt from image name for text-based models
@@ -205,7 +226,10 @@ export default async function handler(req, res) {
                     exampleImageId: exampleImg.exampleImageId,
                     model: model,
                     userLiked: exampleImg.userLiked,
-                    isLoggedIn: !!currentUserId
+                    isLoggedIn: !!currentUserId,
+                    // Add combine-image specific properties
+                    inputImage1: inputImage1Url,
+                    inputImage2: inputImage2Url
                 };
                 
                 console.log(`Successfully processed example image: ${processedImage.id}`);

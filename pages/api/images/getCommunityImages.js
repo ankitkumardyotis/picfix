@@ -56,7 +56,7 @@ export default async function handler(req, res) {
                     }
                 }
                 
-                return {
+                const baseResult = {
                     id: `community-${dbImage.id}`,
                     url: outputUrl,
                     outputUrl: outputUrl,
@@ -77,6 +77,15 @@ export default async function handler(req, res) {
                     createdAt: dbImage.createdAt,
                     publishedImageId: dbImage.id
                 };
+
+                // Special handling for combine-image model
+                if (dbImage.model === 'combine-image' && inputUrls.length >= 2) {
+                    baseResult.inputImage1 = inputUrls[0]?.url;
+                    baseResult.inputImage2 = inputUrls[1]?.url;
+                    baseResult.outputImage = outputUrl;
+                }
+
+                return baseResult;
             } catch (error) {
                 console.error(`Error processing community image ${dbImage.id}:`, error);
                 return null; // Skip this image if URL generation fails

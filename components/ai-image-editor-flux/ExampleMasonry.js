@@ -225,7 +225,11 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
             modelParams: record.modelParams,
             aspectRatio: record.aspectRatio,
             createdAt: record.createdAt,
-            historyId: record.id // Store original history ID for publishing
+            historyId: record.id, // Store original history ID for publishing
+            // Add combine-image specific properties
+            inputImage1: record.inputImage1 || null,
+            inputImage2: record.inputImage2 || null,
+            outputImage: record.url
           }));
 
           // Cache the results
@@ -372,7 +376,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
       // Check if comparison data is available for this image
       const hasComparison = image.hasComparison && image.inputUrl && image.outputUrl;
-      
+
       // Get comparison labels if available
       const getComparisonLabels = (model) => {
         switch (model) {
@@ -395,6 +399,14 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
       const labels = hasComparison ? getComparisonLabels(selectedModel) : null;
 
+      // Special handling for combine-image model
+      const combineData = selectedModel === 'combine-image' && image.inputImage1 && image.inputImage2 ? {
+        inputImage1: image.inputImage1,
+        inputImage2: image.inputImage2,
+        outputImage: image.outputImage || image.url
+      } : null;
+
+
       onImageClick({
         url: image.url,
         index: index,
@@ -411,14 +423,16 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           createdAt: image.createdAt || null,
           resolution: 'High Quality',
           format: 'JPEG',
-          type: image.isCommunity ? 'community' : 'example'
+          type: image.isCommunity ? 'community' : (image.isHistory ? 'history' : 'example')
         },
         // Add comparison data if available
         canCompare: hasComparison,
         beforeImage: hasComparison ? image.inputUrl : null,
         afterImage: hasComparison ? image.outputUrl : null,
         beforeLabel: hasComparison ? labels.before : null,
-        afterLabel: hasComparison ? labels.after : null
+        afterLabel: hasComparison ? labels.after : null,
+        // Add combine data for combine-image model
+        combineData: combineData
       });
     }
   };
@@ -463,7 +477,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
   const handleDeleteConfirm = async () => {
     if (!itemToDelete || !itemToDelete.historyId) return;
-    
+
     setDeleting(true);
     try {
       const response = await fetch('/api/user/deleteHistory', {
@@ -477,24 +491,24 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       if (response.ok) {
         const result = await response.json();
         console.log('History item deleted successfully:', result);
-        
+
         // Remove the item from local state immediately
         setHistoryImages(prev => prev.filter(img => img.historyId !== itemToDelete.historyId));
-        
+
         // Clear cache to ensure fresh data on next fetch
         const historyCacheKey = `history-${selectedModel}`;
         imageCache.delete(historyCacheKey);
-        
+
         // Close dialog
         setDeleteDialogOpen(false);
         setItemToDelete(null);
-        
+
         // Optional: Show success message if you have a notification system
         console.log(`Deleted ${result.details.totalFiles} files from storage and database record`);
       } else {
         const errorData = await response.json();
         console.error('Error deleting history item:', errorData.error);
-        
+
         // Handle published image case
         if (errorData.published) {
           alert('Cannot delete published images. Please unpublish the image first.');
@@ -638,12 +652,12 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
     // Use API endpoint to download with proper headers
     const downloadUrl = `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`;
-    
+
     // Create link and trigger download
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = filename;
-    
+
     // Add to DOM temporarily, click, then remove
     document.body.appendChild(link);
     link.click();
@@ -781,8 +795,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" color="text.secondary">
             {activeTab === 'community' ? 'No community images available for this model' :
-             activeTab === 'history' ? 'No history images available for this model' :
-             'No example images available for this model'}
+              activeTab === 'history' ? 'No history images available for this model' :
+                'No example images available for this model'}
           </Typography>
         </Box>
       ) : (
@@ -886,7 +900,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
                   <CardMedia
                     component="img"
-                    image={image.url}
+                    image={selectedModel === 'combine-image' ? image.outputImage : image.url}
                     alt={image.title || `Example Image ${index + 1}`}
                     onLoad={() => handleImageLoad(image.id)}
                     onLoadStart={() => handleImageLoadStart(image.id)}
@@ -939,7 +953,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
                       </Tooltip>
 
                       {/* Comparison button - only show if comparison is available */}
-                      {image.hasComparison && image.inputUrl && image.outputUrl && (
+                      {image.hasComparison && image.inputUrl && image.outputUrl && selectedModel !== 'combine-image' && (
                         <Tooltip title="Compare Before/After">
                           <IconButton
                             size="small"
@@ -1118,7 +1132,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this image from your history? 
+            Are you sure you want to delete this image from your history?
             {/* <br /><br />
             <strong>This action will:</strong>
             <br />• Remove the image from your history permanently
@@ -1134,17 +1148,17 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={handleDeleteCancel} 
+          <Button
+            onClick={handleDeleteCancel}
             disabled={deleting}
             color="primary"
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleDeleteConfirm} 
+          <Button
+            onClick={handleDeleteConfirm}
             disabled={deleting}
-            color="error" 
+            color="error"
             variant="contained"
             startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
           >

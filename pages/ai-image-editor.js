@@ -55,6 +55,8 @@ import ExampleMasonry from '../components/ai-image-editor-flux/ExampleMasonry';
 import ImagePreviewModal from '../components/ai-image-editor-flux/ImagePreviewModal';
 import BackgroundRemovalProcessor from '../components/ai-image-editor-flux/BackgroundRemovalProcessor';
 import ObjectRemovalMaskEditor from '../components/ai-image-editor-flux/ObjectRemovalMaskEditor';
+import CombineImageDisplay from '../components/ai-image-editor-flux/CombineImageDisplay';
+import CombineImageModal from '../components/ai-image-editor-flux/CombineImageModal';
 import modelConfigurations from '../constant/ModelConfigurations';
 import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 import Image from 'next/image';
@@ -275,6 +277,19 @@ export default function AIImageEditor() {
   const [exampleImages, setExampleImages] = useState([]);
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [autoOpenComparison, setAutoOpenComparison] = useState(false);
+  
+  // Combine image modal state
+  const [combineModalOpen, setCombineModalOpen] = useState(false);
+  
+  // Combine image modal data for examples/history/community
+  const [combineModalData, setCombineModalData] = useState({
+    inputImage1: null,
+    inputImage2: null,
+    outputImage: null,
+    isExample: false,
+    isHistory: false,
+    isCommunity: false
+  });
   
   // Example image comparison states
   const [exampleCanCompare, setExampleCanCompare] = useState(false);
@@ -1955,6 +1970,12 @@ export default function AIImageEditor() {
   };
 
   const handlePreview = (imageUrl, imageIndex = 0) => {
+    // For combine-image model, open the custom modal instead
+    if (selectedModel === 'combine-image') {
+      setCombineModalOpen(true);
+      return;
+    }
+
     // Filter out null images to get valid images array
     const validImages = generatedImages.filter(img => img !== null);
     // Find the index in the valid images array
@@ -1981,6 +2002,23 @@ export default function AIImageEditor() {
     });
     setAutoOpenComparison(false);
     setPreviewOpen(true);
+  };
+
+  // Special preview handler for combine-image model
+  const handleCombineImagePreview = () => {
+    setCombineModalOpen(true);
+  };
+
+  const handleCombineModalClose = () => {
+    setCombineModalOpen(false);
+    setCombineModalData({
+      inputImage1: null,
+      inputImage2: null,
+      outputImage: null,
+      isExample: false,
+      isHistory: false,
+      isCommunity: false
+    });
   };
 
   const handleComparePreview = (imageUrl, imageIndex = 0) => {
@@ -2057,6 +2095,24 @@ export default function AIImageEditor() {
 
   // Handle example image click from masonry
   const handleExampleImageClick = (imageData) => {
+    // For combine-image model, use the custom combine modal
+    if (selectedModel === 'combine-image' && imageData.combineData) {
+      // Determine the type of image (example, history, or community)
+      const imageType = imageData.imageInfo?.type || 'example';
+      
+      setCombineModalData({
+        inputImage1: imageData.combineData.inputImage1,
+        inputImage2: imageData.combineData.inputImage2,
+        outputImage: imageData.combineData.outputImage,
+        isExample: imageType === 'example',
+        isHistory: imageType === 'history',
+        isCommunity: imageType === 'community'
+      });
+      setCombineModalOpen(true);
+      return;
+    }
+
+    // Regular preview for other models
     setPreviewImage(imageData.url);
     setCurrentImageIndex(imageData.index);
     setPreviewType('example');
@@ -2095,6 +2151,11 @@ export default function AIImageEditor() {
 
   // Image comparison functions
   const canCompareImages = () => {
+    // Hide compare functionality for combine-image model as it needs a special 3-image layout
+    if (selectedModel === 'combine-image') {
+      return false;
+    }
+    
     // Check if we have images available for comparison
     if (selectedModel === 'hair-style' && uploadedImage && generatedImages[0]) {
       return true;
@@ -2124,9 +2185,6 @@ export default function AIImageEditor() {
       return true;
     }
     if (selectedModel === 'reimagine' && reimagineImage && generatedImages[0]) {
-      return true;
-    }
-    if (selectedModel === 'combine-image' && combineImage1 && generatedImages[0]) {
       return true;
     }
     // For generate-image model, check if we have at least 2 generated images
@@ -3977,6 +4035,8 @@ export default function AIImageEditor() {
                 onPublish={handlePublishImage}
                 inputPrompt={inputPrompt}
               />
+              
+
             </Box>
 
             {/* Example Images Masonry */}
@@ -4048,6 +4108,17 @@ export default function AIImageEditor() {
           beforeLabel={previewType === 'example' ? exampleBeforeLabel : getComparisonLabels().before}
           afterLabel={previewType === 'example' ? exampleAfterLabel : getComparisonLabels().after}
           autoOpenComparison={autoOpenComparison}
+        />
+
+        {/* Combine Image Modal */}
+        <CombineImageModal
+          open={combineModalOpen}
+          onClose={handleCombineModalClose}
+          inputImage1={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.inputImage1 : combineImage1}
+          inputImage2={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.inputImage2 : combineImage2}
+          outputImage={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.outputImage : generatedImages[0]}
+          onDownload={handleDownload}
+          isLoading={!(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) && isLoading}
         />
       </StyledPaper>
     </>
