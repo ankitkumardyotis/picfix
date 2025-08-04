@@ -34,10 +34,10 @@ export default async function handler(req, res) {
   });
   // Check if this is a free model
   const isFreeModel = config.gfp_restore || config.background_removal;
-  
+
   if (!isFreeModel) {
     const planData = await getUserPlan(session.user.id)
-    
+
     if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
       res.status(402).json("Please Subscribe to a plan to use this feature.");
       return;
@@ -89,17 +89,18 @@ export default async function handler(req, res) {
             userId: session.user.id,
             model: getModelType(config),
             prompt: config.prompt,
+            cost: process.env.DEFAULT_MODEL_RUNNING_COST,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
             inputImages: getInputImagesFromConfig(config)
           });
-          
+
           storedImages.push({
             imageUrl: storedImage.publicUrl,
             historyId: storedImage.historyId
           });
         }
-        
+
         console.log(`Stored ${storedImages.length} images in history`);
         console.log('API Response format:', JSON.stringify(storedImages, null, 2));
         res.status(200).json(storedImages);
@@ -154,11 +155,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Hair style doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Hair style image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -211,11 +213,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Combined image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -269,11 +272,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Text removal doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Text removal image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -308,7 +312,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -335,11 +339,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Cartoonify doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Cartoonify image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -376,7 +381,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -403,11 +408,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Headshot doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Headshot image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -442,7 +448,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -469,11 +475,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Restore image doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: null, // Restore image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Restore image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -510,7 +517,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -537,11 +544,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Reimagine doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Reimagine image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -573,7 +581,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -600,11 +608,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // GFP restore doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: null, // GFP restore preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('GFP restore image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -637,7 +646,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[1]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -664,11 +673,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Home designer image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -702,7 +712,7 @@ export default async function handler(req, res) {
           console.log("First item type:", typeof output[0]);
         }
       }
-      
+
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -729,11 +739,12 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Remove object doesn't use prompts
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: null, // Remove object preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
         });
-        
+
         console.log('Remove object image stored in history:', storedImage.historyId);
         res.status(200).json({
           imageUrl: storedImage.publicUrl,

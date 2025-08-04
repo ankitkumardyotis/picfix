@@ -12,7 +12,7 @@ const aiModels = [
         description: "Generate images with AI precision",
         icon: "🎭",
         gradient: "linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)",
-        image: "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/generate-image/A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city.jpg"
     },
     {
         id: 2,
@@ -20,7 +20,7 @@ const aiModels = [
         description: "Change the color and style of the hair to blonde",
         icon: "✨",
         gradient: "linear-gradient(135deg, #6C5CE7 0%, #45B7D1 100%)",
-        image: "https://dev-photos.picfix.ai/picfix-usecase-image/hair-style/female/Random.png"
+        image: "https://picfixcdn.com/picfix-usecase-image/hair-style/female/Random.png"
     },
     {
         id: 3,
@@ -28,23 +28,16 @@ const aiModels = [
         description: "Convert photo to professional headshot",
         icon: "🎯",
         gradient: "linear-gradient(135deg, #FF8C00 0%, #FF2D55 100%)",
-        image: "https://dev-photos.picfix.ai/picfix-usecase-image/headshot/professional-headshot-wb2igq.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/headshot/professional-headshot-wb2igq.jpg"
     },
-    {
-        id: 4,
-        title: "Enhance Image",
-        description: "Restore and enhance old or damaged photos automatically",
-        icon: "👤",
-        gradient: "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image: "/assets/Hedy lammar image-colorization 1200X300.jpg"
-    },
+
     {
         id: 5,
         title: "Text/Watermark Removal",
         description: "Remove text and watermarks from images",
         icon: "🎨",
         gradient: "linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)",
-        image: "https://dev-photos.picfix.ai/picfix-usecase-image/text-removal/poster from jerry.jpeg"
+        image: "https://picfixcdn.com/picfix-usecase-image/text-removal/poster from jerry.jpeg"
     },
     {
         id: 6,
@@ -52,7 +45,7 @@ const aiModels = [
         description: "Re-imagine yourself in a new scenario",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://dev-photos.picfix.ai/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg"
     },
     {
         id: 7,
@@ -60,7 +53,7 @@ const aiModels = [
         description: "Place the person in natural way to the hills.",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://dev-photos.picfix.ai/combine-image/1752569891934-place-the-person-in-natural-wa.jpg"
+        image: "https://picfixcdn.com/combine-image/1752569891934-place-the-person-in-natural-wa.jpg"
     },
     {
         id: 8,
@@ -68,7 +61,7 @@ const aiModels = [
         description: "Convert images to cartoon style like Disney or Pixar.",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://dev-photos.picfix.ai/cartoonify/1752569996040-cartoonify.jpg"
+        image: "https://picfixcdn.com/cartoonify/1752569996040-cartoonify.jpg"
     },
 
     {

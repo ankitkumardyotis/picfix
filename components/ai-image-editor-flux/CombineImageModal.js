@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,18 @@ import {
   useTheme,
   styled,
   Fade,
-  useMediaQuery
+  useMediaQuery,
+  Chip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddIcon from '@mui/icons-material/Add';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import EnhancedLoader from './EnhancedLoader';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
@@ -226,6 +231,44 @@ const CombineImageModal = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [previewTitle, setPreviewTitle] = useState('');
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => {
+      if (isDragging && zoom > 1) {
+        const newPanX = e.clientX - dragStart.x;
+        const newPanY = e.clientY - dragStart.y;
+        
+        // Limit pan to reasonable bounds
+        const maxPan = 200 * zoom;
+        setPanX(Math.max(-maxPan, Math.min(maxPan, newPanX)));
+        setPanY(Math.max(-maxPan, Math.min(maxPan, newPanY)));
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, dragStart, zoom]);
 
   // Placeholder images from Unsplash
   const placeholderImage1 = 'https://images.unsplash.com/photo-1494790108755-2616c6d1a1b6?w=400&h=300&fit=crop&crop=face';
@@ -240,6 +283,9 @@ const CombineImageModal = ({
   const handlePreviewOpen = (image, title) => {
     setPreviewImage(image);
     setPreviewTitle(title);
+    setZoom(1); // Reset zoom when opening preview
+    setPanX(0); // Reset pan when opening preview
+    setPanY(0);
     setPreviewOpen(true);
   };
 
@@ -247,6 +293,66 @@ const CombineImageModal = ({
     setPreviewOpen(false);
     setPreviewImage(null);
     setPreviewTitle('');
+    setZoom(1); // Reset zoom when closing preview
+    setPanX(0); // Reset pan when closing preview
+    setPanY(0);
+    setIsDragging(false);
+  };
+
+  // Zoom handlers
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.25, 0.25));
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPanX(0); // Reset pan when resetting zoom
+    setPanY(0);
+  };
+
+  // Pan handlers
+  const handleMouseDown = (e) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - panX,
+        y: e.clientY - panY
+      });
+      e.preventDefault();
+    }
+  };
+
+  // Touch handlers for mobile
+  const handleTouchStart = (e) => {
+    if (zoom > 1 && e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - panX,
+        y: e.touches[0].clientY - panY
+      });
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDragging && zoom > 1 && e.touches.length === 1) {
+      const newPanX = e.touches[0].clientX - dragStart.x;
+      const newPanY = e.touches[0].clientY - dragStart.y;
+      
+      // Limit pan to reasonable bounds
+      const maxPan = 200 * zoom;
+      setPanX(Math.max(-maxPan, Math.min(maxPan, newPanX)));
+      setPanY(Math.max(-maxPan, Math.min(maxPan, newPanY)));
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -388,28 +494,10 @@ const CombineImageModal = ({
            <Grid item xs={12} md={4}>
               {isLoading ? (
                 <PlaceholderCard>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <Box
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        border: `4px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        borderTop: `4px solid ${theme.palette.primary.main}`,
-                        borderRadius: '50%',
-                        animation: 'spin 1.5s linear infinite',
-                        '@keyframes spin': {
-                          '0%': { transform: 'rotate(0deg)' },
-                          '100%': { transform: 'rotate(360deg)' },
-                        },
-                      }}
-                    />
-                    <Typography variant="h5" color="primary" sx={{ fontWeight: 700, textAlign: 'center' }}>
-                      Combining Images...
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', maxWidth: '200px' }}>
-                      Please wait while we intelligently merge your images
-                    </Typography>
-                  </Box>
+                  <EnhancedLoader 
+                    selectedModel="combine-image"
+                    size="large"
+                  />
                 </PlaceholderCard>
               ) : (
                 <Fade in={!!outputImage} timeout={800}>
@@ -539,32 +627,135 @@ const CombineImageModal = ({
           {/* Preview Image */}
           {previewImage && (
             <Box
-              component="img"
-              src={previewImage}
-              alt={previewTitle}
               sx={{
-                maxWidth: '90%',
-                maxHeight: '90%',
-                objectFit: 'contain',
-                borderRadius: 2,
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="img"
+                src={previewImage}
+                alt={previewTitle}
+                sx={{
+                  maxWidth: zoom > 1 ? 'none' : '90%',
+                  maxHeight: zoom > 1 ? 'none' : '90%',
+                  objectFit: 'contain',
+                  borderRadius: 2,
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                  border: '2px solid rgba(255, 255, 255, 0.1)',
+                  transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
+                  transition: isDragging ? 'none' : 'transform 0.3s ease-in-out',
+                  cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
+                  userSelect: 'none',
+                }}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              />
+            </Box>
+          )}
+
+          {/* Zoom Controls */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              zIndex: 1000,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              padding: '8px 12px',
+              borderRadius: 2,
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Tooltip title="Zoom Out">
+              <span>
+                <IconButton 
+                  onClick={handleZoomOut} 
+                  disabled={zoom <= 0.25}
+                  sx={{ 
+                    color: 'white',
+                    '&.Mui-disabled': {
+                      color: 'rgba(255, 255, 255, 0.3)',
+                    },
+                  }}
+                >
+                  <ZoomOutIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Chip
+              label={`${Math.round(zoom * 100)}%`}
+              size="small"
+              sx={{
+                color: 'white',
+                backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                minWidth: '60px',
               }}
             />
-          )}
+            <Tooltip title="Reset Zoom">
+              <span>
+                <IconButton 
+                  onClick={handleResetZoom}
+                  disabled={zoom === 1}
+                  sx={{ 
+                    color: 'white',
+                    '&.Mui-disabled': {
+                      color: 'rgba(255, 255, 255, 0.3)',
+                    },
+                  }}
+                >
+                  <RestartAltIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Zoom In">
+              <span>
+                <IconButton 
+                  onClick={handleZoomIn}
+                  disabled={zoom >= 3}
+                  sx={{ 
+                    color: 'white',
+                    '&.Mui-disabled': {
+                      color: 'rgba(255, 255, 255, 0.3)',
+                    },
+                  }}
+                >
+                  <ZoomInIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
 
           {/* Instructions */}
           <Typography
             variant="body1"
             sx={{
               position: 'absolute',
-              bottom: 20,
+              bottom: 80,
+              left: '50%',
+              transform: 'translateX(-50%)',
               color: 'rgba(255, 255, 255, 0.7)',
               textAlign: 'center',
               fontSize: '0.9rem',
+              maxWidth: '80%',
             }}
           >
-            Press ESC or click the close button to exit preview
+            Use zoom controls to inspect details • Click and drag to pan when zoomed • Press ESC or click close to exit
           </Typography>
         </Box>
       </Dialog>

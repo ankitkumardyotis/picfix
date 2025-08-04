@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   Box,
   Typography,
@@ -19,7 +19,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  DialogContentText
+  DialogContentText,
+  useMediaQuery
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -33,7 +34,7 @@ import Image from 'next/image';
 // Cache for images to avoid repeated API calls
 const imageCache = new Map();
 
-const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptUse }) => {
+const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick, onPromptUse }, ref) => {
   const theme = useTheme();
   const [s3Images, setS3Images] = useState([]);
   const [loadingS3Images, setLoadingS3Images] = useState(false);
@@ -187,6 +188,55 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
     }
   }, [selectedModel, communityCacheKey]);
 
+  // Helper function to group images by time periods
+  const groupImagesByTime = (images) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    const thisWeekStart = new Date(today.getTime() - (today.getDay() * 24 * 60 * 60 * 1000));
+    const lastWeekStart = new Date(thisWeekStart.getTime() - (7 * 24 * 60 * 60 * 1000));
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const groups = {
+      today: [],
+      yesterday: [],
+      thisWeek: [],
+      lastWeek: [],
+      thisMonth: [],
+      lastMonth: [],
+      older: []
+    };
+
+    images.forEach(image => {
+      const imageDate = new Date(image.createdAt);
+      const imageDateOnly = new Date(imageDate.getFullYear(), imageDate.getMonth(), imageDate.getDate());
+
+      if (imageDateOnly.getTime() === today.getTime()) {
+        groups.today.push(image);
+      } else if (imageDateOnly.getTime() === yesterday.getTime()) {
+        groups.yesterday.push(image);
+      } else if (imageDate >= thisWeekStart && imageDate < today) {
+        groups.thisWeek.push(image);
+      } else if (imageDate >= lastWeekStart && imageDate < thisWeekStart) {
+        groups.lastWeek.push(image);
+      } else if (imageDate >= thisMonthStart && imageDate < thisWeekStart) {
+        groups.thisMonth.push(image);
+      } else if (imageDate >= lastMonthStart && imageDate < thisMonthStart) {
+        groups.lastMonth.push(image);
+      } else {
+        groups.older.push(image);
+      }
+    });
+
+    // Sort each group by creation date (newest first)
+    Object.keys(groups).forEach(key => {
+      groups[key].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    });
+
+    return groups;
+  };
+
   const fetchUserHistory = useCallback(async () => {
     try {
       const historyCacheKey = `history-${selectedModel}`;
@@ -201,7 +251,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
 
       setLoadingHistoryImages(true);
 
-      const response = await fetch(`/api/user/history?model=${selectedModel}&limit=20`);
+      const response = await fetch(`/api/user/history?model=${selectedModel}&limit=50`);
 
       if (response.ok) {
         const data = await response.json();
@@ -232,9 +282,12 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
             outputImage: record.url
           }));
 
+          // Group images by time periods
+          const groupedImages = groupImagesByTime(transformedHistory);
+
           // Cache the results
-          imageCache.set(historyCacheKey, transformedHistory);
-          setHistoryImages(transformedHistory);
+          imageCache.set(historyCacheKey, groupedImages);
+          setHistoryImages(groupedImages);
 
           // Initialize loading states for new images
           const loadingStates = {};
@@ -267,6 +320,33 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       fetchS3Images();
     }
   }, [activeTab, fetchS3Images, fetchCommunityImages, fetchUserHistory]);
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    refreshHistory: () => {
+      const historyCacheKey = `history-${selectedModel}`;
+      imageCache.delete(historyCacheKey);
+      if (activeTab === 'history') {
+        fetchUserHistory();
+      }
+    },
+    refreshCommunity: () => {
+      const communityCacheKey = `community-${selectedModel}`;
+      imageCache.delete(communityCacheKey);
+      if (activeTab === 'community') {
+        fetchCommunityImages();
+      }
+    },
+    // Add method to get total history count for debugging
+    getHistoryCount: () => {
+      if (activeTab === 'history' && historyImages && typeof historyImages === 'object') {
+        return Object.values(historyImages).reduce((total, group) => {
+          return total + (Array.isArray(group) ? group.length : 0);
+        }, 0);
+      }
+      return Array.isArray(historyImages) ? historyImages.length : 0;
+    }
+  }), [selectedModel, activeTab, fetchUserHistory, fetchCommunityImages, historyImages]);
 
   // Handle individual image loading states
   const handleImageLoad = useCallback((imageId) => {
@@ -312,7 +392,8 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         }
         break;
 
-      case 'reimagine':
+      case 're-imagine':
+      case 'reimagine': // Handle both old and new model names
         if (modelParams?.scenario && modelParams.scenario !== 'Random') {
           configParts.push(modelParams.scenario);
         }
@@ -391,6 +472,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           case 'hair-style':
             return { before: 'Original Hair', after: 'New Hair Style' };
           case 're-imagine':
+          case 'reimagine': // Handle both old and new model names
             return { before: 'Original Photo', after: 'Reimagined Scenario' };
           default:
             return { before: 'Before', after: 'After' };
@@ -406,11 +488,23 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         outputImage: image.outputImage || image.url
       } : null;
 
+      // Get all images for navigation - handle both grouped and regular format
+      let allImages = [];
+      if (activeTab === 'history' && historyImages && typeof historyImages === 'object') {
+        // Flatten grouped history images for navigation
+        Object.values(historyImages).forEach(group => {
+          if (Array.isArray(group)) {
+            allImages = allImages.concat(group);
+          }
+        });
+      } else {
+        allImages = displayImages;
+      }
 
       onImageClick({
         url: image.url,
         index: index,
-        images: displayImages.map(img => ({
+        images: allImages.map(img => ({
           ...img,
           url: img.url
         })),
@@ -492,8 +586,22 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         const result = await response.json();
         console.log('History item deleted successfully:', result);
 
-        // Remove the item from local state immediately
-        setHistoryImages(prev => prev.filter(img => img.historyId !== itemToDelete.historyId));
+        // Remove the item from local state immediately - handle both grouped and flat structures
+        if (typeof historyImages === 'object' && !Array.isArray(historyImages)) {
+          // Grouped structure
+          setHistoryImages(prev => {
+            const newGroups = { ...prev };
+            Object.keys(newGroups).forEach(period => {
+              if (Array.isArray(newGroups[period])) {
+                newGroups[period] = newGroups[period].filter(img => img.historyId !== itemToDelete.historyId);
+              }
+            });
+            return newGroups;
+          });
+        } else {
+          // Flat array structure (fallback)
+          setHistoryImages(prev => prev.filter(img => img.historyId !== itemToDelete.historyId));
+        }
 
         // Clear cache to ensure fresh data on next fetch
         const historyCacheKey = `history-${selectedModel}`;
@@ -545,6 +653,7 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           case 'hair-style':
             return { before: 'Original Hair', after: 'New Hair Style' };
           case 're-imagine':
+          case 'reimagine': // Handle both old and new model names
             return { before: 'Original Photo', after: 'Reimagined Scenario' };
           default:
             return { before: 'Before', after: 'After' };
@@ -670,15 +779,37 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       (s3Images.length > 0 ? s3Images : []);
   console.log("displayImages", displayImages, "activeTab:", activeTab);
 
+  // Helper function to get time period label
+  const getTimePeriodLabel = (period) => {
+    switch (period) {
+      case 'today': return 'Today';
+      case 'yesterday': return 'Yesterday';
+      case 'thisWeek': return 'This Week';
+      case 'lastWeek': return 'Last Week';
+      case 'thisMonth': return 'This Month';
+      case 'lastMonth': return 'Last Month';
+      case 'older': return 'Older';
+      default: return period;
+    }
+  };
+
+  // Helper function to check if history has any images
+  const hasHistoryImages = () => {
+    if (activeTab !== 'history' || !historyImages || typeof historyImages !== 'object') return false;
+    return Object.values(historyImages).some(group => Array.isArray(group) && group.length > 0);
+  };
+
   // Show loading skeleton when fetching images
   const isLoading = activeTab === 'community' ? loadingCommunityImages :
     activeTab === 'history' ? loadingHistoryImages :
       loadingS3Images;
 
+      const isMobile=useMediaQuery('(max-width: 600px)');
+
   return (
     <Box sx={{ mt: 1 }}>
       {/* Toggle between Examples and Community */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection:isMobile ? 'column' : 'row',gap:isMobile ? '1rem' : '0px', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           {activeTab === 'community' ? 'Community Images' :
             activeTab === 'history' ? 'My History' :
@@ -712,13 +843,16 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
           }}
         >
           <ToggleButton value="examples">Examples</ToggleButton>
-          <ToggleButton value="history">History</ToggleButton>
+          <ToggleButton value="history">My History</ToggleButton>
           <ToggleButton value="community">Community</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
       {/* Conditional Content Rendering */}
-      {isLoading && (!displayImages || displayImages.length === 0) ? (
+      {isLoading && (
+        (activeTab === 'history' && !hasHistoryImages()) || 
+        (activeTab !== 'history' && (!displayImages || displayImages.length === 0))
+      ) ? (
         // Show loading skeleton when fetching images and no images exist
         <Box>
           <Box sx={{ mb: 3, textAlign: 'center' }}>
@@ -790,7 +924,10 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
             })}
           </Masonry>
         </Box>
-      ) : (!displayImages || displayImages.length === 0) ? (
+      ) : (
+        (activeTab === 'history' && !hasHistoryImages()) || 
+        (activeTab !== 'history' && (!displayImages || displayImages.length === 0))
+      ) ? (
         // Show empty state when no images and not loading
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" color="text.secondary">
@@ -803,7 +940,10 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
         // Show images when available
         <>
           {/* Show loading indicator when switching between cached images */}
-          {isLoading && displayImages && displayImages.length > 0 && (
+          {isLoading && (
+            (activeTab === 'history' && hasHistoryImages()) ||
+            (activeTab !== 'history' && displayImages && displayImages.length > 0)
+          ) && (
             <Box sx={{ mb: 2, textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                 <Skeleton variant="circular" width={16} height={16} animation="wave" />
@@ -816,16 +956,38 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
               </Box>
             </Box>
           )}
-          <Masonry
-            columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
-            sx={{
-              width: '100%',
-              margin: 0,
-              opacity: isLoading ? 0.7 : 1,
-              transition: 'opacity 0.3s ease',
-            }}
-          >
-            {displayImages.map((image, index) => (
+
+          {/* Render grouped history images */}
+          {activeTab === 'history' && historyImages && typeof historyImages === 'object' ? (
+            Object.entries(historyImages).map(([period, images]) => {
+              if (!Array.isArray(images) || images.length === 0) return null;
+              
+              return (
+                <Box key={period} sx={{ mb: 4 }}>
+                  {/* Time period header */}
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mb: 2, 
+                      color: theme.palette.text.primary,
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    {getTimePeriodLabel(period)} ({images.length})
+                  </Typography>
+                  
+                  {/* Images masonry for this period */}
+                  <Masonry
+                    columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
+                    sx={{
+                      width: '100%',
+                      margin: 0,
+                      opacity: isLoading ? 0.7 : 1,
+                      transition: 'opacity 0.3s ease',
+                    }}
+                  >
+                    {images.map((image, index) => (
               <Card
                 key={image.id}
                 sx={{
@@ -1098,8 +1260,298 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
                   </Box>
                 </Box>
               </Card>
-            ))}
-          </Masonry>
+                    ))}
+                  </Masonry>
+                </Box>
+              );
+            })
+          ) : (
+            // Render regular masonry for non-history tabs
+            <Masonry
+              columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
+              sx={{
+                width: '100%',
+                margin: 0,
+                opacity: isLoading ? 0.7 : 1,
+                transition: 'opacity 0.3s ease',
+              }}
+            >
+              {displayImages.map((image, index) => (
+                <Card
+                  key={image.id}
+                  sx={{
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    padding: 0,
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: theme.shadows[8],
+                      '& .image-overlay': {
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                  onClick={() => handleImagePreview(image, index)}
+                >
+                  <Box sx={{ position: 'relative' }}>
+                    {imageLoadingStates[image.id] && (
+                      <Skeleton
+                        variant="rectangular"
+                        width="100%"
+                        height={image.height || 250}
+                        animation="wave"
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          zIndex: 1,
+                          borderRadius: 1,
+                        }}
+                      />
+                    )}
+
+                    {/* Community Badge */}
+                    {image.isCommunity && (
+                      <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                        <Chip
+                          label="Community"
+                          size="small"
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                            color: 'white',
+                            fontSize: '10px',
+                            height: 20
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    {/* History Badge */}
+                    {image.isHistory && (
+                      <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                        <Chip
+                          label={image.isPublished ? "Published" : "History"}
+                          size="small"
+                          sx={{
+                            backgroundColor: image.isPublished ?
+                              alpha(theme.palette.success.main, 0.9) :
+                              alpha(theme.palette.secondary.main, 0.9),
+                            color: 'white',
+                            fontSize: '10px',
+                            height: 20
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    <CardMedia
+                      component="img"
+                      image={selectedModel === 'combine-image' ? image.outputImage : image.url}
+                      alt={image.title || `Example Image ${index + 1}`}
+                      onLoad={() => handleImageLoad(image.id)}
+                      onLoadStart={() => handleImageLoadStart(image.id)}
+                      referrerPolicy="no-referrer"
+                      sx={{
+                        width: '100%',
+                        height: image.height || 250, // Default height if not specified
+                        objectFit: 'cover',
+                        transition: 'opacity 0.3s ease',
+                        opacity: imageLoadingStates[image.id] ? 0 : 1,
+                      }}
+                    />
+
+                    {/* Overlay */}
+                    <Box
+                      className="image-overlay"
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      {/* Top actions */}
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, p: 2, }}>
+                        <Tooltip title="Preview Image">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                              color: theme.palette.text.primary,
+                              '&:hover': {
+                                backgroundColor: theme.palette.background.paper,
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImagePreview(image, index);
+                            }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* Comparison button - only show if comparison is available */}
+                        {image.hasComparison && image.inputUrl && image.outputUrl && selectedModel !== 'combine-image' && (
+                          <Tooltip title="Compare Before/After">
+                            <IconButton
+                              size="small"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: theme.palette.primary.main,
+                                },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleComparisonOpen(image, index);
+                              }}
+                            >
+                              <CompareIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+
+                        <Tooltip title="Download Image">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                              color: theme.palette.text.primary,
+                              '&:hover': {
+                                backgroundColor: theme.palette.background.paper,
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(image, image.title, image.prompt);
+                            }}
+                          >
+                            <DownloadIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* Delete button - only show for history images */}
+                        {image.isHistory && (
+                          <Tooltip title="Delete from History">
+                            <IconButton
+                              size="small"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.error.main, 0.9),
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: theme.palette.error.main,
+                                  transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease',
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(image);
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Box>
+
+                      {/* Bottom content */}
+                      <Box sx={{ p: 1 }}>
+                        {/* Community image title */}
+                        {image.isCommunity && image.title && (
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              color: 'white',
+                              fontWeight: 600,
+                              mb: 1,
+                              fontSize: '12px'
+                            }}
+                          >
+                            {image.title}
+                          </Typography>
+                        )}
+
+                        {/* Author info for community images */}
+                        {image.isCommunity && image.author && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: alpha('#ffffff', 0.8),
+                              fontSize: '10px',
+                              mb: 1,
+                              display: 'block'
+                            }}
+                          >
+                            by {image.author}
+                          </Typography>
+                        )}
+
+                        {/* Prompt chip - Only show for models that use prompts */}
+                        {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
+                          <Chip
+                            label="Use this prompt"
+                            size="small"
+                            clickable
+                            sx={{
+                              backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                              color: 'white',
+                              fontSize: '10px',
+                              height: 24,
+                              mr: 1,
+                              '&:hover': {
+                                backgroundColor: theme.palette.primary.main,
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePromptUse(image.prompt);
+                            }}
+                          />
+                        )}
+
+                        {/* Publish chip for unpublished history images */}
+                        {image.isHistory && !image.isPublished && (
+                          <Chip
+                            label="Publish"
+                            size="small"
+                            clickable
+                            sx={{
+                              backgroundColor: alpha(theme.palette.success.main, 0.9),
+                              color: 'white',
+                              fontSize: '10px',
+                              height: 24,
+                              '&:hover': {
+                                backgroundColor: theme.palette.success.main,
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePublishFromHistory(image.historyId, image.title);
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                </Card>
+              ))}
+            </Masonry>
+          )}
         </>
       )}
 
@@ -1168,6 +1620,6 @@ const ExampleMasonry = ({ selectedModel, selectedGender, onImageClick, onPromptU
       </Dialog>
     </Box>
   );
-};
+});
 
 export default ExampleMasonry; 

@@ -16,6 +16,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CompareIcon from '@mui/icons-material/Compare';
 import PublishIcon from '@mui/icons-material/Publish';
 import PublishDialog from './PublishDialog';
+import EnhancedLoader from './EnhancedLoader';
+import { Global } from '@emotion/react';
+import { FaGlobe } from 'react-icons/fa';
 
 // Styled components for responsive design
 const ResponsiveImageContainer = styled(Box)(({ theme }) => ({
@@ -65,15 +68,15 @@ const ResponsiveImageOverlay = styled(Box)(({ theme }) => ({
 
 const ResponsiveActionButton = styled(IconButton)(({ theme, variant }) => ({
   color: 'white',
-  backgroundColor: variant === 'publish' 
-    ? 'rgba(102, 126, 234, 0.8)' 
+  backgroundColor: variant === 'publish'
+    ? 'rgba(102, 126, 234, 0.8)'
     : 'rgba(255,255,255,0.2)',
   backdropFilter: 'blur(10px)',
   border: '1px solid rgba(255,255,255,0.1)',
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: variant === 'publish' 
-      ? 'rgba(102, 126, 234, 1)' 
+    backgroundColor: variant === 'publish'
+      ? 'rgba(102, 126, 234, 1)'
       : 'rgba(255,255,255,0.3)',
     transform: 'scale(1.1)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -87,15 +90,15 @@ const ResponsiveActionButton = styled(IconButton)(({ theme, variant }) => ({
   },
 }));
 
-const GeneratedImages = ({ 
-  images, 
-  isLoading, 
-  numOutputs, 
-  selectedModel, 
-  handlePreview, 
-  handleDownload, 
-  removeImage, 
-  canCompare, 
+const GeneratedImages = ({
+  images,
+  isLoading,
+  numOutputs,
+  selectedModel,
+  handlePreview,
+  handleDownload,
+  removeImage,
+  canCompare,
   handleComparePreview,
   // New props for publishing
   onPublish,
@@ -105,11 +108,11 @@ const GeneratedImages = ({
   const theme = useTheme();
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedImageForPublish, setSelectedImageForPublish] = useState({ url: null, index: null });
-  
-  console.log("GeneratedImages component received:", { 
-    images, 
-    isLoading, 
-    numOutputs, 
+
+  console.log("GeneratedImages component received:", {
+    images,
+    isLoading,
+    numOutputs,
     selectedModel,
     hasImages: images.some(img => img !== null)
   });
@@ -120,7 +123,7 @@ const GeneratedImages = ({
     if (validImages.length > 0) {
       validImages.forEach((imageUrl, index) => {
         console.log(`Testing direct image load for image ${index + 1}:`, imageUrl);
-        
+
         // Create a test image element
         const testImg = new Image();
         testImg.onload = () => {
@@ -155,126 +158,115 @@ const GeneratedImages = ({
     setPublishDialogOpen(false);
     setSelectedImageForPublish({ url: null, index: null });
   };
-  
+
   if (!isLoading && !images.some(img => img !== null)) {
     return null;
   }
-  
+
   return (
     <>
-    <Box sx={{ mt: 3, mb: 6 }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          mb: 2, 
-          fontWeight: 600,
-          fontSize: { xs: '1.1rem', sm: '1.25rem' },
-          color: theme.palette.text.primary
-        }}
-      >
-        Generated Images
-      </Typography>
-      <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
-        {isLoading ? (
-          // Loading placeholders
-            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' ? 1 : numOutputs).fill(null).map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
-              <Box
-                sx={{
-                  width: '100%',
-                  height: { xs: '250px', sm: '300px' },
-                  borderRadius: { xs: 1.5, sm: 2 },
-                  overflow: 'hidden',
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                }}
-              >
-                <CircularProgress size={{ xs: 32, sm: 40 }} />
-              </Box>
-            </Grid>
-          ))
-        ) : (
-          images.map((image, index) => (
-            image && (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <ResponsiveImageContainer>
-                  <img
-                    key={`img-${image}-${index}`}
-                    src={image}
-                    alt={`Generated ${index + 1}`}
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                    onLoad={(e) => {
-                      console.log(`✅ Image ${index + 1} loaded successfully:`, image);
-                      console.log(`Image natural dimensions:`, e.target.naturalWidth, 'x', e.target.naturalHeight);
-                      console.log(`Image display dimensions:`, e.target.width, 'x', e.target.height);
-                    }}
-                    onError={(e) => {
-                      console.error(`❌ Image ${index + 1} failed to load:`, image);
-                      console.error(`Error details:`, e);
-                      console.error(`Error type:`, e.type);
-                      console.error(`Target src:`, e.target.src);
-                    }}
-                    onLoadStart={() => console.log(`🔄 Image ${index + 1} loading started:`, image)}
-                  />
-                  <ResponsiveImageOverlay className="image-overlay">
-                    <Tooltip title="Preview Image">
-                      <ResponsiveActionButton
-                        onClick={() => handlePreview(image, index)}
-                      >
-                        <VisibilityIcon />
-                      </ResponsiveActionButton>
-                    </Tooltip>
-                      
-                    {canCompare && handleComparePreview && (
-                      <Tooltip title="Compare Images">
+      <Box sx={{ mt: 3, mb: 6 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            fontWeight: 600,
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+            color: theme.palette.text.primary
+          }}
+        >
+          Generated Images
+        </Typography>
+        <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
+          {isLoading ? (
+            // Enhanced Loading placeholders
+            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
+              <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
+                <EnhancedLoader 
+                  selectedModel={selectedModel}
+                  size="medium"
+                />
+              </Grid>
+            ))
+          ) : (
+            images.map((image, index) => (
+              image && (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <ResponsiveImageContainer>
+                    <img
+                      key={`img-${image}-${index}`}
+                      src={image}
+                      alt={`Generated ${index + 1}`}
+                      referrerPolicy="no-referrer"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      onLoad={(e) => {
+                        console.log(`✅ Image ${index + 1} loaded successfully:`, image);
+                        console.log(`Image natural dimensions:`, e.target.naturalWidth, 'x', e.target.naturalHeight);
+                        console.log(`Image display dimensions:`, e.target.width, 'x', e.target.height);
+                      }}
+                      onError={(e) => {
+                        console.error(`❌ Image ${index + 1} failed to load:`, image);
+                        console.error(`Error details:`, e);
+                        console.error(`Error type:`, e.type);
+                        console.error(`Target src:`, e.target.src);
+                      }}
+                      onLoadStart={() => console.log(`🔄 Image ${index + 1} loading started:`, image)}
+                    />
+                    <ResponsiveImageOverlay className="image-overlay">
+                      <Tooltip title="Preview Image">
                         <ResponsiveActionButton
-                          onClick={() => handleComparePreview(image, index)}
+                          onClick={() => handlePreview(image, index)}
                         >
-                          <CompareIcon />
+                          <VisibilityIcon />
                         </ResponsiveActionButton>
                       </Tooltip>
-                    )}
-                      
+
+                      {canCompare && handleComparePreview && (
+                        <Tooltip title="Compare Images">
+                          <ResponsiveActionButton
+                            onClick={() => handleComparePreview(image, index)}
+                          >
+                            <CompareIcon />
+                          </ResponsiveActionButton>
+                        </Tooltip>
+                      )}
+
                       <Tooltip title="Publish to Community">
                         <ResponsiveActionButton
                           variant="publish"
                           onClick={() => handlePublishClick(image, index)}
                         >
-                          <PublishIcon />
+                          <FaGlobe />
                         </ResponsiveActionButton>
                       </Tooltip>
-                      
-                    <Tooltip title="Download Image">
-                      <ResponsiveActionButton
-                        onClick={() => handleDownload(image, index)}
-                      >
-                        <DownloadIcon />
-                      </ResponsiveActionButton>
-                    </Tooltip>
-                      
-                    <Tooltip title="Delete Image">
-                      <ResponsiveActionButton
-                        onClick={() => removeImage(index)}
-                      >
-                        <DeleteIcon />
-                      </ResponsiveActionButton>
-                    </Tooltip>
-                  </ResponsiveImageOverlay>
-                </ResponsiveImageContainer>
-              </Grid>
-            )
-          ))
-        )}
-      </Grid>
-    </Box>
+
+                      <Tooltip title="Download Image">
+                        <ResponsiveActionButton
+                          onClick={() => handleDownload(image, index)}
+                        >
+                          <DownloadIcon />
+                        </ResponsiveActionButton>
+                      </Tooltip>
+
+                      <Tooltip title="Delete Image">
+                        <ResponsiveActionButton
+                          onClick={() => removeImage(index)}
+                        >
+                          <DeleteIcon />
+                        </ResponsiveActionButton>
+                      </Tooltip>
+                    </ResponsiveImageOverlay>
+                  </ResponsiveImageContainer>
+                </Grid>
+              )
+            ))
+          )}
+        </Grid>
+      </Box>
 
       {/* Publish Dialog */}
       <PublishDialog

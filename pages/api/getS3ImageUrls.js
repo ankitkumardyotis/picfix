@@ -1,4 +1,4 @@
-const PUBLIC_BUCKET_URL = process.env.PUBLIC_BUCKET_URL || 'https://dev-photos.picfix.ai';
+const PUBLIC_BUCKET_URL = process.env.PUBLIC_BUCKET_URL || 'https://picfixcdn.com';
 
 function generatePublicUrl(imagePath) {``
     return `${PUBLIC_BUCKET_URL}/${imagePath}`;

@@ -41,7 +41,7 @@ model History {
   replicateId       String?   // Make optional since we'll generate images directly
   model             String
   status            String
-  
+  cost              String?                                                           
   // Image storage fields
   outputImagePath   String?   // R2 path for generated image
   inputImagePaths   Json?     // Array of input image paths

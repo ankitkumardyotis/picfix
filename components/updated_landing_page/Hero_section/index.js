@@ -22,17 +22,16 @@ const prompts = [
 ];
 
 const images = [
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A futuristic city at sunset with neon lights.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A peaceful beach with crystal clear water, palm trees, and a hammock.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/hair-style/female/Random.png",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A well-groomed man in his 30s, wearing a tailored navy blue suit, standing confidently with a soft smile in a modern office, natural lighting, professional portrait style.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/re-imagine/reimagine-bungee-jumping-from-a-helicopter-pz5cst.jpg"
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A futuristic city at sunset with neon lights.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A peaceful beach with crystal clear water, palm trees, and a hammock.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/hair-style/female/Random.png",
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A well-groomed man in his 30s, wearing a tailored navy blue suit, standing confidently with a soft smile in a modern office, natural lighting, professional portrait style.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-bungee-jumping-from-a-helicopter-pz5cst.jpg"
 ];
 
 // Styled components
 const HeroContainer = styled(Box)(({ theme }) => ({
     minHeight: '100vh',
-    // background: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 30%, #45b7d1 70%, #6c5ce7 100%)',
     background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
     display: 'flex',
     alignItems: 'center',
@@ -118,8 +117,8 @@ const StyledButton = styled(Button)(({ theme }) => ({
     background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
     color: 'white',
     '&:hover': {
-      background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-      transform: 'scale(1.1)',
+        background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
+        transform: 'scale(1.1)',
     },
     transition: 'all 0.3s ease',
 }));
@@ -293,7 +292,7 @@ const PhotoAIHero = () => {
                                     component={motion.button}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    onClick={() => router.push('/ai-image-editor')}
+                                    onClick={() => router.push('/ai-image-editor?model=gfp-restore')}
                                 >
                                     Try PicFix AI Free
                                 </StyledButton>}

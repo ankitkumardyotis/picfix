@@ -368,13 +368,13 @@ export const getUseCaseImageUrl = [
                 id: 1,
                 "inputImage1": "A cozy cabin in the snowy mountains under a starry night sky.jpg",
                 "inputImage2": "a-boy-professional-headshot.jpg",
-                "outputImage": "https://dev-photos.picfix.ai/picfix-usecase-image/combine-image/add-person-near-the-house-taking-selfie-output.jpg"
+                "outputImage": "https://picfixcdn.com/picfix-usecase-image/combine-image/add-person-near-the-house-taking-selfie-output.jpg"
             },
             {
                 id: 2,
                 "inputImage1": "girl-on-beach.jpg",
                 "inputImage2": "a-boy-professional-headshot.jpg",
-                "outputImage": "https://dev-photos.picfix.ai/picfix-usecase-image/combine-image/add-both-person-in-one-frame-where-both-should-loo-bstca2.jpg"
+                "outputImage": "https://picfixcdn.com/picfix-usecase-image/combine-image/add-both-person-in-one-frame-where-both-should-loo-bstca2.jpg"
             },
 
         ]

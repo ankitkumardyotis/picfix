@@ -7,14 +7,14 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 const images = [
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A futuristic city at sunset with flying cars and neon lights.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A fantasy castle floating above the clouds with dragons flying around.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/generate-image/A peaceful beach with crystal clear water, palm trees, and a hammock.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/headshot/a-girl-on-beach-wearing-hat-professional-headshot.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/headshot/a-girl-closeup-shot-professional-headshot.png",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/hair-style/male/high-ponytail.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg",
-    "https://dev-photos.picfix.ai/picfix-usecase-image/re-imagine/Floating in space as an astronaut.png"
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A futuristic city at sunset with flying cars and neon lights.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A fantasy castle floating above the clouds with dragons flying around.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/generate-image/A peaceful beach with crystal clear water, palm trees, and a hammock.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/headshot/a-girl-on-beach-wearing-hat-professional-headshot.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/headshot/a-girl-closeup-shot-professional-headshot.png",
+    "https://picfixcdn.com/picfix-usecase-image/hair-style/male/high-ponytail.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg",
+    "https://picfixcdn.com/picfix-usecase-image/re-imagine/Floating in space as an astronaut.png"
 ];
 
 // Responsive height arrays for different screen sizes

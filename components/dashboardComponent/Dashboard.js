@@ -5,66 +5,392 @@ import Image from 'next/image'
 
 function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches }) {
     if (matches) return (
-        <div style={{ flex: 5, backgroundColor: 'white' }}>
-            <div className="welcomeUser" style={{ paddingTop: '1em', paddingLeft: '1em' }}>
-                <h3 style={{ fontSize: '2em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
-                <p>Welcome back!</p>
+        <div className="dashboard-desktop" style={{ 
+            flex: 1, 
+            backgroundColor: '#f8fafc',
+            padding: '2rem',
+            minHeight: '100%'
+        }}>
+            {/* Welcome Section */}
+            <div className="welcome-section" style={{ 
+                marginBottom: '2rem',
+                padding: '2rem',
+                background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.1) 0%, rgba(215, 109, 119, 0.1) 50%, rgba(255, 175, 123, 0.1) 100%)',
+                borderRadius: '20px',
+                border: '1px solid rgba(58, 28, 113, 0.2)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }}>
+                <h1 style={{ 
+                    fontSize: '2.5rem', 
+                    fontWeight: '600',
+                    marginBottom: '0.5rem',
+                    background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontFamily: 'Roboto, sans-serif'
+                }}>
+                    Hello, {session?.user.name} 👋
+                </h1>
+                <p style={{ 
+                    fontSize: '1.1rem', 
+                    color: '#000',
+                    fontWeight: '400',
+                    fontFamily: 'Roboto, sans-serif'
+                }}>
+                    Welcome back! 
+                </p>
             </div>
-            <div className="creditUsage" style={{ display: 'flex', flexDirection: 'row' }} >
-                <div className="creditUsageContainer" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
-                    <h3 style={{ fontSize: '1.5em', }}>Credits Remaining</h3>
-                    <p style={{ fontSize: '3em', color: userPlan?.remainingPoints > 10 ? 'black' : 'red' }}>{userPlan?.remainingPoints}</p>
 
-                    <p>Renews At:- {userPlan && renewAt}</p>
-                </div>
-                <div className="creditUsageContainers" style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em', margin: '1em', borderRadius: '20px' }}>
+            {/* Credits Section */}
+            <div className="credits-section" style={{ 
+                display: 'flex', 
+                gap: '2rem',
+                marginBottom: '2rem'
+            }}>
+                <div className="credits-card" style={{ 
+                    flex: 1, 
+                    background: 'white',
+                    padding: '2rem',
+                    borderRadius: '20px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(58, 28, 113, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)'
+                    }}></div>
+                    <h3 style={{ 
+                        fontSize: '1.25rem', 
+                        fontWeight: '600',
+                        color: '#000',
+                        marginBottom: '1rem',
+                        fontFamily: 'Roboto, sans-serif'
+                    }}>
+                        Credits Remaining
+                    </h3>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'baseline',
+                        gap: '0.5rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <span style={{ 
+                            fontSize: '3.5rem', 
+                            fontWeight: '600',
+                            color: userPlan?.remainingPoints > 10 ? '#3a1c71' : '#ef4444',
+                            lineHeight: '1',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            {userPlan?.remainingPoints}
+                        </span>
+                        <span style={{ 
+                            fontSize: '1.5rem',
+                            color: '#000',
+                            fontWeight: '400',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            credits
+                        </span>
+                    </div>
+                    <p style={{ 
+                        fontSize: '0.875rem',
+                        color: '#000',
+                        fontWeight: '400',
+                        fontFamily: 'Roboto, sans-serif'
+                    }}>
+                        Renews on: <span style={{ fontWeight: '600', color: '#000' }}>{userPlan && renewAt}</span>
+                    </p>
                 </div>
 
+                <div className="stats-card" style={{ 
+                    flex: 1.5, 
+                    background: 'white',
+                    padding: '2rem',
+                    borderRadius: '20px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(58, 28, 113, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(135deg, #ffaf7b 0%, #d76d77 50%, #3a1c71 100%)'
+                    }}></div>
+                    <h3 style={{ 
+                        fontSize: '1.25rem', 
+                        fontWeight: '600',
+                        color: '#000',
+                        marginBottom: '1rem',
+                        fontFamily: 'Roboto, sans-serif'
+                    }}>
+                        Quick Stats
+                    </h3>
+                    <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '1rem'
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ 
+                                fontSize: '2rem',
+                                fontWeight: '600',
+                                color: '#3a1c71',
+                                marginBottom: '0.25rem',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                {userHistory.length}
+                            </div>
+                            <div style={{ 
+                                fontSize: '0.875rem',
+                                color: '#000',
+                                fontWeight: '400',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Images Processed
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ 
+                                fontSize: '2rem',
+                                fontWeight: '600',
+                                color: '#d76d77',
+                                marginBottom: '0.25rem',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                {userPlan?.totalPoints || 0}
+                            </div>
+                            <div style={{ 
+                                fontSize: '0.875rem',
+                                color: '#000',
+                                fontWeight: '400',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Total Credits Used
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {userHistory.length > 0 && <div className="usageHistory" style={{ paddingLeft: '1em', paddingRight: '1em' }}>
-                <MuiTable userHistory={userHistory} createdAt={createdAt} />
-            </div>}
+
+            {/* Usage History Section */}
+            {userHistory.length > 0 && (
+                <div className="history-section" style={{ 
+                    background: 'white',
+                    borderRadius: '20px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(58, 28, 113, 0.1)',
+                    overflow: 'hidden',
+                    marginBottom: '2rem'
+                }}>
+                    <div style={{
+                        padding: '1.5rem 2rem',
+                        borderBottom: '1px solid rgba(58, 28, 113, 0.1)',
+                        background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.05) 0%, rgba(215, 109, 119, 0.05) 50%, rgba(255, 175, 123, 0.05) 100%)'
+                    }}>
+                        <h3 style={{ 
+                            fontSize: '1.25rem', 
+                            fontWeight: '600',
+                            color: '#000',
+                            margin: 0,
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            Usage History
+                        </h3>
+                    </div>
+                    <div style={{ padding: '1rem' }}>
+                        <MuiTable userHistory={userHistory} createdAt={createdAt} />
+                    </div>
+                </div>
+            )}
         </div>
     )
-    if (!matches) return (
-        <div style={{ minHeight: '100vh' }}>
-            <div style={{ minHeight: '100vh', marginTop: '3.3em', fontFamily: 'sans-serif',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center' }}>
-                <div style={{ width: '90%', display: 'flex', flexDirection: 'column', gap: '1em' }}>
-                    <div style={{ flex: 1, color: 'black', height: '25%', display: 'flex', flexDirection: 'row', gap: '1em' }}>
-                        <div>
-                            <Image width={70} height={70} style={{ borderRadius: "50%", border: "1px solid teal" }} src={session?.user.image ? session?.user.image : userPic} />
-                        </div>
-                        <div style={{ paddingBottom: '.6em' }}>
-                            <h3 style={{ fontSize: '1.7em', marginBottom: '.2em' }}>Hello, {session?.user.name}</h3>
-                            <p>Welcome back!</p>
-                        </div>
-                    </div>
-                    <div className='creditUsageContainer' style={{ flex: 1, color: 'black', height: '25%', backgroundColor: 'white', borderRadius: '5px', padding: '1rem 1rem' }}>
-                        <div>
-                            <span>
 
-                                <h3>Total Credits</h3>
-                            </span>
-                            <p style={{ fontSize: '3em', fontFamily: 'sans-serif', fontWeight: '600', color: userPlan?.remainingPoints > 10 ? 'black' : 'red' }}>{userPlan?.remainingPoints}</p>
-                            <p>Renews At:- {userPlan && renewAt}</p>
+    if (!matches) return (
+        <div style={{ 
+            minHeight: '100vh', 
+            background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
+            paddingBottom: '3em'
+        }}>
+            <div style={{ 
+                minHeight: '100vh', 
+                marginTop: '3.3em', 
+                fontFamily: 'Roboto, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '1rem'
+            }}>
+                {/* Mobile Welcome Section */}
+                <div style={{ 
+                    background: 'white',
+                    borderRadius: '20px',
+                    padding: '1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(58, 28, 113, 0.1)'
+                }}>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <div style={{
+                            position: 'relative'
+                        }}>
+                            <Image 
+                                width={60} 
+                                height={60} 
+                                style={{ 
+                                    borderRadius: "50%", 
+                                    border: "3px solid #3a1c71",
+                                    objectFit: 'cover'
+                                }} 
+                                src={session?.user.image ? session?.user.image : '/assets/user.png'} 
+                                alt="Profile"
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 0,
+                                width: '16px',
+                                height: '16px',
+                                backgroundColor: '#10b981',
+                                borderRadius: '50%',
+                                border: '2px solid white'
+                            }}></div>
+                        </div>
+                        <div>
+                            <h2 style={{ 
+                                fontSize: '1.5rem', 
+                                fontWeight: '600',
+                                marginBottom: '0.25rem',
+                                background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Hello, {session?.user.name}
+                            </h2>
+                            <p style={{ 
+                                fontSize: '0.875rem',
+                                color: '#000',
+                                fontWeight: '400',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Welcome back! 👋
+                            </p>
                         </div>
                     </div>
                 </div>
-                {userHistory.length > 0 &&
-                    <>
-                        <div style={{ textAlign: 'start', marginTop: "3em" }}>
-                            <p style={{ fontSize: '1.7em', fontWeight: 'semi-bold' }}> Usage History</p>
+
+                {/* Mobile Credits Card */}
+                <div style={{ 
+                    background: 'white',
+                    borderRadius: '20px',
+                    padding: '1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(58, 28, 113, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)'
+                    }}></div>
+                    <h3 style={{ 
+                        fontSize: '1.125rem',
+                        fontWeight: '600',
+                        color: '#000',
+                        marginBottom: '1rem',
+                        fontFamily: 'Roboto, sans-serif'
+                    }}>
+                        Available Credits
+                    </h3>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'baseline',
+                        gap: '0.5rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <span style={{ 
+                            fontSize: '3rem', 
+                            fontWeight: '600',
+                            color: userPlan?.remainingPoints > 10 ? '#3a1c71' : '#ef4444',
+                            lineHeight: '1',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            {userPlan?.remainingPoints}
+                        </span>
+                        <span style={{ 
+                            fontSize: '1.25rem',
+                            color: '#000',
+                            fontWeight: '400',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            credits
+                        </span>
+                    </div>
+                    <p style={{ 
+                        fontSize: '0.875rem',
+                        color: '#000',
+                        fontWeight: '400',
+                        fontFamily: 'Roboto, sans-serif'
+                    }}>
+                        Renews on: <span style={{ fontWeight: '600', color: '#000' }}>{userPlan && renewAt}</span>
+                    </p>
+                </div>
+
+                {/* Mobile Usage History */}
+                {userHistory.length > 0 && (
+                    <div style={{ 
+                        background: 'white',
+                        borderRadius: '20px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        border: '1px solid rgba(58, 28, 113, 0.1)',
+                        overflow: 'hidden',
+                        marginBottom: '5rem'
+                    }}>
+                        <div style={{
+                            padding: '1rem 1.5rem',
+                            borderBottom: '1px solid rgba(58, 28, 113, 0.1)',
+                            background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.05) 0%, rgba(215, 109, 119, 0.05) 50%, rgba(255, 175, 123, 0.05) 100%)'
+                        }}>
+                            <h3 style={{ 
+                                fontSize: '1.125rem', 
+                                fontWeight: '600',
+                                color: '#000',
+                                margin: 0,
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Usage History
+                            </h3>
                         </div>
-                        <div className="usageHistory" style={{ textAlign: 'start', marginTop: "1em", marginBottom: '2rem',width:'90%' }}>
+                        <div style={{ padding: '0.5rem' }}>
                             <MuiTable userHistory={userHistory} createdAt={createdAt} />
                         </div>
-                    </>
-                }
+                    </div>
+                )}
             </div>
             <TabNavigation />
         </div>
     )
-
 }
 
 export default Dashboard

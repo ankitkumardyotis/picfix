@@ -16,6 +16,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import EnhancedLoader from './EnhancedLoader';
 
 const StyledContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -299,25 +300,10 @@ const CombineImageDisplay = ({
         <Grid item xs={12} md={3}>
           {isLoading ? (
             <PlaceholderCard>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    border: `4px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    borderTop: `4px solid ${theme.palette.primary.main}`,
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                    '@keyframes spin': {
-                      '0%': { transform: 'rotate(0deg)' },
-                      '100%': { transform: 'rotate(360deg)' },
-                    },
-                  }}
-                />
-                <Typography variant="body2" color="primary">
-                  Combining Images...
-                </Typography>
-              </Box>
+              <EnhancedLoader 
+                selectedModel="combine-image"
+                size="small"
+              />
             </PlaceholderCard>
           ) : (
             <Fade in={!!outputImage} timeout={800}>

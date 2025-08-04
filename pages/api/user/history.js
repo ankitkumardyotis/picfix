@@ -23,7 +23,12 @@ export default async function handler(req, res) {
     };
     
     if (model && model !== 'all') {
-      whereClause.model = model;
+      // Handle both old and new model names for re-imagine
+      if (model === 're-imagine') {
+        whereClause.model = { in: ['re-imagine', 'reimagine'] };
+      } else {
+        whereClause.model = model;
+      }
     }
     
     const history = await prisma.history.findMany({

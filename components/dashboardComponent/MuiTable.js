@@ -26,6 +26,17 @@ const columns = [
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
   },
+  {
+    id: 'cost',
+    label: 'Cost',
+    minWidth: 100,
+    align: 'center',
+    format: (value) => {
+      if (value === null || value === undefined) return '0';
+      if (typeof value === 'number') return value.toString();
+      return value.toString();
+    },
+  },
 ];
 
 export default function MuiTable({ userHistory }) {
@@ -38,20 +49,35 @@ export default function MuiTable({ userHistory }) {
   const newDataAfterDateFormat = sortedUserHistory.map((item, idx) => {
     const diffrenceInTime = diffrenceTime(item.createdAt);
     let model;
+    console.log("item.model=====", item.model);
     if (item.model === "tencentarc/gfpgan") {
       model = "Restore Photos";
-    } else if (item.model === "cjwbw/bigcolor") {
-      model = "Image Colorization";
     } else if (item.model === "allenhooo/lama") {
       model = "Remove Objects";
-    } else if (item.model === "jagilley/controlnet-hough") {
-      model = "AI Home Makeover";
+    } else if (item.model === "home-designer") {
+      model = "Home Designer";
     } else if (item.model === "cjwbw/rembg") {
       model = "Background Removal";
+    } else if (item.model === "hair-style") {
+      model = "Hair Style";
+    }else if (item.model === "generate-image") {
+      model = "Generate Image";
+    } else if (item.model === "combine-image") {
+      model = "Combine Image";
+    } else if (item.model === "text-removal") {
+      model = "Remove Text";
+    } else if (item.model === "cartoonify") {
+      model = "Cartoonify";
+    } else if (item.model === "headshot") {
+      model = "Headshot";
+    } else if (item.model === "restore-image") {
+      model = "Restore Image";
+    } else if (item.model === "gfp-restore") {
+      model = "Restore Image (Free)";
     } else {
       model = item.model;
     }
-    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1};
+    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1, cost: item.cost || 0 };
   });
 
   const [rows, setRows] = React.useState(newDataAfterDateFormat);
@@ -94,7 +120,9 @@ export default function MuiTable({ userHistory }) {
                         <TableCell key={column.id} align={column.align}>
                           {column.format && typeof value === 'number'
                             ? column.format(value)
-                            : value}
+                            : column.format 
+                              ? column.format(value)
+                              : value}
                         </TableCell>
                       );
                     })}

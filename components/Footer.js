@@ -51,33 +51,33 @@ function Footer() {
                 <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 'bold' }}>
                     AI-Models
                 </Typography>
-                <Box sx={buttonSX} onClick={() => { router.push('/restorePhoto'), context.setFileUrl("") }} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=restore-image'), context.setFileUrl("") }} >
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Restore Photos
+                       Restore Image
                     </Typography>
                 </Box>
 
-                {matches && <Box sx={buttonSX} onClick={() => { router.push('/backgroundRemoval'), context.setFileUrl("") }} >
+                {matches && <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=generate-image'), context.setFileUrl("") }} >
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Background Removal
+                        Generate Image
                     </Typography>
                 </Box>}
-                <Box sx={buttonSX} onClick={() => { router.push('/removeObject'), context.setFileUrl("") }} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=combine-image'), context.setFileUrl("") }} >
 
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Remove Objects
+                        Combine Image
                     </Typography>
                 </Box>
-                <Box sx={buttonSX} onClick={() => { router.push('/aiHomeMakeover'), context.setFileUrl("") }} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=remove-object'), context.setFileUrl("") }} >
 
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        AI Home Makeover
+                        Remove Object
                     </Typography>
                 </Box>
-                <Box sx={buttonSX} onClick={() => { router.push('/textToVideo'), context.setFileUrl("") }} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=headshot'), context.setFileUrl("") }} >
 
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Text to Video
+                        Headshot
                     </Typography>
                 </Box>
 

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppContext from '@/components/AppContext';
 import Footer from '@/components/Footer';
 import Script from "next/script";
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, useMediaQuery } from '@mui/material';
 import { SnackbarProvider } from "notistack";
 import { useRouter } from "next/router";
 
@@ -23,6 +23,8 @@ export default function App({
   const [creditPoints, setCreditPoints] = useState(0)
 
   const router = useRouter()
+
+  const isMobile = useMediaQuery('(max-width: 600px)');
 
   const theme = createTheme({
     // palette: {
@@ -74,15 +76,16 @@ export default function App({
         >
           <ThemeProvider theme={theme}>
             <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
-              {router.pathname != '/ai-image-editor' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
               }
+              {isMobile && <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />}
               {useMemo(() => <Component {...pageProps} />, [fileUrl,
                 path,
                 open,
                 removeImageFromTransformerJs,
                 pageProps,
                 timerForRunModel])}
-              {router.pathname != '/ai-image-editor' && <Footer />}
+              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />

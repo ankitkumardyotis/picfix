@@ -78,70 +78,76 @@ function TransactionsHistory() {
             <div style={{ textAlign: 'start', margin: "3em", marginBottom: '2em' }}>
                 <p style={{ fontSize: '1.7em', fontWeight: '600', textAlign: 'center' }}>Payment History</p>
             </div>
-            <div className='creditUsageContainer' style={{ borderRadius: '5px', marginInline: 'auto', width: '95%' }}>
-                <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 'none' }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
-                        <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
+            {rows.length > 0 ? (
+                <div className='creditUsageContainer' style={{ borderRadius: '5px', marginInline: 'auto', width: '95%' }}>
+                    <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 'none' }}>
+                        <TableContainer sx={{ maxHeight: 440 }}>
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
 
-                                <TableRow>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={column.id}
-                                            align={column.align}
-                                            style={{ minWidth: column.minWidth }}
-                                        >
-                                            {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((row) => (
-                                        <TableRow
-                                            hover
-                                            sx={{
-                                                '&:hover': {
-                                                    cursor: 'pointer'
-                                                }
-                                            }}
-                                            role="checkbox"
-                                            tabIndex={-1}
-                                            key={row.id}
-                                            onClick={() => handleClickOpen(row)}
-                                        >
+                                    <TableRow>
+                                        {columns.map((column) => (
+                                            <TableCell
+                                                key={column.id}
+                                                align={column.align}
+                                                style={{ minWidth: column.minWidth }}
+                                            >
+                                                {column.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {rows
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((row) => (
+                                            <TableRow
+                                                hover
+                                                sx={{
+                                                    '&:hover': {
+                                                        cursor: 'pointer'
+                                                    }
+                                                }}
+                                                role="checkbox"
+                                                tabIndex={-1}
+                                                key={row.id}
+                                                onClick={() => handleClickOpen(row)}
+                                            >
 
-                                            {columns.map((column) => {
-                                                const value = row[column.id];
-                                                return (
-                                                    <TableCell key={column.id} align={column.align}>
-                                                        <Tooltip title="Click to View">
-                                                            {column.format && typeof value === 'number'
-                                                                ? column.format(value)
-                                                                : value}
-                                                        </Tooltip>
-                                                    </TableCell>
-                                                );
-                                            })}
+                                                {columns.map((column) => {
+                                                    const value = row[column.id];
+                                                    return (
+                                                        <TableCell key={column.id} align={column.align}>
+                                                            <Tooltip title="Click to View">
+                                                                {column.format && typeof value === 'number'
+                                                                    ? column.format(value)
+                                                                    : value}
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    );
+                                                })}
 
-                                        </TableRow>
-                                    ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[5, 15, 25]}
-                        component="div"
-                        count={rows.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Paper>
-            </div>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 15, 25]}
+                            component="div"
+                            count={rows.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </Paper>
+                </div>
+            ) : (
+                <div style={{ textAlign: 'center', margin: "3em", marginBottom: '2em' }}>
+                    <p style={{ fontSize: '1.7em', fontWeight: '600', color: "gray", textAlign: 'center' }}>No transactions found</p>
+                </div>
+            )}
             <Dialog
                 fullScreen
                 maxHeight='70vh'

@@ -61,7 +61,8 @@ import modelConfigurations from '../constant/ModelConfigurations';
 import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 import Image from 'next/image';
 import Link from 'next/link';
-
+import { useMediaQuery } from '@mui/material';
+import SidePanel from '@/components/ai-image-editor-flux/editor/SidePanel';
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
   background: 'linear-gradient(135deg, #f5f7fa 0%,rgb(232, 230, 218) 100%)',
@@ -73,32 +74,10 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   position: 'relative',
 }));
 
-const SidePanel = styled(Box)(({ theme }) => ({
-  width: '250px',
-  background: alpha(theme.palette.background.paper, 0.95),
-  backdropFilter: 'blur(10px)',
-  borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  padding: theme.spacing(1,3),
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  overflow: 'auto',
-  boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
-  [theme.breakpoints.down('md')]: {
-    width: '100%',
-    position: 'absolute',
-    zIndex: 1000,
-    transform: 'translateX(-100%)',
-    transition: 'transform 0.3s ease',
-    '&.open': {
-      transform: 'translateX(0)',
-    },
-  },
-}));
 
 const MainEditor = styled(Box)(({ theme }) => ({
   flex: 1,
-  padding: theme.spacing(1,3),
+  padding: theme.spacing(1, 3),
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(1),
@@ -186,12 +165,13 @@ export default function AIImageEditor() {
   const { enqueueSnackbar } = useSnackbar();
   const context = useContext(AppContext);
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 600px)');
   const [selectedModel, setSelectedModel] = useState('generate-image');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [inputPrompt, setInputPrompt] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedStyles, setSelectedStyles] = useState([]);
-  const [numOutputs, setNumOutputs] = useState(2);
+  const [numOutputs, setNumOutputs] = useState(1);
   const [generatedImages, setGeneratedImages] = useState(Array(2).fill(null));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -251,6 +231,7 @@ export default function AIImageEditor() {
   const [uploadingRemoveObjectImage, setUploadingRemoveObjectImage] = useState(false);
   const [removeObjectMask, setRemoveObjectMask] = useState(null);
   const [hasMaskDrawn, setHasMaskDrawn] = useState(false);
+  const maskEditorRef = useRef(null);
 
   // ReImagine specific states
   const [reimagineImage, setReimagineImage] = useState(null);
@@ -277,10 +258,10 @@ export default function AIImageEditor() {
   const [exampleImages, setExampleImages] = useState([]);
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [autoOpenComparison, setAutoOpenComparison] = useState(false);
-  
+
   // Combine image modal state
   const [combineModalOpen, setCombineModalOpen] = useState(false);
-  
+
   // Combine image modal data for examples/history/community
   const [combineModalData, setCombineModalData] = useState({
     inputImage1: null,
@@ -290,7 +271,7 @@ export default function AIImageEditor() {
     isHistory: false,
     isCommunity: false
   });
-  
+
   // Example image comparison states
   const [exampleCanCompare, setExampleCanCompare] = useState(false);
   const [exampleBeforeImage, setExampleBeforeImage] = useState(null);
@@ -308,16 +289,16 @@ export default function AIImageEditor() {
       if (savedState) {
         try {
           const state = JSON.parse(savedState);
-          
+
           // Check if state is not too old (24 hours)
           const stateAge = Date.now() - (state.timestamp || 0);
           const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-          
+
           if (stateAge > maxAge) {
             localStorage.removeItem('aiEditorState');
             return;
           }
-          
+
           // Restore state based on what was saved
           if (state.selectedModel) setSelectedModel(state.selectedModel);
           if (state.inputPrompt) setInputPrompt(state.inputPrompt);
@@ -327,7 +308,7 @@ export default function AIImageEditor() {
           if (state.selectedHairStyle) setSelectedHairStyle(state.selectedHairStyle);
           if (state.selectedHairColor) setSelectedHairColor(state.selectedHairColor);
           if (state.selectedGender) setSelectedGender(state.selectedGender);
-          
+
           // Restore model-specific image URLs
           if (state.textRemovalImageUrl) setTextRemovalImageUrl(state.textRemovalImageUrl);
           // if (state.cartoonifyImageUrl) setCartoonifyImageUrl(state.cartoonifyImageUrl);
@@ -340,7 +321,7 @@ export default function AIImageEditor() {
           if (state.reimagineImageUrl) setReimagineImageUrl(state.reimagineImageUrl);
           if (state.combineImage1Url) setCombineImage1Url(state.combineImage1Url);
           if (state.combineImage2Url) setCombineImage2Url(state.combineImage2Url);
-          
+
           // Restore model-specific image data (base64)
           if (state.uploadedImage) setUploadedImage(state.uploadedImage);
           if (state.textRemovalImage) setTextRemovalImage(state.textRemovalImage);
@@ -354,17 +335,17 @@ export default function AIImageEditor() {
           if (state.reimagineImage) setReimagineImage(state.reimagineImage);
           if (state.combineImage1) setCombineImage1(state.combineImage1);
           if (state.combineImage2) setCombineImage2(state.combineImage2);
-          
+
           // Restore model-specific configurations
           if (state.selectedHeadshotGender) setSelectedHeadshotGender(state.selectedHeadshotGender);
           if (state.selectedHeadshotBackground) setSelectedHeadshotBackground(state.selectedHeadshotBackground);
           if (state.selectedReimagineGender) setSelectedReimagineGender(state.selectedReimagineGender);
           if (state.selectedScenario) setSelectedScenario(state.selectedScenario);
-          
+
           // Clear the saved state after restoration
           localStorage.removeItem('aiEditorState');
           enqueueSnackbar('Welcome back! Your previous work has been restored.', { variant: 'success' });
-          
+
           // Force refresh of example masonry by triggering a re-render
           // The key prop on ExampleMasonry will force it to re-mount and clear its cache
           setTimeout(() => {
@@ -408,7 +389,7 @@ export default function AIImageEditor() {
       // Model-specific image data (base64)
       uploadedImage,
       textRemovalImage,
-      
+
       cartoonifyImage,
       headshotImage,
       restoreImage,
@@ -442,11 +423,19 @@ export default function AIImageEditor() {
     return true;
   };
 
+  // Function to refresh history after successful image generation
+  const refreshHistoryAfterGeneration = () => {
+    if (exampleMasonryRef.current) {
+      exampleMasonryRef.current.refreshHistory();
+    }
+  };
+
 
 
   // Refs for smooth scrolling
   const imageGenerationRef = useRef(null);
   const inputSectionRef = useRef(null);
+  const exampleMasonryRef = useRef(null);
 
   // Handle URL parameter for model selection
   useEffect(() => {
@@ -473,7 +462,7 @@ export default function AIImageEditor() {
         setGeneratedImages([null]);
       } else {
         setAspectRatio('1:1');
-        setNumOutputs(2);
+        setNumOutputs(1);
         setGeneratedImages([null, null]);
       }
 
@@ -580,45 +569,30 @@ export default function AIImageEditor() {
     }
   };
 
-  // Dynamic aspect ratio options based on selected model
-  const getAspectRatioOptions = () => {
-    if (selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'home-designer') {
-      return currentConfig.aspectRatios.map(ratio => {
-        const labels = {
-          'match_input_image': 'Match Input Image',
-          '1:1': '1:1 Square',
-          '16:9': '16:9 Landscape',
-          '9:16': '9:16 Vertical',
-          '4:3': '4:3 Landscape',
-          '3:4': '3:4 Portrait',
-          '3:2': '3:2 Standard',
-          '2:3': '2:3 Portrait',
-          '4:5': '4:5 Portrait',
-          '5:4': '5:4 Landscape',
-          '21:9': '21:9 Ultrawide',
-          '9:21': '9:21 Vertical Ultrawide',
-          '2:1': '2:1 Wide',
-          '1:2': '1:2 Tall'
-        };
-        return { value: ratio, label: labels[ratio] || ratio };
+  // Smooth scroll to mask editor for remove-object model
+  const scrollToMaskEditor = () => {
+    if (maskEditorRef.current) {
+      maskEditorRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
       });
     }
-
-    return [
-      { value: '1:1', label: '1:1 Square' },
-      { value: '16:9', label: '16:9 Landscape' },
-      { value: '21:9', label: '21:9 Ultrawide' },
-      { value: '3:2', label: '3:2 Standard' },
-      { value: '2:3', label: '2:3 Portrait' },
-      { value: '4:5', label: '4:5 Portrait' },
-      { value: '5:4', label: '5:4 Landscape' },
-      { value: '3:4', label: '3:4 Portrait' },
-      { value: '4:3', label: '4:3 Landscape' },
-      { value: '9:16', label: '9:16 Vertical' },
-      { value: '9:21', label: '9:21 Vertical Ultrawide' }
-    ];
   };
 
+  // Auto-scroll to loading section when image generation starts
+  useEffect(() => {
+    if (isLoading && imageGenerationRef.current) {
+      // Add a small delay to ensure the loader is rendered before scrolling
+      const timer = setTimeout(() => {
+        imageGenerationRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   const handleModelChange = (event) => {
     const newModel = event.target.value;
@@ -701,7 +675,7 @@ export default function AIImageEditor() {
     }
 
     // Reset reimagine specific states when switching models
-    if (newModel !== 'reimagine') {
+    if (newModel !== 're-imagine') {
       setReimagineImage(null);
       setReimagineImageUrl(null);
       setUploadingReimagineImage(false);
@@ -724,20 +698,20 @@ export default function AIImageEditor() {
       setAspectRatio('match_input_image');
     } else if (newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 'background-removal' || newModel === 'remove-object') {
       setAspectRatio('');
-    } else if (newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'reimagine') {
+    } else if (newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 're-imagine') {
       setAspectRatio('1:1');
     } else {
       setAspectRatio('1:1');
     }
 
     // Set number of outputs based on model
-    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 'reimagine') {
+    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine') {
       console.log(`Setting model ${newModel} to 1 output`);
       setNumOutputs(1);
       setGeneratedImages([null]);
     } else {
       console.log(`Setting model ${newModel} to 2 outputs`);
-      setNumOutputs(2);
+      setNumOutputs(1);
       setGeneratedImages([null, null]);
     }
   };
@@ -840,6 +814,9 @@ export default function AIImageEditor() {
       }
 
       enqueueSnackbar('Images generated successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating images', { variant: 'error' });
       console.error('Error generating images:', err);
@@ -898,13 +875,15 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Hair style image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format
         setGeneratedImages([data]);
       }
 
       enqueueSnackbar('Hair style changed successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error changing hair style', { variant: 'error' });
       console.error('Error changing hair style:', err);
@@ -974,6 +953,9 @@ export default function AIImageEditor() {
       }
 
       enqueueSnackbar('Images combined successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error combining images', { variant: 'error' });
       console.error('Error combining images:', err);
@@ -1048,6 +1030,9 @@ export default function AIImageEditor() {
 
       console.log("Text removal response data:", data);
       enqueueSnackbar('Text removed successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error removing text from image', { variant: 'error' });
       console.error('Error removing text from image:', err);
@@ -1122,6 +1107,9 @@ export default function AIImageEditor() {
 
       console.log("Cartoonify response data:", data);
       enqueueSnackbar('Image cartoonified successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error cartoonifying image', { variant: 'error' });
       console.error('Error cartoonifying image:', err);
@@ -1198,6 +1186,9 @@ export default function AIImageEditor() {
 
       console.log("Headshot response data:", data);
       enqueueSnackbar('Professional headshot generated successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating headshot', { variant: 'error' });
       console.error('Error generating headshot:', err);
@@ -1272,6 +1263,9 @@ export default function AIImageEditor() {
 
       console.log("Restore image response data:", data);
       enqueueSnackbar('Image restored successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error restoring image', { variant: 'error' });
       console.error('Error restoring image:', err);
@@ -1343,6 +1337,9 @@ export default function AIImageEditor() {
 
       console.log("GFP restore response data:", data);
       enqueueSnackbar('Image restored successfully', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error restoring image with  ', { variant: 'error' });
       console.error('Error restoring image with  :', err);
@@ -1421,6 +1418,9 @@ export default function AIImageEditor() {
 
       console.log("Home designer response data:", data);
       enqueueSnackbar('Home design generated successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating home design', { variant: 'error' });
       console.error('Error generating home design:', err);
@@ -1467,6 +1467,9 @@ export default function AIImageEditor() {
     setIsLoading(false);
     setProcessingBackgroundRemoval(false);
     enqueueSnackbar('Background removed successfully!', { variant: 'success' });
+
+    // Refresh history to show the new image
+    refreshHistoryAfterGeneration();
   };
 
   const handleBackgroundRemovalError = (error) => {
@@ -1554,6 +1557,9 @@ export default function AIImageEditor() {
 
       console.log("Remove object response data:", data);
       enqueueSnackbar('Objects removed successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error removing objects', { variant: 'error' });
       console.error('Error removing objects:', err);
@@ -1636,6 +1642,9 @@ export default function AIImageEditor() {
 
       console.log("ReImagine response data:", data);
       enqueueSnackbar('Impossible scenario generated successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating impossible scenario', { variant: 'error' });
       console.error('Error generating impossible scenario:', err);
@@ -1755,7 +1764,6 @@ export default function AIImageEditor() {
       'generate-image': 'AI Image Generator',
       'hair-style': 'Hair Style Changer',
       'headshot': 'Professional Headshot',
-      // 'cartoonify': 'Cartoonify',
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
@@ -1952,10 +1960,10 @@ export default function AIImageEditor() {
         };
       }
     }
-    
+
     // For other models, show specific configuration options
     const configText = generateGeneratedImageConfig();
-    
+
     if (configText) {
       return {
         type: 'config',
@@ -2057,7 +2065,7 @@ export default function AIImageEditor() {
     setExampleImages([]);
     setExampleImageInfo(null);
     setAutoOpenComparison(false);
-    
+
     // Reset example comparison states
     setExampleCanCompare(false);
     setExampleBeforeImage(null);
@@ -2099,7 +2107,7 @@ export default function AIImageEditor() {
     if (selectedModel === 'combine-image' && imageData.combineData) {
       // Determine the type of image (example, history, or community)
       const imageType = imageData.imageInfo?.type || 'example';
-      
+
       setCombineModalData({
         inputImage1: imageData.combineData.inputImage1,
         inputImage2: imageData.combineData.inputImage2,
@@ -2118,21 +2126,20 @@ export default function AIImageEditor() {
     setPreviewType('example');
     setExampleImages(imageData.images);
     setExampleImageInfo(imageData.imageInfo);
-    
+
     // Set comparison data if available
     setExampleCanCompare(imageData.canCompare || false);
     setExampleBeforeImage(imageData.beforeImage || null);
     setExampleAfterImage(imageData.afterImage || null);
     setExampleBeforeLabel(imageData.beforeLabel || null);
     setExampleAfterLabel(imageData.afterLabel || null);
-    
+
     setPreviewOpen(true);
   };
 
   // Handle prompt use from masonry
   const handlePromptUse = (prompt) => {
     setInputPrompt(prompt);
-    enqueueSnackbar('Prompt added! Scrolling to input field...', { variant: 'success' });
 
     // Smooth scroll to input section after a short delay to let the snackbar appear
     setTimeout(() => {
@@ -2155,7 +2162,7 @@ export default function AIImageEditor() {
     if (selectedModel === 'combine-image') {
       return false;
     }
-    
+
     // Check if we have images available for comparison
     if (selectedModel === 'hair-style' && uploadedImage && generatedImages[0]) {
       return true;
@@ -2184,7 +2191,7 @@ export default function AIImageEditor() {
     if (selectedModel === 'remove-object' && removeObjectImage && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'reimagine' && reimagineImage && generatedImages[0]) {
+    if (selectedModel === 're-imagine' && reimagineImage && generatedImages[0]) {
       return true;
     }
     // For generate-image model, check if we have at least 2 generated images
@@ -2199,8 +2206,8 @@ export default function AIImageEditor() {
       return { before: 'Original', after: 'New Hair Style' };
     } else if (selectedModel === 'text-removal') {
       return { before: 'With Text', after: 'Text Removed' };
-    // } else if (selectedModel === 'cartoonify') {
-    //   return { before: 'Original', after: 'Cartoonified' };
+      // } else if (selectedModel === 'cartoonify') {
+      //   return { before: 'Original', after: 'Cartoonified' };
     } else if (selectedModel === 'headshot') {
       return { before: 'Original', after: 'Professional Headshot' };
     } else if (selectedModel === 'restore-image') {
@@ -2213,7 +2220,7 @@ export default function AIImageEditor() {
       return { before: 'With Background', after: 'Background Removed' };
     } else if (selectedModel === 'remove-object') {
       return { before: 'With Objects', after: 'Objects Removed' };
-    } else if (selectedModel === 'reimagine') {
+    } else if (selectedModel === 're-imagine') {
       return { before: 'Original', after: 'Reimagined' };
     } else if (selectedModel === 'combine-image') {
       return { before: 'Input Image', after: 'Combined Result' };
@@ -2349,6 +2356,11 @@ export default function AIImageEditor() {
         const result = await response.json();
         enqueueSnackbar('🎉 Image published to community successfully!', { variant: 'success' });
         console.log('Published image:', result.image);
+
+        // Refresh community images to show the newly published image
+        if (exampleMasonryRef.current) {
+          exampleMasonryRef.current.refreshCommunity();
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to publish image');
@@ -2359,10 +2371,7 @@ export default function AIImageEditor() {
       enqueueSnackbar(`Failed to publish image: ${error.message}`, { variant: 'error' });
     }
   };
-  
-  const imageStyle = {
-    borderRadius: '5px',
-};
+
 
 
   return (
@@ -2378,7 +2387,7 @@ export default function AIImageEditor() {
           {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
         </MenuButton>
 
-        <Box sx={{ display: 'flex', height: '100%', width: '100%', position: 'relative' }}>
+        <Box sx={{ display: 'flex', height: '100%', width: '100%', position: 'relative', mt: isMobile ? '4rem' : '0px' }}>
           {/* Overlay for mobile */}
           {mobileMenuOpen && (
             <Box
@@ -2396,475 +2405,7 @@ export default function AIImageEditor() {
             />
           )}
 
-          {/* Right Side Panel */}
-          <SidePanel className={mobileMenuOpen ? 'open' : ''}>
-
-            {/* Logo */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
-              <Link href="/">
-                <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
-              </Link>
-            </Box>
-            {/* Model Selection */}
-            <FormControl fullWidth variant="outlined">
-              <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>Select Model</InputLabel>
-              <Select
-                value={selectedModel}
-                onChange={handleModelChange}
-                label="Select Model"
-                sx={{
-                  borderRadius: 2,
-                  '& .MuiSelect-select': {
-                    padding: '.5rem',
-                    paddingLeft: '1rem',
-                    fontSize: '12px',
-                    fontWeight: 400,
-                  },
-
-
-                }}
-              >
-                {Object.entries(modelConfigurations).map(([key, config]) => (
-                  <MenuItem 
-                    key={key} 
-                    value={key} 
-                    sx={{ 
-                      fontSize: '12px', 
-                      fontWeight: 400,
-                      '&:hover .free-pro-label': {
-                        opacity: 1,
-                        transform: 'translateX(0)',
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {config.type != 'gfp-restore' && config.type != 'background-removal' && <FaCrown
-                          style={{
-                            fontSize: '16px',
-                            color: '#FFD700',
-                            filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.5))'
-                          }}
-                        />}
-                        {config.type == 'gfp-restore' && <FaGift
-                          style={{
-                            fontSize: '16px',
-                            color: 'green',
-                            // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
-                          }}
-                        />}
-                        {config.type == 'background-removal' && <FaGift
-                          style={{
-                            fontSize: '16px',
-                            color: 'green',
-                            // filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))'
-                          }}
-                        />}
-                        <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
-                          {config.name}
-                        </Typography>
-                      </Box>
-                      {/* Free/Pro Label - Hidden by default, shown on hover */}
-                      <Box
-                        className="free-pro-label"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          minWidth: '40px',
-                          height: '18px',
-                          borderRadius: '10px',
-                          fontSize: '10px',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          opacity: 0,
-                          transform: 'translateX(10px)',
-                          transition: 'all 0.2s ease-in-out',
-                          ...(config.free ? {
-                            backgroundColor: '#e8f5e8',
-                            color: '#2e7d32',
-                            border: '1px solid #4caf50'
-                          } : {
-                            backgroundColor: '#fff3e0',
-                            color: '#f57c00',
-                            border: '1px solid #ff9800'
-                          })
-                        }}
-                      >
-                        {config.free ? 'Free' : 'Pro'}
-                      </Box>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && (
-              <FormControl fullWidth variant="outlined">
-                <InputLabel>Aspect Ratio</InputLabel>
-                <Select
-                  value={aspectRatio}
-                  onChange={(e) => setAspectRatio(e.target.value)}
-                  label="Aspect Ratio"
-                  sx={{
-                    borderRadius: 2,
-                    '& .MuiSelect-select': {
-                      padding: '.5rem',
-                      paddingLeft: '1rem',
-                      fontSize: '2px',
-                      fontWeight: 400,
-                    },
-                  }}
-                >
-                  {getAspectRatioOptions().map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                        <Box
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            backgroundColor: alpha(theme.palette.grey[300], 0.3),
-                            borderRadius: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: option.value === '1:1' ? 16 : option.value === '16:9' ? 20 : option.value === '9:16' ? 10 :
-                                option.value === '2:3' ? 12 : option.value === '3:4' ? 14 : option.value === '1:2' ? 10 :
-                                  option.value === '2:1' ? 20 : option.value === '4:5' ? 16 : option.value === '3:2' ? 18 : 16,
-                              height: option.value === '1:1' ? 16 : option.value === '16:9' ? 11 : option.value === '9:16' ? 18 :
-                                option.value === '2:3' ? 18 : option.value === '3:4' ? 18 : option.value === '1:2' ? 20 :
-                                  option.value === '2:1' ? 10 : option.value === '4:5' ? 20 : option.value === '3:2' ? 12 : 12,
-                              backgroundColor: theme.palette.primary.main,
-                              borderRadius: 0.5,
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 500, }}>{option.label}</Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-
-            {/* Hair Style Specific Sidebar Controls */}
-            {selectedModel === 'hair-style' && (
-              <>
-                {/* Hair Color Selection */}
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Hair Color</InputLabel>
-                  <Select
-                    value={selectedHairColor}
-                    onChange={(e) => setSelectedHairColor(e.target.value)}
-                    label="Hair Color"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.hairColors.map((color, index) => (
-                      <MenuItem key={index} value={color} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {color}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Gender Selection */}
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    value={selectedGender}
-                    onChange={(e) => setSelectedGender(e.target.value)}
-                    label="Gender"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {gender}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </>
-            )}
-            {/* Headshot Specific Sidebar Controls */}
-            {selectedModel === 'headshot' && (
-              <>
-                {/* Gender Selection */}
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    value={selectedHeadshotGender}
-                    onChange={(e) => setSelectedHeadshotGender(e.target.value)}
-                    label="Gender"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {gender}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Background Selection */}
-                <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
-                  <InputLabel>Background</InputLabel>
-                  <Select
-                    value={selectedHeadshotBackground}
-                    onChange={(e) => setSelectedHeadshotBackground(e.target.value)}
-                    label="Background"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.backgrounds.map((background, index) => (
-                      <MenuItem key={index} value={background} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {background}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </>
-            )}
-
-            {/* ReImagine Specific Sidebar Controls */}
-            {selectedModel === 'reimagine' && (
-              <>
-                {/* Gender Selection */}
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    value={selectedReimagineGender}
-                    onChange={(e) => setSelectedReimagineGender(e.target.value)}
-                    label="Gender"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.genders.map((gender, index) => (
-                      <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {gender}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
-                  <InputLabel>Reimagine Yourself</InputLabel>
-                  <Select
-                    value={selectedScenario}
-                    onChange={(e) => setSelectedScenario(e.target.value)}
-                    label="Reimagine Yourself"
-                    sx={{
-                      borderRadius: 2,
-                      '& .MuiSelect-select': {
-                        padding: '.5rem',
-                        paddingLeft: '1rem',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                      },
-                    }}
-                  >
-                    {currentConfig.scenarios.map((scenario, index) => (
-                      <MenuItem key={index} value={scenario} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                        {scenario}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </>
-            )}
-
-            {selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
-              <Box sx={{ mt: -1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
-                  Number of Outputs
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    bgcolor: alpha(theme.palette.background.paper, 0.8),
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    '& .MuiSelect-select': {
-                      padding: '.5rem',
-                      paddingLeft: '1rem',
-                    },
-                  }}
-                >
-                  <IconButton
-                    onClick={() => {
-                      if (numOutputs > 1) {
-                        setNumOutputs(prev => prev - 1);
-                        setGeneratedImages(Array(numOutputs - 1).fill(null));
-                      }
-                    }}
-                    disabled={numOutputs <= 1}
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                      },
-                      '&.Mui-disabled': {
-                        color: alpha(theme.palette.text.secondary, 0.3),
-                      }
-                    }}
-                  >
-                    <RemoveIcon />
-                  </IconButton>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      px: 2,
-                      minWidth: '60px',
-                      fontWeight: 600,
-                      fontSize: '1.1rem',
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    {numOutputs}
-                  </Box>
-                  <IconButton
-                    onClick={() => {
-                      if (numOutputs < 4) {
-                        setNumOutputs(prev => prev + 1);
-                        setGeneratedImages(Array(numOutputs + 1).fill(null));
-                      }
-                    }}
-                    disabled={numOutputs >= 4}
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                      },
-                      '&.Mui-disabled': {
-                        color: alpha(theme.palette.text.secondary, 0.3),
-                      }
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </Box>
-              </Box>
-            )}
-
-            {/* Additional Settings */}
-            <Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
-                Credits remaining: {context.creditPoints || 0}
-              </Typography>
-
-
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
-                disabled={isLoading ||
-                  (selectedModel === 'hair-style' ? !uploadedImageUrl :
-                    selectedModel === 'text-removal' ? !textRemovalImageUrl :
-                      // selectedModel === 'cartoonify' ? !cartoonifyImageUrl :
-                        selectedModel === 'headshot' ? !headshotImageUrl :
-                          selectedModel === 'restore-image' ? !restoreImageUrl :
-                            selectedModel === 'gfp-restore' ? !gfpRestoreImageUrl :
-                              selectedModel === 'home-designer' ? (!homeDesignerImageUrl || !inputPrompt.trim()) :
-                                selectedModel === 'background-removal' ? (!backgroundRemovalImage || backgroundRemovalStatus !== 'Ready') :
-                                  selectedModel === 'remove-object' ? (!removeObjectImageUrl || !hasMaskDrawn) :
-                                    selectedModel === 'reimagine' ? !reimagineImageUrl :
-                                      selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
-                                        !inputPrompt.trim())}
-                onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
-                  selectedModel === 'text-removal' ? generateTextRemovalImage :
-                    // selectedModel === 'cartoonify' ? generateCartoonifyImage :
-                      selectedModel === 'headshot' ? generateHeadshotImage :
-                        selectedModel === 'restore-image' ? generateRestoreImage :
-                          selectedModel === 'gfp-restore' ? generateGfpRestoreImage :
-                            selectedModel === 'home-designer' ? generateHomeDesignerImage :
-                              selectedModel === 'background-removal' ? generateBackgroundRemovalImage :
-                                selectedModel === 'remove-object' ? generateRemoveObjectImage :
-                                  selectedModel === 'reimagine' ? generateReimagineImage :
-                                    selectedModel === 'combine-image' ? generateCombineImages :
-                                      generateFluxImages}
-                sx={{
-                  borderRadius: 3,
-                  py: 1,
-                  background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: '.8rem',
-                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
-                  },
-                  '&.Mui-disabled': {
-                    background: theme.palette.action.disabledBackground,
-                    color: theme.palette.action.disabled,
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {isLoading ? 'Processing...' :
-                  selectedModel === 'hair-style' ? 'Change Hair Style' :
-                    selectedModel === 'text-removal' ? 'Remove Watermark' :
-                      // selectedModel === 'cartoonify' ? 'Cartoonify Image' :
-                        selectedModel === 'headshot' ? 'Generate Headshot' :
-                          selectedModel === 'restore-image' ? 'Restore Image' :
-                            selectedModel === 'gfp-restore' ? 'Restore Image (Free)' :
-                              selectedModel === 'home-designer' ? 'Design Interior' :
-                                selectedModel === 'background-removal' ? (backgroundRemovalStatus === 'Ready' ? 'Remove Background' : backgroundRemovalStatus) :
-                                  selectedModel === 'remove-object' ? 'Remove Objects' :
-                                    selectedModel === 'reimagine' ? 'Reimagine Yourself' :
-                                      selectedModel === 'combine-image' ? 'Combine Images' :
-                                        'Generate Image'}
-              </Button>
-            </Box>
-          </SidePanel>
-
+          <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
           {/* Main Editor Area */}
           <MainEditor>
             {/* Hair Style Scrollable Strip for Hair Style Model */}
@@ -3028,7 +2569,7 @@ export default function AIImageEditor() {
             )}
 
             {/* Input Section - Only show for models that need prompts */}
-            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'reimagine' && (
+            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
               <Box ref={inputSectionRef} sx={{ position: 'relative' }}>
                 <StyledTextField
                   fullWidth
@@ -3153,11 +2694,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingHairImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'hair-style-input.jpg');
                         if (url) {
                           setUploadedImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setUploadedImage(null); // Reset if upload failed
                         }
@@ -3228,11 +2768,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingTextRemovalImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'text-removal-input.jpg');
                         if (url) {
                           setTextRemovalImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setTextRemovalImage(null); // Reset if upload failed
                         }
@@ -3308,11 +2847,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingCartoonifyImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'cartoonify-input.jpg');
                         if (url) {
                           setCartoonifyImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setCartoonifyImage(null); // Reset if upload failed
                         }
@@ -3388,11 +2926,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingHeadshotImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'headshot-input.jpg');
                         if (url) {
                           setHeadshotImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setHeadshotImage(null); // Reset if upload failed
                         }
@@ -3468,11 +3005,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingRestoreImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'restore-input.jpg');
                         if (url) {
                           setRestoreImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setRestoreImage(null); // Reset if upload failed
                         }
@@ -3547,11 +3083,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingGfpRestoreImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'gfp-restore-input.jpg');
                         if (url) {
                           setGfpRestoreImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setGfpRestoreImage(null); // Reset if upload failed
                         }
@@ -3627,11 +3162,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingHomeDesignerImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'home-designer-input.jpg');
                         if (url) {
                           setHomeDesignerImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setHomeDesignerImage(null); // Reset if upload failed
                         }
@@ -3676,7 +3210,7 @@ export default function AIImageEditor() {
                       reader.onload = async (event) => {
                         const base64Data = event.target.result;
                         setBackgroundRemovalImage(base64Data);
-                        enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                       };
                       reader.readAsDataURL(file);
                     }
@@ -3767,11 +3301,13 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingRemoveObjectImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'remove-object-input.jpg');
                         if (url) {
                           setRemoveObjectImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+                          // Scroll to mask editor after successful upload
+                          setTimeout(() => {
+                            scrollToMaskEditor();
+                          }, 100);
                         } else {
                           setRemoveObjectImage(null); // Reset if upload failed
                         }
@@ -3796,11 +3332,13 @@ export default function AIImageEditor() {
 
                 {/* Mask Editor - Only show when image is uploaded */}
                 {removeObjectImage && (
-                  <ObjectRemovalMaskEditor
-                    inputImage={removeObjectImage}
-                    onMaskCreated={handleMaskCreated}
-                    isLoading={isLoading}
-                  />
+                  <div ref={maskEditorRef}>
+                    <ObjectRemovalMaskEditor
+                      inputImage={removeObjectImage}
+                      onMaskCreated={handleMaskCreated}
+                      isLoading={isLoading}
+                    />
+                  </div>
                 )}
 
                 <Box sx={{ mt: 2 }}>
@@ -3845,7 +3383,7 @@ export default function AIImageEditor() {
             )}
 
             {/* ReImagine Specific Controls */}
-            {selectedModel === 'reimagine' && (
+            {selectedModel === 're-imagine' && (
               <>
                 {/* Image Upload Section */}
                 <ImageUploader
@@ -3863,11 +3401,10 @@ export default function AIImageEditor() {
 
                         // Immediately upload to R2
                         setUploadingReimagineImage(true);
-                        enqueueSnackbar('Uploading image to storage...', { variant: 'info' });
                         const url = await uploadImageToR2(base64Data, 'reimagine-input.jpg');
                         if (url) {
                           setReimagineImageUrl(url);
-                          enqueueSnackbar('Image uploaded successfully!', { variant: 'success' });
+
                         } else {
                           setReimagineImage(null); // Reset if upload failed
                         }
@@ -3948,7 +3485,6 @@ export default function AIImageEditor() {
                             const url = await uploadImageToR2(base64Data, 'combine-image-1.jpg');
                             if (url) {
                               setCombineImage1Url(url);
-                              enqueueSnackbar('First image uploaded successfully!', { variant: 'success' });
                             } else {
                               setCombineImage1(null); // Reset if upload failed
                             }
@@ -3993,7 +3529,6 @@ export default function AIImageEditor() {
                             const url = await uploadImageToR2(base64Data, 'combine-image-2.jpg');
                             if (url) {
                               setCombineImage2Url(url);
-                              enqueueSnackbar('Second image uploaded successfully!', { variant: 'success' });
                             } else {
                               setCombineImage2(null); // Reset if upload failed
                             }
@@ -4035,12 +3570,13 @@ export default function AIImageEditor() {
                 onPublish={handlePublishImage}
                 inputPrompt={inputPrompt}
               />
-              
+
 
             </Box>
 
             {/* Example Images Masonry */}
             <ExampleMasonry
+              ref={exampleMasonryRef}
               key={`${selectedModel}-${selectedGender}-${session?.user?.id || 'guest'}`}
               selectedModel={selectedModel}
               selectedGender={selectedGender}
@@ -4078,32 +3614,32 @@ export default function AIImageEditor() {
               selectedModel === 'hair-style' ? uploadedImage :
                 selectedModel === 'text-removal' ? textRemovalImage :
                   // selectedModel === 'cartoonify' ? cartoonifyImage :
-                    selectedModel === 'headshot' ? headshotImage :
-                      selectedModel === 'restore-image' ? restoreImage :
-                        selectedModel === 'gfp-restore' ? gfpRestoreImage :
-                          selectedModel === 'home-designer' ? homeDesignerImage :
-                            selectedModel === 'background-removal' ? backgroundRemovalImage :
-                              selectedModel === 'remove-object' ? removeObjectImage :
-                                selectedModel === 'reimagine' ? reimagineImage :
-                                  selectedModel === 'combine-image' ? combineImage1 :
-                                    selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
-                                      ? generatedImages.filter(img => img !== null)[0] : null
+                  selectedModel === 'headshot' ? headshotImage :
+                    selectedModel === 'restore-image' ? restoreImage :
+                      selectedModel === 'gfp-restore' ? gfpRestoreImage :
+                        selectedModel === 'home-designer' ? homeDesignerImage :
+                          selectedModel === 'background-removal' ? backgroundRemovalImage :
+                            selectedModel === 'remove-object' ? removeObjectImage :
+                              selectedModel === 're-imagine' ? reimagineImage :
+                                selectedModel === 'combine-image' ? combineImage1 :
+                                  selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                                    ? generatedImages.filter(img => img !== null)[0] : null
           }
           afterImage={
             previewType === 'example' ? exampleAfterImage :
               selectedModel === 'hair-style' ? generatedImages[0] :
                 selectedModel === 'text-removal' ? generatedImages[0] :
                   // selectedModel === 'cartoonify' ? generatedImages[0] :
-                    selectedModel === 'headshot' ? generatedImages[0] :
-                      selectedModel === 'restore-image' ? generatedImages[0] :
-                        selectedModel === 'gfp-restore' ? generatedImages[0] :
-                          selectedModel === 'home-designer' ? generatedImages[0] :
-                            selectedModel === 'background-removal' ? generatedImages[0] :
-                              selectedModel === 'remove-object' ? generatedImages[0] :
-                                selectedModel === 'reimagine' ? generatedImages[0] :
-                                  selectedModel === 'combine-image' ? generatedImages[0] :
-                                    selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
-                                      ? generatedImages.filter(img => img !== null)[1] : null
+                  selectedModel === 'headshot' ? generatedImages[0] :
+                    selectedModel === 'restore-image' ? generatedImages[0] :
+                      selectedModel === 'gfp-restore' ? generatedImages[0] :
+                        selectedModel === 'home-designer' ? generatedImages[0] :
+                          selectedModel === 'background-removal' ? generatedImages[0] :
+                            selectedModel === 'remove-object' ? generatedImages[0] :
+                              selectedModel === 're-imagine' ? generatedImages[0] :
+                                selectedModel === 'combine-image' ? generatedImages[0] :
+                                  selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                                    ? generatedImages.filter(img => img !== null)[1] : null
           }
           beforeLabel={previewType === 'example' ? exampleBeforeLabel : getComparisonLabels().before}
           afterLabel={previewType === 'example' ? exampleAfterLabel : getComparisonLabels().after}

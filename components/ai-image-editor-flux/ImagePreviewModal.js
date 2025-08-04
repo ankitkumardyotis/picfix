@@ -288,8 +288,6 @@ const ImagePreviewModal = ({
     if (imageInfo) {
       return {
         ...imageInfo,
-        // Use provided title or fallback to default
-        // title: imageInfo.title || `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
         model: imageInfo.model ? getModelDisplayName(imageInfo.model) : getModelDisplayName(selectedModel),
         // Format created date properly if it exists
         createdAt: imageInfo.createdAt ? imageInfo.createdAt : null
@@ -306,6 +304,7 @@ const ImagePreviewModal = ({
   };
 
   const info = formatImageInfo();
+  console.log("info", info);
 
   if (!currentImage) return null;
 
@@ -685,7 +684,7 @@ const ImagePreviewModal = ({
                     borderRadius: 1,
                     fontSize: '0.8rem'
                   }}>
-                    "{info.prompt}"
+                    "{info.prompt.replace(".jpg", "").replace(".png", "")}"
                   </Typography>
                 </Box>
               )}
