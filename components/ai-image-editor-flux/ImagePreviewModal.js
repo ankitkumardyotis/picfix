@@ -194,7 +194,6 @@ const ImagePreviewModal = ({
       'generate-image': 'AI Image Generator',
       'hair-style': 'Hair Style Changer',
       'headshot': 'Professional Headshot',
-      'cartoonify': 'Cartoonify',
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
@@ -244,9 +243,6 @@ const ImagePreviewModal = ({
         configParts.push('Text and Watermark Removal');
         break;
 
-      case 'cartoonify':
-        configParts.push('Cartoon Style Transformation');
-        break;
 
       case 'restore-image':
         configParts.push('Image Restoration and Enhancement');
@@ -620,9 +616,9 @@ const ImagePreviewModal = ({
         >
           {/* Header */}
           <Box sx={{ p: 3, pb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+            {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
               {info.title}
-            </Typography>
+            </Typography> */}
             <Chip 
               label={info.model} 
               size="small" 

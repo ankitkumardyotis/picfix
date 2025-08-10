@@ -40,14 +40,7 @@ const getModelInfo = (selectedModel) => {
       color: '#667eea',
       estimatedTime: '15-30 seconds'
     },
-    'cartoonify': {
-      icon: <AutoAwesomeIcon />,
-      title: 'Cartoonifying Image',
-      description: 'Converting to cartoon style...',
-      color: '#667eea',
-      estimatedTime: '20-35 seconds'
-    },
-    'headshot': {
+     'headshot': {
       icon: <PortraitIcon />,
       title: 'Creating Headshot',
       description: 'Generating professional headshot...',
@@ -91,8 +84,8 @@ const getModelInfo = (selectedModel) => {
     },
     'reimagine': {
       icon: <PsychologyIcon />,
-      title: 'Creating Impossible Scenario',
-      description: 'Generating impossible scenario...',
+      title: 'ReImagine Scenarios',
+      description: 'Generating ReImagine Scenarios...',
       color: '#667eea',
       estimatedTime: '25-45 seconds'
     },
@@ -108,12 +101,12 @@ const getModelInfo = (selectedModel) => {
   return modelConfigs[selectedModel] || modelConfigs['generate-image'];
 };
 
-const EnhancedLoader = ({ 
-  selectedModel, 
-  numOutputs = 1, 
+const EnhancedLoader = ({
+  selectedModel,
+  numOutputs = 1,
   size = 'medium',
   showProgress = false,
-  showDetails = false 
+  showDetails = false
 }) => {
   const theme = useTheme();
   const modelInfo = getModelInfo(selectedModel);

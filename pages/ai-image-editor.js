@@ -165,7 +165,7 @@ export default function AIImageEditor() {
   const { enqueueSnackbar } = useSnackbar();
   const context = useContext(AppContext);
   const router = useRouter();
-  const isMobile = useMediaQuery('(max-width: 600px)');
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedModel, setSelectedModel] = useState('generate-image');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [inputPrompt, setInputPrompt] = useState('');
@@ -173,7 +173,6 @@ export default function AIImageEditor() {
   const [selectedStyles, setSelectedStyles] = useState([]);
   const [numOutputs, setNumOutputs] = useState(1);
   const [generatedImages, setGeneratedImages] = useState(Array(2).fill(null));
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -281,6 +280,55 @@ export default function AIImageEditor() {
 
   // Authentication and state management
   const { data: session, status } = useSession();
+
+  // Fetch user's credit points when component mounts
+  useEffect(() => {
+    const fetchUserCredits = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/getPlan?userId=${session.user.id}`);
+          if (response.ok) {
+            const { plan } = await response.json();
+            if (plan && plan.remainingPoints !== undefined) {
+              context.setCreditPoints(plan.remainingPoints);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user credits:", error);
+        }
+      }
+    };
+
+    fetchUserCredits();
+  }, [session, context]);
+
+  // Periodic credit refresh every 5 minutes
+  useEffect(() => {
+    if (session?.user?.id) {
+      const interval = setInterval(() => {
+        refreshUserCredits();
+      }, 5 * 60 * 1000); // 5 minutes
+
+      return () => clearInterval(interval);
+    }
+  }, [session]);
+
+  // Function to refresh user credits
+  const refreshUserCredits = async () => {
+    if (session?.user?.id) {
+      try {
+        const response = await fetch(`/api/getPlan?userId=${session.user.id}`);
+        if (response.ok) {
+          const { plan } = await response.json();
+          if (plan && plan.remainingPoints !== undefined) {
+            context.setCreditPoints(plan.remainingPoints);
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing user credits:", error);
+      }
+    }
+  };
 
   // State restoration after login
   useEffect(() => {
@@ -456,7 +504,7 @@ export default function AIImageEditor() {
         setAspectRatio('');
         setNumOutputs(1);
         setGeneratedImages([null]);
-      } else if (['text-removal', 'cartoonify', 'headshot', 'reimagine'].includes(model)) {
+      } else if (['text-removal', 'headshot', 'reimagine'].includes(model)) {
         setAspectRatio('1:1');
         setNumOutputs(1);
         setGeneratedImages([null]);
@@ -482,11 +530,6 @@ export default function AIImageEditor() {
         setUploadingTextRemovalImage(false);
       }
 
-      if (model !== 'cartoonify') {
-        setCartoonifyImage(null);
-        setCartoonifyImageUrl(null);
-        setUploadingCartoonifyImage(false);
-      }
 
       if (model !== 'headshot') {
         setHeadshotImage(null);
@@ -589,7 +632,7 @@ export default function AIImageEditor() {
           block: 'start',
         });
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
@@ -612,6 +655,12 @@ export default function AIImageEditor() {
 
     }
 
+    if (newModel !== 'generate-image') {
+      setGeneratedImages([null]);
+      setNumOutputs(1);
+      setAspectRatio('1:1');
+      setInputPrompt('');
+    }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
       setTextRemovalImage(null);
@@ -619,12 +668,7 @@ export default function AIImageEditor() {
       setUploadingTextRemovalImage(false);
     }
 
-    // Reset cartoonify specific states when switching models
-    if (newModel !== 'cartoonify') {
-      setCartoonifyImage(null);
-      setCartoonifyImageUrl(null);
-      setUploadingCartoonifyImage(false);
-    }
+
 
     // Reset headshot specific states when switching models
     if (newModel !== 'headshot') {
@@ -698,14 +742,14 @@ export default function AIImageEditor() {
       setAspectRatio('match_input_image');
     } else if (newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 'background-removal' || newModel === 'remove-object') {
       setAspectRatio('');
-    } else if (newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 're-imagine') {
+    } else if (newModel === 'text-removal' || newModel === 'headshot' || newModel === 're-imagine') {
       setAspectRatio('1:1');
     } else {
       setAspectRatio('1:1');
     }
 
     // Set number of outputs based on model
-    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'cartoonify' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine') {
+    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine') {
       console.log(`Setting model ${newModel} to 1 output`);
       setNumOutputs(1);
       setGeneratedImages([null]);
@@ -817,6 +861,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating images', { variant: 'error' });
       console.error('Error generating images:', err);
@@ -884,6 +931,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error changing hair style', { variant: 'error' });
       console.error('Error changing hair style:', err);
@@ -956,6 +1006,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error combining images', { variant: 'error' });
       console.error('Error combining images:', err);
@@ -1033,6 +1086,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error removing text from image', { variant: 'error' });
       console.error('Error removing text from image:', err);
@@ -1041,82 +1097,6 @@ export default function AIImageEditor() {
     }
   };
 
-  const generateCartoonifyImage = async () => {
-    if (!cartoonifyImageUrl) {
-      enqueueSnackbar('Please upload an image first', { variant: 'warning' });
-      return;
-    }
-
-    // Check authentication before proceeding
-    if (!checkAuthBeforeAction()) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    setNumOutputs(1); // Ensure only 1 output for cartoonify
-    setGeneratedImages([null]); // Cartoonify model returns only 1 image
-
-    // Smooth scroll to image generation section
-    scrollToImageGeneration();
-
-    try {
-      enqueueSnackbar('Cartoonifying image...', { variant: 'info' });
-
-      // Send the stored URL to Replicate
-      const response = await fetch('/api/fluxApp/generateFluxImages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          config: {
-            cartoonify: true,
-            input_image: cartoonifyImageUrl,
-            aspect_ratio: aspectRatio,
-            output_format: 'png',
-            safety_tolerance: 2
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to cartoonify image');
-      }
-
-      const data = await response.json();
-
-      // Handle new response format with historyId
-      if (data && data.imageUrl) {
-        // New format: { imageUrl, historyId }
-        setGeneratedImages([data.imageUrl]);
-        console.log('Cartoonify image stored in history with ID:', data.historyId);
-      } else {
-        // Fallback to old format - Make sure we have a valid image URL or data URL
-        if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
-          setGeneratedImages([data]); // Cartoonify model returns single image
-        } else if (Array.isArray(data) && data.length > 0) {
-          setGeneratedImages([data[0]]); // Take the first item if it's an array
-        } else {
-          console.error("Unexpected cartoonify response format:", data);
-          enqueueSnackbar('Error processing cartoonified image', { variant: 'error' });
-          setGeneratedImages([null]);
-        }
-      }
-
-      console.log("Cartoonify response data:", data);
-      enqueueSnackbar('Image cartoonified successfully!', { variant: 'success' });
-
-      // Refresh history to show the new image
-      refreshHistoryAfterGeneration();
-    } catch (err) {
-      enqueueSnackbar(err.message || 'Error cartoonifying image', { variant: 'error' });
-      console.error('Error cartoonifying image:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const generateHeadshotImage = async () => {
     if (!headshotImageUrl) {
@@ -1189,6 +1169,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating headshot', { variant: 'error' });
       console.error('Error generating headshot:', err);
@@ -1266,6 +1249,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error restoring image', { variant: 'error' });
       console.error('Error restoring image:', err);
@@ -1340,6 +1326,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error restoring image with  ', { variant: 'error' });
       console.error('Error restoring image with  :', err);
@@ -1421,6 +1410,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating home design', { variant: 'error' });
       console.error('Error generating home design:', err);
@@ -1470,6 +1462,9 @@ export default function AIImageEditor() {
 
     // Refresh history to show the new image
     refreshHistoryAfterGeneration();
+    
+    // Refresh user credits to show updated balance
+    refreshUserCredits();
   };
 
   const handleBackgroundRemovalError = (error) => {
@@ -1560,6 +1555,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error removing objects', { variant: 'error' });
       console.error('Error removing objects:', err);
@@ -1594,7 +1592,7 @@ export default function AIImageEditor() {
     scrollToImageGeneration();
 
     try {
-      enqueueSnackbar('Generating impossible scenario...', { variant: 'info' });
+      enqueueSnackbar('Generating ReImagine Scenarios...', { variant: 'info' });
 
       // Send the stored URL to Replicate
       const response = await fetch('/api/fluxApp/generateFluxImages', {
@@ -1645,6 +1643,9 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
+      
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating impossible scenario', { variant: 'error' });
       console.error('Error generating impossible scenario:', err);
@@ -1732,16 +1733,16 @@ export default function AIImageEditor() {
   };
 
   // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (mobileMenuOpen && !event.target.closest('.MuiBox-root')) {
-        setMobileMenuOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (mobileMenuOpen && !event.target.closest('.MuiBox-root')) {
+  //       setMobileMenuOpen(false);
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [mobileMenuOpen]);
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => document.removeEventListener('mousedown', handleClickOutside);
+  // }, [mobileMenuOpen]);
 
   // Log when generatedImages changes
   useEffect(() => {
@@ -1893,9 +1894,6 @@ export default function AIImageEditor() {
         configParts.push('Text and watermark removal');
         break;
 
-      // case 'cartoonify':
-      //   configParts.push('Cartoon style transformation');
-      //   break;
 
       case 'restore-image':
         configParts.push('Image restoration and enhancement');
@@ -2170,9 +2168,7 @@ export default function AIImageEditor() {
     if (selectedModel === 'text-removal' && textRemovalImage && generatedImages[0]) {
       return true;
     }
-    // if (selectedModel === 'cartoonify' && cartoonifyImage && generatedImages[0]) {
-    //   return true;
-    // }
+
     if (selectedModel === 'headshot' && headshotImage && generatedImages[0]) {
       return true;
     }
@@ -2206,8 +2202,6 @@ export default function AIImageEditor() {
       return { before: 'Original', after: 'New Hair Style' };
     } else if (selectedModel === 'text-removal') {
       return { before: 'With Text', after: 'Text Removed' };
-      // } else if (selectedModel === 'cartoonify') {
-      //   return { before: 'Original', after: 'Cartoonified' };
     } else if (selectedModel === 'headshot') {
       return { before: 'Original', after: 'Professional Headshot' };
     } else if (selectedModel === 'restore-image') {
@@ -2274,9 +2268,6 @@ export default function AIImageEditor() {
 
       case 'text-removal':
         return 'Text and watermark removal';
-
-      // case 'cartoonify':
-      //   return 'Cartoon style transformation';
 
       case 'restore-image':
         return 'Image restoration and enhancement';
@@ -2383,13 +2374,13 @@ export default function AIImageEditor() {
       </Head>
 
       <StyledPaper elevation={0}>
-        <MenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        {/* <MenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-        </MenuButton>
+        </MenuButton> */}
 
         <Box sx={{ display: 'flex', height: '100%', width: '100%', position: 'relative', mt: isMobile ? '4rem' : '0px' }}>
           {/* Overlay for mobile */}
-          {mobileMenuOpen && (
+          {/* {mobileMenuOpen && (
             <Box
               sx={{
                 position: 'absolute',
@@ -2403,12 +2394,18 @@ export default function AIImageEditor() {
               }}
               onClick={() => setMobileMenuOpen(false)}
             />
-          )}
+          )} */}
 
-          <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+          {!isMobile && <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+          }
+
           {/* Main Editor Area */}
           <MainEditor>
             {/* Hair Style Scrollable Strip for Hair Style Model */}
+            {isMobile && <Box sx={{}}>
+              <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+            </Box>
+            }
             {selectedModel === 'hair-style' ? (
               <Box>
                 <Box
@@ -2514,8 +2511,8 @@ export default function AIImageEditor() {
                       ))}
                     </Box>
                   </Box>
-                ) : currentConfig.type === 'text-removal' || currentConfig.type === 'cartoonify' || currentConfig.type === 'headshot' || currentConfig.type === 'restore-image' || currentConfig.type === 'reimagine' ? (
-                  // Don't show anything for text-removal, cartoonify, headshot, restore-image, or reimagine type
+                ) : currentConfig.type === 'text-removal' || currentConfig.type === 'headshot' || currentConfig.type === 'restore-image' || currentConfig.type === 'reimagine' ? (
+                  // Don't show anything for text-removal, headshot, restore-image, or reimagine type
                   null
                 ) : (
                   <Box>
@@ -2569,7 +2566,7 @@ export default function AIImageEditor() {
             )}
 
             {/* Input Section - Only show for models that need prompts */}
-            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
+            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
               <Box ref={inputSectionRef} sx={{ position: 'relative' }}>
                 <StyledTextField
                   fullWidth
@@ -2828,84 +2825,6 @@ export default function AIImageEditor() {
               </>
             )}
 
-            {/* Cartoonify Specific Controls */}
-            {selectedModel === 'cartoonify' && (
-              <>
-                {/* Image Upload Section */}
-                <ImageUploader
-                  title="Upload Image to Cartoonify"
-                  uploadedImage={cartoonifyImage}
-                  uploadingImage={uploadingCartoonifyImage}
-                  placeholderText="Click to upload an image to cartoonify"
-                  onImageUpload={async (e) => {
-                    const file = e.target.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                      const reader = new FileReader();
-                      reader.onload = async (event) => {
-                        const base64Data = event.target.result;
-                        setCartoonifyImage(base64Data);
-
-                        // Immediately upload to R2
-                        setUploadingCartoonifyImage(true);
-                        const url = await uploadImageToR2(base64Data, 'cartoonify-input.jpg');
-                        if (url) {
-                          setCartoonifyImageUrl(url);
-
-                        } else {
-                          setCartoonifyImage(null); // Reset if upload failed
-                        }
-                        setUploadingCartoonifyImage(false);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  onImageRemove={() => {
-                    setCartoonifyImage(null);
-                    setCartoonifyImageUrl(null);
-                  }}
-                  isDragging={isDragging}
-                  isLoading={isLoading}
-                  error={error}
-                  handleDragOver={handleDragOver}
-                  handleDragLeave={handleDragLeave}
-                  handleDrop={handleDrop}
-                />
-
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="textSecondary">
-                    This tool will transform your photo into a cartoon-style image.
-                  </Typography>
-                </Box>
-
-                {/* Generate Button for Cartoonify */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    onClick={generateCartoonifyImage}
-                    disabled={!cartoonifyImageUrl || isLoading}
-                    sx={{
-                      py: .8,
-                      px: 2,
-                      borderRadius: 3,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      fontSize: '14px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                      },
-                      '&:disabled': {
-                        background: '#e0e0e0',
-                        color: '#9e9e9e'
-                      }
-                    }}
-                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
-                  >
-                    {isLoading ? 'Cartoonifying...' : 'Cartoonify Image'}
-                  </Button>
-                </Box>
-              </>
-            )}
 
             {/* Headshot Specific Controls */}
             {selectedModel === 'headshot' && (
@@ -3387,10 +3306,10 @@ export default function AIImageEditor() {
               <>
                 {/* Image Upload Section */}
                 <ImageUploader
-                  title="Upload Image for Impossible Scenario"
+                  title="Upload Image for ReImagine"
                   uploadedImage={reimagineImage}
                   uploadingImage={uploadingReimagineImage}
-                  placeholderText="Click to upload an image for impossible scenario"
+                  placeholderText="Click to upload an image for ReImagine"
                   onImageUpload={async (e) => {
                     const file = e.target.files[0];
                     if (file && file.type.startsWith('image/')) {
@@ -3427,7 +3346,7 @@ export default function AIImageEditor() {
 
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="textSecondary">
-                    This tool will place you in an impossible scenario that would be difficult or impossible to achieve in real life.
+                    This tool will place you in an ReImagine Scenarios that would be difficult or impossible to achieve in real life.
                   </Typography>
                 </Box>
 
@@ -3452,7 +3371,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Generating Impossible Scenario...' : 'Generate Impossible Scenario'}
+                    {isLoading ? 'ReImagining...' : 'ReImagine Scenarios'}
                   </Button>
                 </Box>
               </>
@@ -3603,8 +3522,8 @@ export default function AIImageEditor() {
                 modelConfig: configDisplay.type === 'config' ? configDisplay.content : null,
                 model: selectedModel,
                 resolution: 'High Quality',
-                format: previewImage?.startsWith('data:') ? 'Base64' : 'JPEG',
-                createdAt: new Date().toISOString()
+                format: 'JPEG',
+                type: 'generated'
               };
             })()
           }
@@ -3613,7 +3532,6 @@ export default function AIImageEditor() {
             previewType === 'example' ? exampleBeforeImage :
               selectedModel === 'hair-style' ? uploadedImage :
                 selectedModel === 'text-removal' ? textRemovalImage :
-                  // selectedModel === 'cartoonify' ? cartoonifyImage :
                   selectedModel === 'headshot' ? headshotImage :
                     selectedModel === 'restore-image' ? restoreImage :
                       selectedModel === 'gfp-restore' ? gfpRestoreImage :
@@ -3629,7 +3547,6 @@ export default function AIImageEditor() {
             previewType === 'example' ? exampleAfterImage :
               selectedModel === 'hair-style' ? generatedImages[0] :
                 selectedModel === 'text-removal' ? generatedImages[0] :
-                  // selectedModel === 'cartoonify' ? generatedImages[0] :
                   selectedModel === 'headshot' ? generatedImages[0] :
                     selectedModel === 'restore-image' ? generatedImages[0] :
                       selectedModel === 'gfp-restore' ? generatedImages[0] :

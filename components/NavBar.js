@@ -40,12 +40,6 @@ const aiModels = [
         description: 'Create professional headshots'
     },
     {
-        key: 'cartoonify',
-        name: 'Cartoonify',
-        icon: <FaceRetouchingNaturalIcon sx={{ fontSize: 18 }} />,
-        description: 'Transform photos into cartoons'
-    },
-    {
         key: 'restore-image',
         name: 'Image Restoration',
         icon: <RestoreIcon sx={{ fontSize: 18 }} />,
@@ -61,7 +55,7 @@ const aiModels = [
         key: 'reimagine',
         name: 'ReImagine Scenarios',
         icon: <PsychologyIcon sx={{ fontSize: 18 }} />,
-        description: 'Create impossible scenarios'
+        description: 'Create ReImagine Scenarios'  
     },
     {
         key: 'combine-image',

@@ -2,17 +2,19 @@ import React from 'react'
 import MuiTable from './MuiTable'
 import TabNavigation from '../mobileTabNavigation/TabNavigation'
 import Image from 'next/image'
+import Link from 'next/link'
+import { Button } from '@mui/material'
 
 function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches }) {
     if (matches) return (
-        <div className="dashboard-desktop" style={{ 
-            flex: 1, 
+        <div className="dashboard-desktop" style={{
+            flex: 1,
             backgroundColor: '#f8fafc',
             padding: '2rem',
             minHeight: '100%'
         }}>
             {/* Welcome Section */}
-            <div className="welcome-section" style={{ 
+            <div className="welcome-section" style={{
                 marginBottom: '2rem',
                 padding: '2rem',
                 background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.1) 0%, rgba(215, 109, 119, 0.1) 50%, rgba(255, 175, 123, 0.1) 100%)',
@@ -20,36 +22,65 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                 border: '1px solid rgba(58, 28, 113, 0.2)',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}>
-                <h1 style={{ 
-                    fontSize: '2.5rem', 
-                    fontWeight: '600',
-                    marginBottom: '0.5rem',
-                    background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    fontFamily: 'Roboto, sans-serif'
-                }}>
-                    Hello, {session?.user.name} 👋
-                </h1>
-                <p style={{ 
-                    fontSize: '1.1rem', 
-                    color: '#000',
-                    fontWeight: '400',
-                    fontFamily: 'Roboto, sans-serif'
-                }}>
-                    Welcome back! 
-                </p>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center',}}>
+                    <div>
+                        <h1 style={{
+                            fontSize: '2.5rem',
+                            fontWeight: '600',
+                            marginBottom: '0.5rem',
+                            background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            Hello, {session?.user.name} 👋
+                        </h1>
+                        <p style={{
+                            fontSize: '1.1rem',
+                            color: '#000',
+                            fontWeight: '400',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            Welcome back!
+                        </p>
+                    </div>
+                    <div>
+                        {/* Upgrade Plan Button */}
+                        <Link href="/price" passHref legacyBehavior>
+                            <Button
+                                variant="contained"
+                                sx={{
+                                    background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
+                                    color: '#fff',
+                                    fontWeight: 600,
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    boxShadow: '0 2px 8px rgba(58,28,113,0.08)',
+                                    px: 3,
+                                    py: 1.2,
+                                    fontSize: '1rem',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+                                        boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
+                                    },
+                                }}
+                            >
+                                Upgrade Plan ↗
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
             </div>
 
             {/* Credits Section */}
-            <div className="credits-section" style={{ 
-                display: 'flex', 
+            <div className="credits-section" style={{
+                display: 'flex',
                 gap: '2rem',
                 marginBottom: '2rem'
             }}>
-                <div className="credits-card" style={{ 
-                    flex: 1, 
+                <div className="credits-card" style={{
+                    flex: 1,
                     background: 'white',
                     padding: '2rem',
                     borderRadius: '20px',
@@ -66,8 +97,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         height: '4px',
                         background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)'
                     }}></div>
-                    <h3 style={{ 
-                        fontSize: '1.25rem', 
+                    <h3 style={{
+                        fontSize: '1.25rem',
                         fontWeight: '600',
                         color: '#000',
                         marginBottom: '1rem',
@@ -75,14 +106,14 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     }}>
                         Credits Remaining
                     </h3>
-                    <div style={{ 
-                        display: 'flex', 
+                    <div style={{
+                        display: 'flex',
                         alignItems: 'baseline',
                         gap: '0.5rem',
                         marginBottom: '1rem'
                     }}>
-                        <span style={{ 
-                            fontSize: '3.5rem', 
+                        <span style={{
+                            fontSize: '3.5rem',
                             fontWeight: '600',
                             color: userPlan?.remainingPoints > 10 ? '#3a1c71' : '#ef4444',
                             lineHeight: '1',
@@ -90,7 +121,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         }}>
                             {userPlan?.remainingPoints}
                         </span>
-                        <span style={{ 
+                        <span style={{
                             fontSize: '1.5rem',
                             color: '#000',
                             fontWeight: '400',
@@ -99,7 +130,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             credits
                         </span>
                     </div>
-                    <p style={{ 
+                    <p style={{
                         fontSize: '0.875rem',
                         color: '#000',
                         fontWeight: '400',
@@ -109,8 +140,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     </p>
                 </div>
 
-                <div className="stats-card" style={{ 
-                    flex: 1.5, 
+                <div className="stats-card" style={{
+                    flex: 1.5,
                     background: 'white',
                     padding: '2rem',
                     borderRadius: '20px',
@@ -127,8 +158,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         height: '4px',
                         background: 'linear-gradient(135deg, #ffaf7b 0%, #d76d77 50%, #3a1c71 100%)'
                     }}></div>
-                    <h3 style={{ 
-                        fontSize: '1.25rem', 
+                    <h3 style={{
+                        fontSize: '1.25rem',
                         fontWeight: '600',
                         color: '#000',
                         marginBottom: '1rem',
@@ -136,13 +167,13 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     }}>
                         Quick Stats
                     </h3>
-                    <div style={{ 
+                    <div style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
                         gap: '1rem'
                     }}>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ 
+                            <div style={{
                                 fontSize: '2rem',
                                 fontWeight: '600',
                                 color: '#3a1c71',
@@ -151,7 +182,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             }}>
                                 {userHistory.length}
                             </div>
-                            <div style={{ 
+                            <div style={{
                                 fontSize: '0.875rem',
                                 color: '#000',
                                 fontWeight: '400',
@@ -161,16 +192,16 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             </div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ 
+                            <div style={{
                                 fontSize: '2rem',
                                 fontWeight: '600',
                                 color: '#d76d77',
                                 marginBottom: '0.25rem',
                                 fontFamily: 'Roboto, sans-serif'
                             }}>
-                                {userPlan?.totalPoints || 0}
+                                {userPlan && userPlan.creditPoints - userPlan.remainingPoints}
                             </div>
-                            <div style={{ 
+                            <div style={{
                                 fontSize: '0.875rem',
                                 color: '#000',
                                 fontWeight: '400',
@@ -185,7 +216,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
 
             {/* Usage History Section */}
             {userHistory.length > 0 && (
-                <div className="history-section" style={{ 
+                <div className="history-section" style={{
                     background: 'white',
                     borderRadius: '20px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
@@ -198,8 +229,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         borderBottom: '1px solid rgba(58, 28, 113, 0.1)',
                         background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.05) 0%, rgba(215, 109, 119, 0.05) 50%, rgba(255, 175, 123, 0.05) 100%)'
                     }}>
-                        <h3 style={{ 
-                            fontSize: '1.25rem', 
+                        <h3 style={{
+                            fontSize: '1.25rem',
                             fontWeight: '600',
                             color: '#000',
                             margin: 0,
@@ -217,21 +248,21 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
     )
 
     if (!matches) return (
-        <div style={{ 
-            minHeight: '100vh', 
+        <div style={{
+            minHeight: '100vh',
             background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
             paddingBottom: '3em'
         }}>
-            <div style={{ 
-                minHeight: '100vh', 
-                marginTop: '3.3em', 
+            <div style={{
+                minHeight: '100vh',
+                marginTop: '3.3em',
                 fontFamily: 'Roboto, sans-serif',
                 display: 'flex',
                 flexDirection: 'column',
                 padding: '1rem'
             }}>
                 {/* Mobile Welcome Section */}
-                <div style={{ 
+                <div style={{
                     background: 'white',
                     borderRadius: '20px',
                     padding: '1.5rem',
@@ -239,8 +270,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     border: '1px solid rgba(58, 28, 113, 0.1)'
                 }}>
-                    <div style={{ 
-                        display: 'flex', 
+                    <div style={{
+                        display: 'flex',
                         alignItems: 'center',
                         gap: '1rem',
                         marginBottom: '1rem'
@@ -248,15 +279,15 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         <div style={{
                             position: 'relative'
                         }}>
-                            <Image 
-                                width={60} 
-                                height={60} 
-                                style={{ 
-                                    borderRadius: "50%", 
+                            <Image
+                                width={60}
+                                height={60}
+                                style={{
+                                    borderRadius: "50%",
                                     border: "3px solid #3a1c71",
                                     objectFit: 'cover'
-                                }} 
-                                src={session?.user.image ? session?.user.image : '/assets/user.png'} 
+                                }}
+                                src={session?.user.image ? session?.user.image : '/assets/user.png'}
                                 alt="Profile"
                             />
                             <div style={{
@@ -270,33 +301,36 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                                 border: '2px solid white'
                             }}></div>
                         </div>
-                        <div>
-                            <h2 style={{ 
-                                fontSize: '1.5rem', 
-                                fontWeight: '600',
-                                marginBottom: '0.25rem',
-                                background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text',
-                                fontFamily: 'Roboto, sans-serif'
-                            }}>
-                                Hello, {session?.user.name}
-                            </h2>
-                            <p style={{ 
-                                fontSize: '0.875rem',
-                                color: '#000',
-                                fontWeight: '400',
-                                fontFamily: 'Roboto, sans-serif'
-                            }}>
-                                Welcome back! 👋
-                            </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                            <div>
+                                <h2 style={{
+                                    fontSize: '1.5rem',
+                                    fontWeight: '600',
+                                    marginBottom: '0.25rem',
+                                    background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    fontFamily: 'Roboto, sans-serif'
+                                }}>
+                                    Hello, {session?.user.name}
+                                </h2>
+                                <p style={{
+                                    fontSize: '0.875rem',
+                                    color: '#000',
+                                    fontWeight: '400',
+                                    fontFamily: 'Roboto, sans-serif'
+                                }}>
+                                    Welcome back! 👋
+                                </p>
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
                 {/* Mobile Credits Card */}
-                <div style={{ 
+                <div style={{
                     background: 'white',
                     borderRadius: '20px',
                     padding: '1.5rem',
@@ -314,7 +348,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         height: '4px',
                         background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)'
                     }}></div>
-                    <h3 style={{ 
+                    <h3 style={{
                         fontSize: '1.125rem',
                         fontWeight: '600',
                         color: '#000',
@@ -323,14 +357,14 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     }}>
                         Available Credits
                     </h3>
-                    <div style={{ 
-                        display: 'flex', 
+                    <div style={{
+                        display: 'flex',
                         alignItems: 'baseline',
                         gap: '0.5rem',
                         marginBottom: '1rem'
                     }}>
-                        <span style={{ 
-                            fontSize: '3rem', 
+                        <span style={{
+                            fontSize: '3rem',
                             fontWeight: '600',
                             color: userPlan?.remainingPoints > 10 ? '#3a1c71' : '#ef4444',
                             lineHeight: '1',
@@ -338,7 +372,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         }}>
                             {userPlan?.remainingPoints}
                         </span>
-                        <span style={{ 
+                        <span style={{
                             fontSize: '1.25rem',
                             color: '#000',
                             fontWeight: '400',
@@ -347,7 +381,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             credits
                         </span>
                     </div>
-                    <p style={{ 
+                    <p style={{
                         fontSize: '0.875rem',
                         color: '#000',
                         fontWeight: '400',
@@ -359,7 +393,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
 
                 {/* Mobile Usage History */}
                 {userHistory.length > 0 && (
-                    <div style={{ 
+                    <div style={{
                         background: 'white',
                         borderRadius: '20px',
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
@@ -372,8 +406,8 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             borderBottom: '1px solid rgba(58, 28, 113, 0.1)',
                             background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.05) 0%, rgba(215, 109, 119, 0.05) 50%, rgba(255, 175, 123, 0.05) 100%)'
                         }}>
-                            <h3 style={{ 
-                                fontSize: '1.125rem', 
+                            <h3 style={{
+                                fontSize: '1.125rem',
                                 fontWeight: '600',
                                 color: '#000',
                                 margin: 0,

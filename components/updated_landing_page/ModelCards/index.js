@@ -41,8 +41,8 @@ const aiModels = [
     },
     {
         id: 6,
-        title: "Re-imagine Scenario",
-        description: "Re-imagine yourself in a new scenario",
+        title: "Re-imagine",
+        description: "Re-imagine yourself in a new",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
         image: "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg"
@@ -50,19 +50,12 @@ const aiModels = [
     {
         id: 7,
         title: "Combine Images",
-        description: "Place the person in natural way to the hills.",
+        description: "Add both person in one frame where both should look natural.",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://picfixcdn.com/combine-image/1752569891934-place-the-person-in-natural-wa.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/combine-image/add-both-person-in-one-frame-where-both-should-loo-bstca2.jpg"
     },
-    {
-        id: 8,
-        title: "Image to Cartoon",
-        description: "Convert images to cartoon style like Disney or Pixar.",
-        icon: "📝",
-        gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://picfixcdn.com/cartoonify/1752569996040-cartoonify.jpg"
-    },
+
 
     {
         id: 9,

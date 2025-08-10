@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, styled, alpha, FormControl, InputLabel, Select, MenuItem, Typography, Button, IconButton, CircularProgress, useTheme } from '@mui/material';
+import { Box, styled, alpha, FormControl, InputLabel, Select, MenuItem, Typography, Button, IconButton, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
 import modelConfigurations from '@/constant/ModelConfigurations';
@@ -7,32 +7,31 @@ import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-materi
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SplitButton from '../SplitButton';
 
-function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelChange, selectedModel, setSelectedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
+function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, setSelectedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
 
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
 
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
     const SidePanel = styled(Box)(({ theme }) => ({
-        width: '250px',
-        background: alpha(theme.palette.background.paper, 0.95),
+        width: isMobile ? '100%' : '250px',
+        background: isMobile ? 'transparent' : alpha(theme.palette.background.default, 0.5),
         backdropFilter: 'blur(10px)',
-        borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        borderRight: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         padding: theme.spacing(1, 3),
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing(2),
         overflow: 'auto',
-        boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
-        [theme.breakpoints.down('md')]: {
-            width: '100%',
-            position: 'absolute',
-            zIndex: 1000,
-            transform: 'translateX(-100%)',
-            transition: 'transform 0.3s ease',
-            '&.open': {
-                transform: 'translateX(0)',
-            },
-        },
+        boxShadow: isMobile ? 'none' : '4px 0 24px rgba(0,0,0,0.08)',
+        // [theme.breakpoints.down('md')]: {
+        //     width: '100%',
+        //     position: 'absolute',
+        //     zIndex: 1000,
+        //     transform: 'translateX(-100%)',
+        //     transition: 'transform 0.3s ease',
+        // },
     }));
 
 
@@ -81,15 +80,14 @@ function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelCha
 
     return (
 
-        < SidePanel className={mobileMenuOpen ? 'open' : ''} >
+        < SidePanel >
 
             {/* Logo */}
-            < Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }
-            }>
+            {!isMobile && < Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
                 <Link href="/">
                     <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
                 </Link>
-            </Box >
+            </Box >}
             {/* Model Selection */}
             < FormControl fullWidth variant="outlined" >
                 <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>Select Model</InputLabel>
@@ -385,7 +383,7 @@ function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelCha
             }
 
             {
-                selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
+                selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
                     <Box sx={{ mt: -1 }}>
                         <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
                             Number of Outputs
@@ -464,9 +462,9 @@ function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelCha
             }
 
             {/* Additional Settings */}
-            <Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+            {!isMobile && < Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
                 <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
-                    Credits remaining: {context.creditPoints || 0}
+                    Credits remaining: {context.creditPoints}
                 </Typography>
 
 
@@ -500,7 +498,7 @@ function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelCha
 
                 <SplitButton />
 
-            </Box>
+            </Box>}
             {/*Button with dropdown to navigate from editor to dashboard */}
             {/* <Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
                 <Button 
@@ -524,3 +522,4 @@ function SidePanel({ mobileMenuOpen, aspectRatio, setAspectRatio, handleModelCha
 }
 
 export default SidePanel
+

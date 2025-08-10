@@ -219,22 +219,6 @@ export const getUseCaseImageUrl = [
         ]
     },
     {
-        id: 6,
-        model: 'cartoonify',
-        useCaseImages: [
-            {
-                "id": 1,
-                "imagePath": "portrait-of-men-in-village.jpg",
-                "outputImage": "cartoonify-portrait-of-men-in-village.jpg"
-            },
-            {
-                "id": 2,
-                "imagePath": "cartoonify-before-2.jpg",
-                "outputImage": "cartoonify-after-2.jpg"
-            }
-        ]
-    },
-    {
         id: 7,
         model: 're-imagine',
         useCaseImages: [

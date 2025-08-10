@@ -33,7 +33,7 @@ export default async function handler(req, res) {
             }
         });
 
-        // 1. Fetch community images with pagination
+        // 1. Fetch community images with pagination (optimized query)
         const communityImages = await prisma.publishedImage.findMany({
             where: {
                 isPublic: true,
@@ -42,7 +42,19 @@ export default async function handler(req, res) {
             orderBy: { [sortBy]: 'desc' },
             skip: Math.floor(skip / 2), // Split pagination between community and examples
             take: Math.ceil(take / 2), // Take half the limit for community images
-            include: {
+            select: {
+                id: true,
+                title: true,
+                prompt: true,
+                outputImagePath: true,
+                inputImagePaths: true,
+                likes: true,
+                downloads: true,
+                views: true,
+                modelParams: true,
+                aspectRatio: true,
+                createdAt: true,
+                model: true,
                 user: {
                     select: { name: true, image: true }
                 },
@@ -53,59 +65,89 @@ export default async function handler(req, res) {
             }
         });
 
-                 // 2. Fetch example images from all models
-         console.log('Processing example images from models:', getUseCaseImageUrl.length);
-         const allExampleImages = [];
-         
-         for (const modelData of getUseCaseImageUrl) {
-             const model = modelData.model;
-             
-             // Skip reimagine model (map to 'reimagine' instead of 're-imagine')
-             const modelKey = model === 're-imagine' ? 'reimagine' : model;
+                         // 2. Get total count of example images first (for pagination calculation)
+        let totalExampleImages = 0;
+        for (const modelData of getUseCaseImageUrl) {
+            totalExampleImages += modelData.useCaseImages.length;
+        }
+        
+        console.log(`Total example images available: ${totalExampleImages}`);
 
-             for (const imageData of modelData.useCaseImages) {
-                 const exampleImageId = `${modelKey}::${imageData.outputImage}`;
-                 
-                 // Get stats for this example image
-                 const stats = await prisma.exampleImageStats.findUnique({
-                     where: { imageId: exampleImageId }
-                 });
-
-                 // Check if user liked this example image
-                 let userLiked = false;
-                 if (currentUserId) {
-                     const userLike = await prisma.imageLike.findFirst({
-                         where: {
-                             userId: currentUserId,
-                             exampleImageId: exampleImageId
-                         }
-                     });
-                     userLiked = !!userLike;
-                 }
-
-                 allExampleImages.push({
-                     id: `example-${exampleImageId}`,
-                     model: modelKey,
-                     imageData: imageData,
-                     exampleImageId: exampleImageId,
-                     likes: stats?.likes || 0,
-                     downloads: stats?.downloads || 0,
-                     views: stats?.views || 0,
-                     userLiked: userLiked,
-                     isExample: true,
-                     createdAt: stats?.createdAt || new Date('2024-01-01') // Default date for sorting
-                 });
-             }
-         }
-         
-         console.log(`Total example images collected: ${allExampleImages.length}`);
-
-        // 3. Sort example images by likes (descending) and apply pagination
-        allExampleImages.sort((a, b) => b.likes - a.likes);
-        const totalExampleImages = allExampleImages.length;
+        // 3. Efficiently paginate example images without loading all
         const exampleSkip = Math.ceil(skip / 2);
         const exampleTake = Math.floor(take / 2);
+        
+        // Get all example image IDs with their basic info for sorting
+        const allExampleImageIds = [];
+        for (const modelData of getUseCaseImageUrl) {
+            const model = modelData.model;
+            const modelKey = model === 're-imagine' ? 'reimagine' : model;
+
+            for (const imageData of modelData.useCaseImages) {
+                const exampleImageId = `${modelKey}::${imageData.outputImage}`;
+                allExampleImageIds.push({
+                    id: exampleImageId,
+                    model: modelKey,
+                    imageData: imageData,
+                    exampleImageId: exampleImageId,
+                    isExample: true
+                });
+            }
+        }
+        
+        // Get stats for all example images in one query (optimized)
+        const allExampleStats = await prisma.exampleImageStats.findMany({
+            where: {
+                imageId: {
+                    in: allExampleImageIds.map(img => img.exampleImageId)
+                }
+            },
+            select: {
+                imageId: true,
+                likes: true,
+                downloads: true,
+                views: true,
+                createdAt: true
+            }
+        });
+        
+        // Get user likes for all example images in one query (if user is logged in)
+        let userExampleLikes = [];
+        if (currentUserId) {
+            userExampleLikes = await prisma.imageLike.findMany({
+                where: {
+                    userId: currentUserId,
+                    exampleImageId: {
+                        in: allExampleImageIds.map(img => img.exampleImageId)
+                    }
+                },
+                select: { exampleImageId: true }
+            });
+        }
+        
+        // Create a map for quick lookups
+        const statsMap = new Map(allExampleStats.map(stat => [stat.imageId, stat]));
+        const likesMap = new Map(userExampleLikes.map(like => [like.exampleImageId, true]));
+        
+        // Add stats to example images and sort by likes
+        const allExampleImages = allExampleImageIds.map(img => {
+            const stats = statsMap.get(img.exampleImageId);
+            return {
+                ...img,
+                id: `example-${img.exampleImageId}`,
+                likes: stats?.likes || 0,
+                downloads: stats?.downloads || 0,
+                views: stats?.views || 0,
+                userLiked: likesMap.has(img.exampleImageId),
+                createdAt: stats?.createdAt || new Date('2024-01-01')
+            };
+        });
+        
+        // Sort by likes and apply pagination
+        allExampleImages.sort((a, b) => b.likes - a.likes);
         const selectedExampleImages = allExampleImages.slice(exampleSkip, exampleSkip + exampleTake);
+        
+        console.log(`Selected ${selectedExampleImages.length} example images for processing`);
 
         // 4. Process community images with public URLs (instant loading)
         const processedCommunityImages = communityImages.map((dbImage, idx) => {

@@ -180,7 +180,7 @@ const GeneratedImages = ({
         <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
           {isLoading ? (
             // Enhanced Loading placeholders
-            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'cartoonify' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
+            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
               <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
                 <EnhancedLoader 
                   selectedModel={selectedModel}

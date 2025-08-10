@@ -406,10 +406,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
         configParts.push('Text and watermark removal');
         break;
 
-      case 'cartoonify':
-        configParts.push('Cartoon style transformation');
-        break;
-
       case 'restore-image':
         configParts.push('Image restoration and enhancement');
         break;
@@ -465,15 +461,13 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
             return { before: 'Original Photo', after: 'Professional Headshot' };
           case 'text-removal':
             return { before: 'With Text', after: 'Text Removed' };
-          case 'cartoonify':
-            return { before: 'Original Photo', after: 'Cartoonified' };
           case 'restore-image':
-            return { before: 'Damaged Photo', after: 'Restored Photo' };
+            return { before: 'Original Photo', after: 'Restored Photo' };
           case 'hair-style':
             return { before: 'Original Hair', after: 'New Hair Style' };
           case 're-imagine':
           case 'reimagine': // Handle both old and new model names
-            return { before: 'Original Photo', after: 'Reimagined Scenario' };
+            return { before: 'Original Photo', after: 'Reimagined' };
           default:
             return { before: 'Before', after: 'After' };
         }
@@ -646,15 +640,13 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
             return { before: 'Original Photo', after: 'Professional Headshot' };
           case 'text-removal':
             return { before: 'With Text', after: 'Text Removed' };
-          case 'cartoonify':
-            return { before: 'Original Photo', after: 'Cartoonified' };
           case 'restore-image':
-            return { before: 'Damaged Photo', after: 'Restored Photo' };
+            return { before: 'Original Photo', after: 'Restored Photo' };
           case 'hair-style':
             return { before: 'Original Hair', after: 'New Hair Style' };
           case 're-imagine':
           case 'reimagine': // Handle both old and new model names
-            return { before: 'Original Photo', after: 'Reimagined Scenario' };
+            return { before: 'Original Photo', after: 'Reimagined' };
           default:
             return { before: 'Before', after: 'After' };
         }

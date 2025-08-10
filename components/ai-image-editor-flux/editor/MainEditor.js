@@ -1,14 +1,18 @@
 import React from 'react'
-import { Box, styled, alpha, InputAdornment, InputLabel,TextField ,Select, MenuItem, Typography, Button, IconButton, CircularProgress, useTheme } from '@mui/material';
+import { Box, styled, alpha, InputAdornment, InputLabel,TextField ,Select, MenuItem, Typography, Button, IconButton, CircularProgress, useTheme, useMediaQuery, Chip } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
 import modelConfigurations from '@/constant/ModelConfigurations';
-import { Remove, Add } from '@mui/icons-material';
+import { Remove, Add, SendIcon } from '@mui/icons-material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import MobileConfigPanel from './MobileConfigPanel';
+import ImageUploader from '../ImageUploader';
+import ObjectRemovalMaskEditor from '../ObjectRemovalMaskEditor';
 
-function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHairStyle, setSelectedHairStyle, selectedItems, setSelectedItems, inputPrompt, setInputPrompt, handleKeyPress, generateHairStyleImages, generateTextRemovalImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateCombineImages, generateFluxImages, uploadedImage, uploadingHairImage, setUploadedImage, setUploadedImageUrl, isDragging, handleDragOver, handleDragLeave, handleDrop, error, uploadImageToR2, generatedImages, setGeneratedImages, isLoading, textRemovalImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, combineImage1Url, combineImage2Url, hasMaskDrawn }) {
+function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHairStyle, setSelectedHairStyle, selectedItems, setSelectedItems, inputPrompt, setInputPrompt, handleKeyPress, generateHairStyleImages, generateTextRemovalImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateCombineImages, generateFluxImages, uploadedImage, uploadingHairImage, setUploadedImage, setUploadedImageUrl, isDragging, handleDragOver, handleDragLeave, handleDrop, error, uploadImageToR2, generatedImages, setGeneratedImages, isLoading, textRemovalImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, combineImage1Url, combineImage2Url, hasMaskDrawn, aspectRatio, setAspectRatio, handleModelChange, selectedHairColor, setSelectedHairColor, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, getAllStyleItems, AppStyleCard, AppStyleIcon, AppStyleLabel, handleStyleSelect, selectedStyles, handleChipClick, handleChipDelete }) {
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const MainEditor = styled(Box)(({ theme }) => ({
         flex: 1,
         padding: theme.spacing(1, 3),
@@ -38,6 +42,32 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
 
     return (
         <MainEditor>
+            {/* Mobile Configuration Panel */}
+            {isMobile && (
+                <MobileConfigPanel
+                    selectedModel={selectedModel}
+                    handleModelChange={handleModelChange}
+                    aspectRatio={aspectRatio}
+                    setAspectRatio={setAspectRatio}
+                    selectedHairColor={selectedHairColor}
+                    setSelectedHairColor={setSelectedHairColor}
+                    selectedGender={selectedGender}
+                    setSelectedGender={setSelectedGender}
+                    selectedHeadshotGender={selectedHeadshotGender}
+                    setSelectedHeadshotGender={setSelectedHeadshotGender}
+                    selectedHeadshotBackground={selectedHeadshotBackground}
+                    setSelectedHeadshotBackground={setSelectedHeadshotBackground}
+                    selectedReimagineGender={selectedReimagineGender}
+                    setSelectedReimagineGender={setSelectedReimagineGender}
+                    selectedScenario={selectedScenario}
+                    setSelectedScenario={setSelectedScenario}
+                    numOutputs={numOutputs}
+                    setNumOutputs={setNumOutputs}
+                    generatedImages={generatedImages}
+                    setGeneratedImages={setGeneratedImages}
+                />
+            )}
+            
             {/* Hair Style Scrollable Strip for Hair Style Model */}
             {selectedModel === 'hair-style' ? (
                 <Box>
@@ -144,8 +174,8 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                                 ))}
                             </Box>
                         </Box>
-                    ) : currentConfig.type === 'text-removal' || currentConfig.type === 'cartoonify' || currentConfig.type === 'headshot' || currentConfig.type === 'restore-image' || currentConfig.type === 'reimagine' ? (
-                        // Don't show anything for text-removal, cartoonify, headshot, restore-image, or reimagine type
+                    ) : currentConfig.type === 'text-removal'|| currentConfig.type === 'headshot' || currentConfig.type === 'restore-image' || currentConfig.type === 'reimagine' ? (
+                        // Don't show anything for text-removal, headshot, restore-image, or reimagine type
                         null
                     ) : (
                         <Box>
@@ -199,7 +229,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
             )}
 
             {/* Input Section - Only show for models that need prompts */}
-            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'cartoonify' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
+            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
                 <Box ref={inputSectionRef} sx={{ position: 'relative' }}>
                     <StyledTextField
                         fullWidth
@@ -453,85 +483,6 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
                             {isLoading ? 'Removing Text...' : 'Remove Text'}
-                        </Button>
-                    </Box>
-                </>
-            )}
-
-            {/* Cartoonify Specific Controls */}
-            {selectedModel === 'cartoonify' && (
-                <>
-                    {/* Image Upload Section */}
-                    <ImageUploader
-                        title="Upload Image to Cartoonify"
-                        uploadedImage={cartoonifyImage}
-                        uploadingImage={uploadingCartoonifyImage}
-                        placeholderText="Click to upload an image to cartoonify"
-                        onImageUpload={async (e) => {
-                            const file = e.target.files[0];
-                            if (file && file.type.startsWith('image/')) {
-                                const reader = new FileReader();
-                                reader.onload = async (event) => {
-                                    const base64Data = event.target.result;
-                                    setCartoonifyImage(base64Data);
-
-                                    // Immediately upload to R2
-                                    setUploadingCartoonifyImage(true);
-                                    const url = await uploadImageToR2(base64Data, 'cartoonify-input.jpg');
-                                    if (url) {
-                                        setCartoonifyImageUrl(url);
-
-                                    } else {
-                                        setCartoonifyImage(null); // Reset if upload failed
-                                    }
-                                    setUploadingCartoonifyImage(false);
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        }}
-                        onImageRemove={() => {
-                            setCartoonifyImage(null);
-                            setCartoonifyImageUrl(null);
-                        }}
-                        isDragging={isDragging}
-                        isLoading={isLoading}
-                        error={error}
-                        handleDragOver={handleDragOver}
-                        handleDragLeave={handleDragLeave}
-                        handleDrop={handleDrop}
-                    />
-
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" color="textSecondary">
-                            This tool will transform your photo into a cartoon-style image.
-                        </Typography>
-                    </Box>
-
-                    {/* Generate Button for Cartoonify */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                        <Button
-                            variant="contained"
-                            onClick={generateCartoonifyImage}
-                            disabled={!cartoonifyImageUrl || isLoading}
-                            sx={{
-                                py: .8,
-                                px: 2,
-                                borderRadius: 3,
-                                fontWeight: 600,
-                                textTransform: 'none',
-                                fontSize: '14px',
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                '&:hover': {
-                                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                                },
-                                '&:disabled': {
-                                    background: '#e0e0e0',
-                                    color: '#9e9e9e'
-                                }
-                            }}
-                            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
-                        >
-                            {isLoading ? 'Cartoonifying...' : 'Cartoonify Image'}
                         </Button>
                     </Box>
                 </>
@@ -1012,10 +963,10 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                 <>
                     {/* Image Upload Section */}
                     <ImageUploader
-                        title="Upload Image for Impossible Scenario"
+                        title="Upload Image for ReImagine"
                         uploadedImage={reimagineImage}
                         uploadingImage={uploadingReimagineImage}
-                        placeholderText="Click to upload an image for impossible scenario"
+                        placeholderText="Click to upload an image for ReImagine Scenarios"
                         onImageUpload={async (e) => {
                             const file = e.target.files[0];
                             if (file && file.type.startsWith('image/')) {
@@ -1052,7 +1003,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
 
                     <Box sx={{ mt: 2 }}>
                         <Typography variant="body2" color="textSecondary">
-                            This tool will place you in an impossible scenario that would be difficult or impossible to achieve in real life.
+                            This tool will place you in an ReImagine Scenarios that would be difficult or impossible to achieve in real life.
                         </Typography>
                     </Box>
 
@@ -1077,7 +1028,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Generating Impossible Scenario...' : 'Generate Impossible Scenario'}
+                            {isLoading ? 'ReImagining...' : 'ReImagine Scenarios'}
                         </Button>
                     </Box>
                 </>

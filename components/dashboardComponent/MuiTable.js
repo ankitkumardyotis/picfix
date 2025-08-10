@@ -21,18 +21,19 @@ const columns = [
   },
   {
     id: 'createdAt',
-    label: 'Run At',
+    label: 'Time',
     minWidth: 100,
     align: 'center',
     format: (value) => value.toLocaleString('en-US'),
   },
   {
     id: 'cost',
-    label: 'Cost',
+    label: 'Credit Used',
     minWidth: 100,
     align: 'center',
     format: (value) => {
-      if (value === null || value === undefined) return '0';
+      if (value === 0) return 'Free';
+      if (value === null || value === undefined) return 'Free';
       if (typeof value === 'number') return value.toString();
       return value.toString();
     },
@@ -66,8 +67,6 @@ export default function MuiTable({ userHistory }) {
       model = "Combine Image";
     } else if (item.model === "text-removal") {
       model = "Remove Text";
-    } else if (item.model === "cartoonify") {
-      model = "Cartoonify";
     } else if (item.model === "headshot") {
       model = "Headshot";
     } else if (item.model === "restore-image") {

@@ -16,13 +16,13 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import PublishIcon from '@mui/icons-material/Publish';
 
-const PublishDialog = ({ 
-  open, 
-  onClose, 
+const PublishDialog = ({
+  open,
+  onClose,
   imageUrl,
-  selectedModel, 
+  selectedModel,
   prompt,
-  onPublish 
+  onPublish
 }) => {
   const theme = useTheme();
   const [title, setTitle] = useState('');
@@ -47,18 +47,17 @@ const PublishDialog = ({
   const generateFallbackTitle = (model) => {
     const modelTitles = {
       'hair-style': 'Hair Style Transformation',
-      'text-removal': 'Text Removed from Image', 
-      'cartoonify': 'Cartoonified Portrait',
+      'text-removal': 'Text Removed from Image',
       'headshot': 'Professional Headshot',
       'restore-image': 'Restored Photo',
-      'reimagine': 'Reimagined Scenario',
+      'reimagine': 'Reimagined',
       'combine-image': 'Combined Image Creation',
       'generate-image': 'AI Generated Image'
     };
-    
-    const baseTitle = modelTitles[model] || 'AI Enhanced Image';
-    const timestamp = new Date().toLocaleDateString();
-    return `${baseTitle} - ${timestamp}`;
+
+    const baseTitle = modelTitles[model] || `${"Enhanced by picfixai - " + Date.now()}`;
+
+    return `${baseTitle}`;
   };
 
   const handleSubmit = async () => {
@@ -72,7 +71,7 @@ const PublishDialog = ({
         title: title.trim(),
         description: description.trim()
       });
-      
+
       // Reset form and close dialog on success
       handleSubmitSuccess();
     } catch (error) {
@@ -104,7 +103,6 @@ const PublishDialog = ({
       'generate-image': 'AI Image Generator',
       'hair-style': 'Hair Style Changer',
       'headshot': 'Professional Headshot',
-      'cartoonify': 'Cartoonify',
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
@@ -114,8 +112,8 @@ const PublishDialog = ({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
@@ -126,10 +124,10 @@ const PublishDialog = ({
         }
       }}
     >
-      <DialogTitle 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           pb: 1
         }}
@@ -140,8 +138,8 @@ const PublishDialog = ({
             Publish to Community
           </Typography>
         </Box>
-        <IconButton 
-          onClick={handleClose} 
+        <IconButton
+          onClick={handleClose}
           disabled={isPublishing}
           size="small"
         >
@@ -152,8 +150,8 @@ const PublishDialog = ({
       <DialogContent sx={{ pt: 2 }}>
         {/* Image Preview */}
         {imageUrl && (
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               mb: 3,
               borderRadius: 2,
               overflow: 'hidden',
@@ -163,9 +161,9 @@ const PublishDialog = ({
               backgroundColor: alpha(theme.palette.grey[300], 0.3)
             }}
           >
-            <img 
-              src={imageUrl} 
-              alt="Preview" 
+            <img
+              src={imageUrl}
+              alt="Preview"
               style={{
                 maxWidth: '100%',
                 maxHeight: '200px',
@@ -211,43 +209,12 @@ const PublishDialog = ({
           sx={{ mb: 2 }}
         />
 
-        {/* Original Prompt Display or Model Info */}
-        <Box 
-          sx={{ 
-            p: 2, 
-            backgroundColor: alpha(theme.palette.info.main, 0.1),
-            borderRadius: 2,
-            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-          }}
-        >
-          {prompt && prompt.trim() ? (
-            <>
-              <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
-                Original Prompt:
-              </Typography>
-              <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                "{prompt}"
-              </Typography>
-            </>
-          ) : (
-            <>
-              <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
-                AI Model Used:
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {getModelDisplayName()}
-              </Typography>
-              <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5, display: 'block' }}>
-                This model transforms images without requiring text prompts
-              </Typography>
-            </>
-          )}
-        </Box>
+
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button 
-          onClick={handleClose} 
+        <Button
+          onClick={handleClose}
           disabled={isPublishing}
           sx={{ mr: 1 }}
         >

@@ -85,7 +85,7 @@ export default function App({
                 removeImageFromTransformerJs,
                 pageProps,
                 timerForRunModel])}
-              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && <Footer />}
+              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && router.pathname != '/gallery' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -17,6 +17,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import LoginIcon from '@mui/icons-material/Login';
+import CompareIcon from '@mui/icons-material/Compare';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from 'notistack';
@@ -33,6 +34,7 @@ const CommunityGallery = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalImages, setTotalImages] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Preview modal states (same as ExampleMasonry)
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -42,6 +44,12 @@ const CommunityGallery = () => {
   const [exampleImages, setExampleImages] = useState([]);
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [imageLoadingStates, setImageLoadingStates] = useState({});
+
+  // Infinite scroll refs
+  const loadMoreTriggerRef = useRef(null);
+  const isLoadingRef = useRef(false);
+  const scrollPositionRef = useRef(0);
+  const containerRef = useRef(null);
 
   const IMAGES_PER_PAGE = 12;
 
@@ -77,7 +85,27 @@ const CommunityGallery = () => {
           
           // Update images (append for pagination, replace for initial load)
           if (append) {
+            // For infinite scroll, preserve scroll position
+            const currentScrollY = window.scrollY;
+            const documentHeight = document.documentElement.scrollHeight;
+            
             setCommunityImages(prev => [...prev, ...newImages]);
+            
+            // Use requestAnimationFrame to ensure DOM has updated
+            requestAnimationFrame(() => {
+              // Calculate how much the document grew
+              const newDocumentHeight = document.documentElement.scrollHeight;
+              const heightIncrease = newDocumentHeight - documentHeight;
+              
+              // Only adjust scroll if content was added and user is still near the bottom
+              if (heightIncrease > 0 && currentScrollY > 0) {
+                // Maintain relative position
+                window.scrollTo({
+                  top: currentScrollY,
+                  behavior: 'instant'
+                });
+              }
+            });
           } else {
             setCommunityImages(newImages);
             setTotalImages(data.total || newImages.length);
@@ -86,32 +114,32 @@ const CommunityGallery = () => {
           // Update pagination state
           setHasMore(data.hasMore || (page * IMAGES_PER_PAGE < (data.total || newImages.length)));
           
-                     // Initialize loading states for new images
-           const loadingStates = {};
-           newImages.forEach((image, index) => {
-             const imageId = `community-${image.id || index}`;
-             loadingStates[imageId] = true; // Start with loading = true
-           });
-           
-           if (append) {
-             setImageLoadingStates(prev => ({ ...prev, ...loadingStates }));
-           } else {
-             setImageLoadingStates(loadingStates);
-           }
-           
-           // Set timeout to clear loading states after 10 seconds (prevents infinite loading)
-           setTimeout(() => {
-             setImageLoadingStates(prev => {
-               const updated = { ...prev };
-               Object.keys(loadingStates).forEach(imageId => {
-                 if (updated[imageId] === true) {
-                   console.log('Timeout: Clearing loading state for', imageId);
-                   updated[imageId] = false;
-                 }
-               });
-               return updated;
-             });
-           }, 10000);
+          // Initialize loading states for new images - only for images that will be visible
+          const loadingStates = {};
+          newImages.forEach((image, index) => {
+            const imageId = `community-${image.id || index}`;
+            loadingStates[imageId] = true; // Start with loading = true
+          });
+          
+          if (append) {
+            setImageLoadingStates(prev => ({ ...prev, ...loadingStates }));
+          } else {
+            setImageLoadingStates(loadingStates);
+          }
+          
+          // Reduced timeout to 5 seconds (prevents infinite loading)
+          setTimeout(() => {
+            setImageLoadingStates(prev => {
+              const updated = { ...prev };
+              Object.keys(loadingStates).forEach(imageId => {
+                if (updated[imageId] === true) {
+                  console.log('Timeout: Clearing loading state for', imageId);
+                  updated[imageId] = false;
+                }
+              });
+              return updated;
+            });
+          }, 5000);
         } else {
           console.error('Error fetching community images:', data.error);
           if (!append) {
@@ -138,23 +166,106 @@ const CommunityGallery = () => {
     }
   };
 
-  // Load more images from server
-  const loadMoreImages = async () => {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    await fetchCommunityImages(nextPage, true); // append = true
-  };
+  // Load more images from server (optimized for infinite scroll)
+  const loadMoreImages = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingRef.current || !hasMore) {
+      return;
+    }
+    
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    
+    try {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      await fetchCommunityImages(nextPage, true); // append = true (scroll preservation handled inside)
+    } catch (error) {
+      console.error('Error loading more images:', error);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoadingMore(false);
+    }
+  }, [currentPage, hasMore]);
 
   useEffect(() => {
     fetchCommunityImages(1, false); // page = 1, append = false
   }, []);
 
-  const handleShowMore = async () => {
-    await loadMoreImages();
-  };
+  // Infinite scroll effect with Intersection Observer
+  useEffect(() => {
+    const currentTrigger = loadMoreTriggerRef.current;
+    
+    if (!currentTrigger) return;
 
-  // Image click handler (same pattern as ExampleMasonry)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        
+        // Load more when trigger element is visible and we have more images
+        if (entry.isIntersecting && hasMore && !loading && !isLoadingMore) {
+          console.log('Infinite scroll triggered - loading more images');
+          loadMoreImages();
+        }
+      },
+      {
+        // Trigger when element is 100px away from being visible
+        rootMargin: '100px',
+        threshold: 0.1
+      }
+    );
+
+    observer.observe(currentTrigger);
+
+    return () => {
+      if (currentTrigger) {
+        observer.unobserve(currentTrigger);
+      }
+    };
+  }, [hasMore, loading, isLoadingMore, loadMoreImages]);
+
+
+
+  // Image click handler with comparison support (same pattern as ExampleMasonry)
   const handleCommunityImageClick = (imageData) => {
+    // Check if comparison data is available for this image
+    const hasComparison = imageData.hasComparison && imageData.inputUrls && imageData.inputUrls.length > 0;
+    
+    // Get comparison labels based on model
+    const getComparisonLabels = (model) => {
+      switch (model) {
+        case 'headshot':
+          return { before: 'Original Photo', after: 'Professional Headshot' };
+        case 'text-removal':
+          return { before: 'With Text', after: 'Text Removed' };
+        case 'restore-image':
+          return { before: 'Original Photo', after: 'Restored Photo' };
+        case 'hair-style':
+          return { before: 'Original Hair', after: 'New Hair Style' };
+        case 're-imagine':
+        case 'reimagine':
+          return { before: 'Original Photo', after: 'Reimagined' };
+        case 'background-removal':
+          return { before: 'With Background', after: 'Background Removed' };
+        case 'remove-object':
+          return { before: 'With Object', after: 'Object Removed' };
+        default:
+          return { before: 'Before', after: 'After' };
+      }
+    };
+
+    const labels = hasComparison ? getComparisonLabels(imageData.model) : null;
+    
+    // Get input image URL for comparison
+    const inputImageUrl = hasComparison && imageData.inputUrls.length > 0 ? imageData.inputUrls[0].url : null;
+    
+    // Special handling for combine-image model
+    const combineData = imageData.model === 'combine-image' && imageData.inputImage1 && imageData.inputImage2 ? {
+      inputImage1: imageData.inputImage1,
+      inputImage2: imageData.inputImage2,
+      outputImage: imageData.outputImage || imageData.url
+    } : null;
+
     setPreviewImage(imageData.url);
     setCurrentImageIndex(imageData.index);
     setPreviewType('community');
@@ -165,14 +276,24 @@ const CommunityGallery = () => {
       model: imageData.model,
       resolution: 'High Quality',
       format: 'JPEG',
-      type: 'community',
+      type: imageData.isCommunity ? 'community' : 'example',
       author: imageData.author,
       createdAt: imageData.createdAt,
       likes: imageData.likes,
       downloads: imageData.downloads,
       views: imageData.views,
       userLiked: imageData.userLiked,
-      publishedImageId: imageData.publishedImageId
+      publishedImageId: imageData.publishedImageId,
+      exampleImageId: imageData.exampleImageId,
+      isCommunity: imageData.isCommunity,
+      isExample: imageData.isExample,
+      // Add comparison data
+      canCompare: hasComparison,
+      beforeImage: inputImageUrl,
+      afterImage: imageData.url,
+      beforeLabel: labels?.before,
+      afterLabel: labels?.after,
+      combineData: combineData
     });
     setPreviewOpen(true);
   };
@@ -187,25 +308,75 @@ const CommunityGallery = () => {
     setExampleImageInfo(null);
   };
 
-  // Handle image navigation in preview
+  // Handle image navigation in preview with comparison support
   const handleImageChange = (newIndex) => {
     setCurrentImageIndex(newIndex);
     if (communityImages[newIndex]) {
-      setPreviewImage(communityImages[newIndex].url);
+      const currentImage = communityImages[newIndex];
+      
+      // Check if comparison data is available for this image
+      const hasComparison = currentImage.hasComparison && currentImage.inputUrls && currentImage.inputUrls.length > 0;
+      
+      // Get comparison labels based on model
+      const getComparisonLabels = (model) => {
+        switch (model) {
+          case 'headshot':
+            return { before: 'Original Photo', after: 'Professional Headshot' };
+          case 'text-removal':
+            return { before: 'With Text', after: 'Text Removed' };
+          case 'restore-image':
+            return { before: 'Original Photo', after: 'Restored Photo' };
+          case 'hair-style':
+            return { before: 'Original Hair', after: 'New Hair Style' };
+          case 're-imagine':
+          case 'reimagine':
+            return { before: 'Original Photo', after: 'Reimagined' };
+          case 'background-removal':
+            return { before: 'With Background', after: 'Background Removed' };
+          case 'remove-object':
+            return { before: 'With Object', after: 'Object Removed' };
+          default:
+            return { before: 'Before', after: 'After' };
+        }
+      };
+
+      const labels = hasComparison ? getComparisonLabels(currentImage.model) : null;
+      
+      // Get input image URL for comparison
+      const inputImageUrl = hasComparison && currentImage.inputUrls.length > 0 ? currentImage.inputUrls[0].url : null;
+      
+      // Special handling for combine-image model
+      const combineData = currentImage.model === 'combine-image' && currentImage.inputImage1 && currentImage.inputImage2 ? {
+        inputImage1: currentImage.inputImage1,
+        inputImage2: currentImage.inputImage2,
+        outputImage: currentImage.outputImage || currentImage.url
+      } : null;
+
+      setPreviewImage(currentImage.url);
       setExampleImageInfo({
-        title: communityImages[newIndex].title || 'Community Creation',
-        prompt: communityImages[newIndex].prompt || 'AI Generated Image',
-        model: communityImages[newIndex].model,
+        title: currentImage.title || 'Community Creation',
+        prompt: currentImage.prompt || 'AI Generated Image',
+        model: currentImage.model,
         resolution: 'High Quality',
         format: 'JPEG',
-        type: 'community',
-        author: communityImages[newIndex].author,
-        createdAt: communityImages[newIndex].createdAt,
-        likes: communityImages[newIndex].likes,
-        downloads: communityImages[newIndex].downloads,
-        views: communityImages[newIndex].views,
-        userLiked: communityImages[newIndex].userLiked,
-        publishedImageId: communityImages[newIndex].publishedImageId
+        type: currentImage.isCommunity ? 'community' : 'example',
+        author: currentImage.author,
+        createdAt: currentImage.createdAt,
+        likes: currentImage.likes,
+        downloads: currentImage.downloads,
+        views: currentImage.views,
+        userLiked: currentImage.userLiked,
+        publishedImageId: currentImage.publishedImageId,
+        exampleImageId: currentImage.exampleImageId,
+        isCommunity: currentImage.isCommunity,
+        isExample: currentImage.isExample,
+        // Add comparison data
+        canCompare: hasComparison,
+        beforeImage: inputImageUrl,
+        afterImage: currentImage.url,
+        beforeLabel: labels?.before,
+        afterLabel: labels?.after,
+        combineData: combineData
       });
     }
   };
@@ -216,7 +387,6 @@ const CommunityGallery = () => {
       'generate-image': '/ai-image-editor',
       'hair-style': '/ai-image-editor',
       'headshot': '/ai-image-editor',
-      'cartoonify': '/ai-image-editor',
       'restore-image': '/restorePhoto',
       'text-removal': '/ai-image-editor',
       'reimagine': '/ai-image-editor',
@@ -227,23 +397,40 @@ const CommunityGallery = () => {
     router.push(route);
   };
 
-  // Image loading state handlers (same as ExampleMasonry)
-  // const handleImageLoad = (imageId) => {
-  //   setImageLoadingStates(prev => ({
-  //     ...prev,
-  //     [imageId]: false
-  //   }));
-  // };
-
-  const handleImageError = (imageId) => {
+  // Image loading state handlers (optimized with useCallback)
+  const handleImageLoad = useCallback((imageId) => {
     setImageLoadingStates(prev => ({
       ...prev,
       [imageId]: false
     }));
+  }, []);
+
+  const handleImageError = useCallback((imageId) => {
+    console.log('Image error:', imageId);
+    setImageLoadingStates(prev => ({
+      ...prev,
+      [imageId]: false
+    }));
+  }, []);
+
+  // Handle comparison button click - open preview with comparison mode
+  const handleComparisonClick = (image, index) => {
+    handleCommunityImageClick({
+      ...image,
+      index,
+      images: communityImages,
+      openComparison: true // Flag to auto-open comparison
+    });
   };
 
-  // Handle like/unlike functionality for both community and example images
+  // Handle like/unlike functionality for community images only
   const handleLikeToggle = async (image, currentlyLiked) => {
+    // Only allow liking community images
+    if (!image.isCommunity) {
+      enqueueSnackbar('You can only like community images', { variant: 'info' });
+      return;
+    }
+
     if (!session) {
       enqueueSnackbar('Please log in to like images', { variant: 'warning' });
       router.push('/login');
@@ -253,18 +440,10 @@ const CommunityGallery = () => {
     try {
       const action = currentlyLiked ? 'unlike' : 'like';
       
-      // Determine if it's a community or example image
-      const isExampleImage = image.isExample;
       const requestBody = {
-        action: action
+        action: action,
+        publishedImageId: image.publishedImageId
       };
-
-      // Add the appropriate ID field
-      if (isExampleImage) {
-        requestBody.exampleImageId = image.exampleImageId;
-      } else {
-        requestBody.publishedImageId = image.publishedImageId;
-      }
 
       const response = await fetch('/api/images/like', {
         method: 'POST',
@@ -275,17 +454,11 @@ const CommunityGallery = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Update the image in the state (works for both types)
+        // Update the community image in the state
         const updateFunction = (img) => {
-          if (isExampleImage) {
-            return img.exampleImageId === image.exampleImageId 
-              ? { ...img, likes: data.likes, userLiked: data.userLiked }
-              : img;
-          } else {
-            return img.publishedImageId === image.publishedImageId 
-              ? { ...img, likes: data.likes, userLiked: data.userLiked }
-              : img;
-          }
+          return img.publishedImageId === image.publishedImageId 
+            ? { ...img, likes: data.likes, userLiked: data.userLiked }
+            : img;
         };
 
         setCommunityImages(prev => prev.map(updateFunction));
@@ -315,7 +488,6 @@ const CommunityGallery = () => {
       'generate-image': '#667eea',
       'hair-style': '#f093fb',
       'headshot': '#4facfe',
-      'cartoonify': '#43e97b',
       'restore-image': '#fa709a',
       'text-removal': '#fee140',
       'reimagine': '#a8edea',
@@ -356,7 +528,7 @@ const CommunityGallery = () => {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" ref={containerRef}>
       <Box sx={{ textAlign: 'center', mb: 1}}>
         <Typography 
           variant="h3" 
@@ -393,30 +565,29 @@ const CommunityGallery = () => {
         )}
       </Box>
 
-      {/* Show loading indicator when switching between cached images */}
+      {/* Show loading indicator when loading more images */}
       {loading && communityImages && communityImages.length > 0 && (
         <Box sx={{ mb: 2, textAlign: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <Skeleton variant="circular" width={16} height={16} animation="wave" />
-            <Skeleton
-              variant="text"
-              width="140px"
-              height={20}
-              animation="wave"
-            />
+            <CircularProgress size={16} />
+            <Typography variant="body2" color="textSecondary">
+              Loading more images...
+            </Typography>
           </Box>
         </Box>
       )}
 
-      {/* Community Images Masonry (same structure as ExampleMasonry) */}
+      {/* Community Images Masonry (optimized for scroll stability) */}
       <Masonry
         columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
         spacing={0.5}
         sx={{
           width: '100%',
           margin: 0,
-          opacity: loading ? 0.7 : 1,
+          opacity: loading && communityImages.length === 0 ? 0.7 : 1,
           transition: 'opacity 0.3s ease',
+          // Prevent layout shifts during loading
+          minHeight: communityImages.length > 0 ? 'auto' : '400px',
         }}
       >
         {communityImages.map((image, index) => {
@@ -433,6 +604,11 @@ const CommunityGallery = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
+                // Prevent layout shifts
+                contain: 'layout style paint',
+                willChange: 'transform',
+                // Reserve space for the image
+                minHeight: `${image.height || 280}px`,
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
@@ -447,8 +623,8 @@ const CommunityGallery = () => {
                 images: communityImages
               })}
             >
-              {/* Loading overlay */}
-              {/* {isLoading && (
+              {/* Loading skeleton overlay */}
+              {isLoading && (
                 <Box
                   sx={{
                     position: 'absolute',
@@ -456,16 +632,23 @@ const CommunityGallery = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 2,
+                    zIndex: 1,
+                    borderRadius: 1,
+                    overflow: 'hidden'
                   }}
                 >
-                  <CircularProgress size={24} />
+                  <Skeleton 
+                    variant="rectangular" 
+                    width="100%" 
+                    height="100%"
+                    animation="wave"
+                    sx={{
+                      borderRadius: 1,
+                      backgroundColor: alpha(theme.palette.grey[300], 0.3)
+                    }}
+                  />
                 </Box>
-              )} */}
+              )}
 
                             {/* Model and Type Badges */}
               <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2, display: 'flex', gap: 0.5, flexDirection: 'column' }}>
@@ -515,95 +698,158 @@ const CommunityGallery = () => {
                 src={image.url}
                 alt={image.title || 'Community creation'}
                 referrerPolicy="no-referrer"
+                loading="lazy"
                 style={{
                   width: '100%',
                   height: `${image.height || 280}px`,
                   objectFit: 'cover',
                   display: 'block',
                   borderRadius: '8px',
+                  // Prevent layout shift by maintaining aspect ratio
+                  aspectRatio: 'auto',
                 }}
-                // onLoad={() => {
-                //   console.log('Image loaded:', imageId);
-                //   handleImageLoad(imageId);
-                // }}
+                onLoad={() => {
+                  handleImageLoad(imageId);
+                }}
                 onError={() => {
-                  console.log('Image error:', imageId);
                   handleImageError(imageId);
                 }}
               />
 
-              {/* Like button overlay (top-right) - Always visible */}
-              <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    backgroundColor: alpha('#000000', 0.75),
-                    borderRadius: 3,
-                    px: 1.5,
-                    py: 1,
-                    gap: 0.75,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                  }}
-                >
-                  <Tooltip title={!session ? "Login to like" : image.userLiked ? "Unlike" : "Like"}>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLikeToggle(image, image.userLiked);
-                      }}
-                      sx={{
-                        color: image.userLiked ? '#ff4757' : '#ffffff',
-                        p: 0.5,
-                        '&:hover': {
-                          transform: 'scale(1.3)',
-                          color: '#ff4757',
-                          backgroundColor: alpha('#ffffff', 0.1)
-                        },
-                        transition: 'all 0.2s ease',
-                        borderRadius: 2
-                      }}
-                    >
-                      {!session ? (
-                        <FavoriteBorderIcon fontSize="medium" />
-                      ) : image.userLiked ? (
-                        <FavoriteIcon fontSize="medium" />
-                      ) : (
-                        <FavoriteBorderIcon fontSize="medium" />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: '#ffffff',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      minWidth: '16px',
-                      textAlign: 'center'
+              {/* Like button overlay (top-right) - Only for community images */}
+              {image.isCommunity && (
+                <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      backgroundColor: alpha('#000000', 0.75),
+                      borderRadius: 3,
+                      px: 1.5,
+                      py: 1,
+                      gap: 0.75,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)'
                     }}
                   >
-                    {image.likes || 0}
-                  </Typography>
+                    <Tooltip title={!session ? "Login to like" : image.userLiked ? "Unlike" : "Like"}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLikeToggle(image, image.userLiked);
+                        }}
+                        sx={{
+                          color: image.userLiked ? '#ff4757' : '#ffffff',
+                          p: 0.5,
+                          '&:hover': {
+                            transform: 'scale(1.3)',
+                            color: '#ff4757',
+                            backgroundColor: alpha('#ffffff', 0.1)
+                          },
+                          transition: 'all 0.2s ease',
+                          borderRadius: 2
+                        }}
+                      >
+                        {!session ? (
+                          <FavoriteBorderIcon fontSize="medium" />
+                        ) : image.userLiked ? (
+                          <FavoriteIcon fontSize="medium" />
+                        ) : (
+                          <FavoriteBorderIcon fontSize="medium" />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#ffffff',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        minWidth: '16px',
+                        textAlign: 'center'
+                      }}
+                    >
+                      {image.likes || 0}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
+              )}
 
-              {/* Action overlay (same as ExampleMasonry) */}
+              {/* View count for platform/example images (optional) */}
+              {/* {image.isExample && (
+                <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      backgroundColor: alpha('#000000', 0.75),
+                      borderRadius: 3,
+                      px: 1.5,
+                      py: 1,
+                      gap: 0.75,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#ffffff',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        textAlign: 'center'
+                      }}
+                    >
+                      Created By PicFix.ai
+                    </Typography>
+                  </Box>
+                </Box>
+              )} */}
+
+              {/* Action overlay with comparison support */}
               <Box
                 className="image-actions"
                 sx={{
                   position: 'absolute',
-                  bottom: 0,
+                  top: 0,
                   left: 0,
                   right: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+                  bottom: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
                   opacity: 0,
                   transition: 'opacity 0.3s ease',
-                  padding: 1.5,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                 }}
               >
+                {/* Top actions (comparison button) */}
+                {image.hasComparison && image.inputUrls && image.inputUrls.length > 0 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, p: 1 }}>
+                    <Tooltip title="Compare Before/After">
+                      <IconButton
+                        size="small"
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: theme.palette.primary.main,
+                            transform: 'scale(1.1)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleComparisonClick(image, index);
+                        }}
+                      >
+                        <CompareIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
+
                 {/* Bottom content */}
                 <Box sx={{ p: 1 }}>
                   {/* Author info for community images */}
@@ -664,66 +910,71 @@ const CommunityGallery = () => {
         )}
       </Masonry>
 
-      {/* Show More Button */}
-      {hasMore && !loading && (
-        <Box sx={{ textAlign: 'center', mt: 6 }}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleShowMore}
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+      {/* Infinite Scroll Trigger and Loading Indicator */}
+      {hasMore && (
+        <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
+          {/* Invisible trigger element for intersection observer */}
+          <Box
+            ref={loadMoreTriggerRef}
             sx={{
-              borderRadius: 3,
-              px: 4,
-              py: 1.5,
-              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
-              },
-              transition: 'all 0.3s ease',
+              height: '20px',
+              width: '100%',
+              // Uncomment below line to visualize the trigger (for debugging)
+              // backgroundColor: 'rgba(255, 0, 0, 0.1)'
             }}
-          >
-            {loading ? 'Loading...' : 'Show More'}
-          </Button>
+          />
           
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-            Showing {communityImages.length} of {totalImages} images
-          </Typography>
+          {/* Loading indicator for infinite scroll */}
+          {(loading || isLoadingMore) && (
+            <Box sx={{ mt: 2 }}>
+              <CircularProgress size={32} />
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                Loading more amazing images...
+              </Typography>
+            </Box>
+          )}
+          
+          {/* Progress indicator */}
+          {!loading && !isLoadingMore && (
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              Showing {communityImages.length} of {totalImages} images
+            </Typography>
+          )}
         </Box>
       )}
 
-      {/* Call to Action */}
+      {/* End of content message */}
       {!hasMore && communityImages.length > 0 && (
-        <Box sx={{ textAlign: 'center', mt: 6, p: 4, borderRadius: 3, backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
-          <Typography variant="h6" gutterBottom>
-            🎨 Ready to create your own masterpiece?
+        <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            ✨ You've reached the end! Showing all {totalImages} images
           </Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-            Join our community and share your AI-generated creations alongside curated examples!
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => router.push('/ai-image-editor')}
-            sx={{
-              borderRadius: 3,
-              px: 4,
-              py: 1.5,
-              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-            }}
-          >
-            Start Creating Now
-          </Button>
+          
+          <Box sx={{ p: 4, borderRadius: 3, backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Typography variant="h6" gutterBottom>
+              🎨 Ready to create your own masterpiece?
+            </Typography>
+            <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+              Join our community and share your AI-generated creations alongside curated examples!
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => router.push('/ai-image-editor')}
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+              }}
+            >
+              Start Creating Now
+            </Button>
+          </Box>
         </Box>
       )}
 
-      {/* Enhanced Preview Modal (same as ai-image-editor) */}
+      {/* Enhanced Preview Modal with Comparison Support */}
       <ImagePreviewModal
         open={previewOpen}
         onClose={handlePreviewClose}
@@ -732,12 +983,12 @@ const CommunityGallery = () => {
         onImageChange={handleImageChange}
         selectedModel={exampleImageInfo?.model || 'generate-image'}
         imageInfo={exampleImageInfo}
-        canCompare={false}
-        beforeImage={null}
-        afterImage={null}
-        beforeLabel="Before"
-        afterLabel="After"
-        autoOpenComparison={false}
+        canCompare={exampleImageInfo?.canCompare || false}
+        beforeImage={exampleImageInfo?.beforeImage || null}
+        afterImage={exampleImageInfo?.afterImage || null}
+        beforeLabel={exampleImageInfo?.beforeLabel || "Before"}
+        afterLabel={exampleImageInfo?.afterLabel || "After"}
+        autoOpenComparison={exampleImageInfo?.canCompare && exampleImageInfo?.beforeImage && exampleImageInfo?.afterImage}
       />
     </Container>
   );

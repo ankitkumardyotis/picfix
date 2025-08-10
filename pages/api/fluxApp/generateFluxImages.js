@@ -3,6 +3,7 @@ import { authOptions } from "../auth/[...nextauth]"
 import { getUserPlan } from "@/lib/userData";
 import { storeGeneratedImage, getModelType, getInputImagesFromConfig } from "@/lib/unifiedImageStorage";
 import Replicate from "replicate";
+import prisma from "@/lib/prisma";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_KEY,
   });
-  // Check if this is a free model
+  
+  
   const isFreeModel = config.gfp_restore || config.background_removal;
 
   if (!isFreeModel) {
@@ -46,7 +48,7 @@ export default async function handler(req, res) {
 
   try {
     // POST request to Replicate to start the image restoration generation process
-    console.log("Generating  config:", config);
+
     if (config.generate_flux_images) {
       const input = {
         prompt: config.prompt,
@@ -59,7 +61,6 @@ export default async function handler(req, res) {
         num_inference_steps: 4
       };
 
-      console.log("Generating images with config:", input);
 
       const output = await replicate.run("black-forest-labs/flux-schnell", { input });
 
@@ -77,8 +78,10 @@ export default async function handler(req, res) {
         }
       }
 
+
       // Ensure we return exactly the number of images requested
       const finalOutput = processedOutput.slice(0, config.num_outputs);
+
 
       // Store images in history
       try {
@@ -100,6 +103,9 @@ export default async function handler(req, res) {
             historyId: storedImage.historyId
           });
         }
+
+
+        
 
         console.log(`Stored ${storedImages.length} images in history`);
         console.log('API Response format:', JSON.stringify(storedImages, null, 2));
@@ -155,7 +161,6 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Hair style doesn't use prompts
-          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -213,7 +218,7 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: config.prompt,
-          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          cost: process.env.COMBINE_IMAGES_MODEL_RUNNING_COST,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -288,73 +293,7 @@ export default async function handler(req, res) {
         // Fallback to original behavior if storage fails
         res.status(200).json(processedOutput);
       }
-    } else if (config.cartoonify) {
-      console.log("Cartoonifying image...");
-      const input = {
-        input_image: config.input_image,
-        aspect_ratio: config.aspect_ratio,
-        output_format: config.output_format || "png",
-        safety_tolerance: config.safety_tolerance || 2
-      };
 
-      console.log("Cartoonifying with config:", {
-        ...input,
-        input_image: input.input_image.startsWith('data:') ? '[BASE64_DATA]' : input.input_image
-      });
-
-      const output = await replicate.run("flux-kontext-apps/cartoonify", { input });
-
-      // Process the output - cartoonify model returns single image
-      console.log("Raw cartoonify output type:", typeof output, Array.isArray(output) ? "is array" : "not array");
-      if (Array.isArray(output)) {
-        console.log("Cartoonify output array length:", output.length);
-        if (output.length > 0) {
-          console.log("First item type:", typeof output[0]);
-        }
-      }
-
-      let processedOutput;
-      if (output instanceof ReadableStream) {
-        const buffer = await streamToBuffer(output);
-        const base64 = buffer.toString('base64');
-        processedOutput = `data:image/png;base64,${base64}`;
-      } else if (typeof output === 'string') {
-        processedOutput = output;
-      } else if (Array.isArray(output) && output.length > 0) {
-        // If it returns an array, take the first item
-        const firstItem = output[0];
-        if (firstItem instanceof ReadableStream) {
-          const buffer = await streamToBuffer(firstItem);
-          const base64 = buffer.toString('base64');
-          processedOutput = `data:image/png;base64,${base64}`;
-        } else {
-          processedOutput = firstItem;
-        }
-      }
-
-      // Store cartoonify image in history
-      try {
-        const storedImage = await storeGeneratedImage({
-          imageData: processedOutput,
-          userId: session.user.id,
-          model: getModelType(config),
-          prompt: null, // Cartoonify doesn't use prompts
-          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
-          modelParams: config,
-          aspectRatio: config.aspect_ratio,
-          inputImages: getInputImagesFromConfig(config)
-        });
-
-        console.log('Cartoonify image stored in history:', storedImage.historyId);
-        res.status(200).json({
-          imageUrl: storedImage.publicUrl,
-          historyId: storedImage.historyId
-        });
-      } catch (error) {
-        console.error('Error storing cartoonify image in history:', error);
-        // Fallback to original behavior if storage fails
-        res.status(200).json(processedOutput);
-      }
     } else if (config.headshot) {
       console.log("Generating professional headshot...");
       const input = {
@@ -492,7 +431,6 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
     } else if (config.reimagine) {
-      console.log("Generating impossible scenario...");
       const input = {
         input_image: config.input_image,
         gender: config.gender || "none",
@@ -502,10 +440,6 @@ export default async function handler(req, res) {
         impossible_scenario: config.impossible_scenario || "Random"
       };
 
-      console.log("Generating impossible scenario with config:", {
-        ...input,
-        input_image: input.input_image.startsWith('data:') ? '[BASE64_DATA]' : input.input_image
-      });
 
       const output = await replicate.run("flux-kontext-apps/impossible-scenarios", { input });
 

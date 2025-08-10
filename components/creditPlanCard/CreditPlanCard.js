@@ -78,7 +78,7 @@ function CreditPlanCard() {
     "Free Remove Background",
     "1 Credit used per model",
     "Access of all Models",
-    "Credits will expire in 1 year"
+    `Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`
   ];
 
   return (
