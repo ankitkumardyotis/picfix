@@ -3,11 +3,13 @@ const modelConfigurations = {
   'generate-image': {
     name: 'Generate Image',
     type: 'prompts',
+    creditCost: 2,
     options: ['A sunset over mountains', 'Futuristic city', 'Abstract art', 'Nature landscape', 'Portrait photography']
   },
   'hair-style': {
     name: 'Hair Style',
     type: 'hair-style',
+    creditCost: 2,
     hairStylesFemale: [
       { id: 1, name: "No change", image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop' },
       { id: 2, name: "Random", image: '/assets/ai-image-editor/hair-cut/female/Random.png' },
@@ -48,6 +50,7 @@ const modelConfigurations = {
   'combine-image': {
     name: 'Combine Image',
     type: 'prompts',
+    creditCost: 3,
     options: [
       'Put the woman next to the house',
       'Merge the two landscapes together',
@@ -65,6 +68,7 @@ const modelConfigurations = {
   'text-removal': {
     name: 'Remove Watermark or Text',
     type: 'text-removal',
+    creditCost: 2,
     aspectRatios: [
       "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
     ]
@@ -72,6 +76,7 @@ const modelConfigurations = {
   'headshot': {
     name: 'Headshot',
     type: 'headshot',
+    creditCost: 2,
     aspectRatios: [
       "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"
     ],
@@ -80,18 +85,21 @@ const modelConfigurations = {
   },
   'restore-image': {
     name: 'Restore Image',
-    type: 'restore-image'
+    type: 'restore-image',
+    creditCost: 2
     // No aspect ratios needed for restore-image
   },
   'gfp-restore': {
     name: 'Restore Image',
     type: 'gfp-restore',
+    creditCost: 0,
     free: true
     // No aspect ratios needed for gfp-restore
   },
   'home-designer': {
     name: 'Home Designer',
     type: 'prompts',
+    creditCost: 2,
     options: [
       'a cheerful modernist bedroom',
       'a cozy living room with fireplace',
@@ -109,17 +117,20 @@ const modelConfigurations = {
   'background-removal': {
     name: 'Remove Background',
     type: 'background-removal',
+    creditCost: 0,
     free: true
     // No aspect ratios needed for background removal
   },
   'remove-object': {
     name: 'Remove Object',
-    type: 'remove-object'
+    type: 'remove-object',
+    creditCost: 2
     // No aspect ratios needed for remove object
   },
   're-imagine': {
     name: 'ReImagine',
     type: 're-imagine',
+    creditCost: 2,
     genders: ["Male", "Female", "None"],
     aspectRatios: [
       "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"

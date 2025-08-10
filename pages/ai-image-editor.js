@@ -2632,6 +2632,11 @@ export default function AIImageEditor() {
                             },
                             transition: 'all 0.3s ease',
                           }}
+                          title={
+                            selectedModel === 'generate-image' 
+                              ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(currentConfig.creditCost || 0) * numOutputs} credits)`
+                              : `Generate ${currentConfig.name || 'Image'} (${currentConfig.creditCost || 0} credits)`
+                          }
                         >
                           <SendIcon sx={{ fontSize: '18px' }} />
                         </IconButton>
@@ -2739,7 +2744,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Changing Hair Style...' : 'Change Hair Style'}
+                    {isLoading ? 'Changing Hair Style...' : `Change Hair Style (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
 
@@ -2819,7 +2824,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Removing Text...' : 'Remove Text'}
+                    {isLoading ? 'Removing Text...' : `Remove Text (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>
@@ -2899,7 +2904,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Generating Headshot...' : 'Generate Headshot'}
+                    {isLoading ? 'Generating Headshot...' : `Generate Headshot (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>
@@ -2978,7 +2983,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Restoring Image...' : 'Restore Image'}
+                    {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>
@@ -3056,7 +3061,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Restoring Image...' : 'Restore Image (Free)'}
+                    {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>
@@ -3184,7 +3189,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={processingBackgroundRemoval ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {processingBackgroundRemoval ? 'Removing Background...' : 'Remove Background (Free)'}
+                    {processingBackgroundRemoval ? 'Removing Background...' : `Remove Background (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
 
@@ -3295,7 +3300,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Removing Objects...' : 'Remove Objects'}
+                    {isLoading ? 'Removing Objects...' : `Remove Objects (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>
@@ -3371,7 +3376,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'ReImagining...' : 'ReImagine Scenarios'}
+                    {isLoading ? 'ReImagining...' : `ReImagine Scenarios (${currentConfig.creditCost || 0} credits)`}
                   </Button>
                 </Box>
               </>

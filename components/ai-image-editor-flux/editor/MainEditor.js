@@ -8,6 +8,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import MobileConfigPanel from './MobileConfigPanel';
 import ImageUploader from '../ImageUploader';
 import ObjectRemovalMaskEditor from '../ObjectRemovalMaskEditor';
+import BackgroundRemovalProcessor from '../BackgroundRemovalProcessor';
 
 function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHairStyle, setSelectedHairStyle, selectedItems, setSelectedItems, inputPrompt, setInputPrompt, handleKeyPress, generateHairStyleImages, generateTextRemovalImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateCombineImages, generateFluxImages, uploadedImage, uploadingHairImage, setUploadedImage, setUploadedImageUrl, isDragging, handleDragOver, handleDragLeave, handleDrop, error, uploadImageToR2, generatedImages, setGeneratedImages, isLoading, textRemovalImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, combineImage1Url, combineImage2Url, hasMaskDrawn, aspectRatio, setAspectRatio, handleModelChange, selectedHairColor, setSelectedHairColor, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, getAllStyleItems, AppStyleCard, AppStyleIcon, AppStyleLabel, handleStyleSelect, selectedStyles, handleChipClick, handleChipDelete }) {
     const theme = useTheme();
@@ -295,6 +296,11 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                                             },
                                             transition: 'all 0.3s ease',
                                         }}
+                                        title={
+                                            selectedModel === 'generate-image' 
+                                              ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(currentConfig.creditCost || 0) * numOutputs} credits)`
+                                              : `Generate ${currentConfig.name || 'Image'} (${currentConfig.creditCost || 0} credits)`
+                                        }
                                     >
                                         <SendIcon sx={{ fontSize: '18px' }} />
                                     </IconButton>
@@ -402,7 +408,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Changing Hair Style...' : 'Change Hair Style'}
+                            {isLoading ? 'Changing Hair Style...' : `Change Hair Style (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
 
@@ -482,7 +488,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Removing Text...' : 'Remove Text'}
+                            {isLoading ? 'Removing Text...' : `Remove Text (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>
@@ -561,7 +567,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Generating Headshot...' : 'Generate Headshot'}
+                            {isLoading ? 'Generating Headshot...' : `Generate Headshot (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>
@@ -640,7 +646,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Restoring Image...' : 'Restore Image'}
+                            {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>
@@ -718,7 +724,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Restoring Image...' : 'Restore Image (Free)'}
+                            {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>
@@ -846,7 +852,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={processingBackgroundRemoval ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {processingBackgroundRemoval ? 'Removing Background...' : 'Remove Background (Free)'}
+                            {processingBackgroundRemoval ? 'Removing Background...' : `Remove Background (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
 
@@ -952,7 +958,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'Removing Objects...' : 'Remove Objects'}
+                            {isLoading ? 'Removing Objects...' : `Remove Objects (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>
@@ -1028,7 +1034,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                             }}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                         >
-                            {isLoading ? 'ReImagining...' : 'ReImagine Scenarios'}
+                            {isLoading ? 'ReImagining...' : `ReImagine Scenarios (${currentConfig.creditCost || 0} credits)`}
                         </Button>
                     </Box>
                 </>

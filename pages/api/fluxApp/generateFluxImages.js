@@ -79,7 +79,7 @@ export default async function handler(req, res) {
       }
 
 
-      // Ensure we return exactly the number of images requested
+
       const finalOutput = processedOutput.slice(0, config.num_outputs);
 
 
@@ -95,6 +95,7 @@ export default async function handler(req, res) {
             cost: process.env.DEFAULT_MODEL_RUNNING_COST,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
+            numOutputs: config.num_outputs,
             inputImages: getInputImagesFromConfig(config)
           });
 
@@ -103,12 +104,6 @@ export default async function handler(req, res) {
             historyId: storedImage.historyId
           });
         }
-
-
-        
-
-        console.log(`Stored ${storedImages.length} images in history`);
-        console.log('API Response format:', JSON.stringify(storedImages, null, 2));
         res.status(200).json(storedImages);
       } catch (error) {
         console.error('Error storing images in history:', error);
