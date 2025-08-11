@@ -76,6 +76,7 @@ function CreditPlanCard() {
     `${item.creditPoints - item.extraCreditPoints} Photo Credits`,
     ...(item.extraCreditPoints != 0 ? [`+${item.extraCreditPoints} Credits Extra`] : []),
     "Free Remove Background",
+    `Storage: ${item.storage}`,
     "1 Credit used per model",
     "Access of all Models",
     `Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`

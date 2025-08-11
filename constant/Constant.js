@@ -31,6 +31,7 @@ const priceStructure = [
         name: "standard",
         country: "Others Country",
         currency: "USD",
+        storage: "2GB",
         price: process.env.NEXT_PUBLIC_STANDARD_VARIANT_PRICE_US,
         creditPoints: process.env.NEXT_PUBLIC_STANDARD_TOTAL_CREDIT_POINTS_US,
         extraCreditPoints: process.env.NEXT_PUBLIC_STANDARD_EXTRA_CREDIT_POINTS_US,
@@ -40,6 +41,7 @@ const priceStructure = [
         name: "popular",
         country: "Others Country",
         currency: "USD",
+        storage: "5GB",
         price: process.env.NEXT_PUBLIC_POPULAR_VARIANT_PRICE_US,
         creditPoints: process.env.NEXT_PUBLIC_POPULAR_TOTAL_CREDIT_POINTS_US,
         extraCreditPoints: process.env.NEXT_PUBLIC_POPULAR_EXTRA_CREDIT_POINTS_US,
@@ -49,6 +51,7 @@ const priceStructure = [
         name: "premium",
         country: "Others Country",
         currency: "USD",
+        storage: "10GB",
         price: process.env.NEXT_PUBLIC_PREMIUM_VARIANT_PRICE_US,
         creditPoints: process.env.NEXT_PUBLIC_PREMIUM_TOTAL_CREDIT_POINTS_US,
         extraCreditPoints: process.env.NEXT_PUBLIC_PREMIUM_EXTRA_CREDIT_POINTS_US

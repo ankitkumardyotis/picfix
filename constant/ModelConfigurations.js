@@ -66,7 +66,7 @@ const modelConfigurations = {
     ]
   },
   'text-removal': {
-    name: 'Remove Watermark or Text',
+    name: 'Remove Watermark',
     type: 'text-removal',
     creditCost: 2,
     aspectRatios: [

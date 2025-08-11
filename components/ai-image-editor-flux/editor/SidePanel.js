@@ -11,7 +11,6 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
-
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const SidePanel = styled(Box)(({ theme }) => ({
@@ -38,6 +37,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
     const imageStyle = {
         borderRadius: '5px',
     };
+
 
     // Dynamic aspect ratio options based on selected model
     const getAspectRatioOptions = () => {
@@ -461,8 +461,17 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                 )
             }
 
+            {/* Show credit according to the model */}
+
             {/* Additional Settings */}
             {!isMobile && < Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+
+                <Box sx={{}}>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center' }}>
+                        {currentConfig.creditCost !== 0 ? `Per run cost: ${currentConfig.creditCost * numOutputs}` : 'This model is free to use.'}
+                    </Typography>
+                </Box>
+
                 <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
                     Credits remaining: {context.creditPoints}
                 </Typography>

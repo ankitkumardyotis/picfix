@@ -230,11 +230,22 @@ const PhotoAIHero = () => {
                                 }}
                             >
                                 Transform Your{' '}
-                                <Box component="span" sx={{ color: '#4ecdc4' }}>
+                                <Box component="span" sx={{
+                                    background: 'linear-gradient(135deg,rgb(244,0,123) 0%, #d76d77 50%, #ff8418 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}>
                                     Photos
                                 </Box>{' '}
                                 with{' '}
-                                <Box component="span" sx={{ color: '#ffa726' }}>
+                                <Box component="span" sx={{
+                                    background: 'linear-gradient(135deg,rgb(254,198,0) 0%, #d76d77 100%,rgb(244,0,123) 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    fontWeight: 800,
+                                }}>
                                     AI
                                 </Box>
                             </Typography>

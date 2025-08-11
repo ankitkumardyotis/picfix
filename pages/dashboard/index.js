@@ -162,7 +162,7 @@ function Home() {
                                 {/* logo */}
                                 <div style={{ display: 'flex', alignItems: 'center', paddingBottom: '1.5em', justifyContent: 'center', }}>
                                     <Link href="/">
-                                        <Image src="/assets/PicFixAILogo.jpg" alt="Logo" width={180} height={45} style={{ borderRadius: '10px' }} />
+                                        <Image src="/assets/PicFixAILogo.jpg" alt="Logo" width={180} height={40} style={{ borderRadius: '5px' }} />
                                     </Link>
                                 </div>
                                 <Box className="dashboard " onClick={() => router.push('/')} sx={{ cursor: 'pointer', backgroundColor: '#ececec', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', "&:hover": { backgroundColor: '#adb5bd', transition: '.2s ease-in-out' } }}>
