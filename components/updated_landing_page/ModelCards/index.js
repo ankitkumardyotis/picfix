@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, Card, Typography, Container, useTheme, styled, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/router';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SendIcon from '@mui/icons-material/Send';
@@ -12,7 +13,8 @@ const aiModels = [
         description: "Generate images with AI precision",
         icon: "🎭",
         gradient: "linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/generate-image/A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/generate-image/A cyberpunk girl with glowing tattoos and a robotic arm in a rainy city.jpg",
+        modelKey: "generate-image"
     },
     {
         id: 2,
@@ -20,7 +22,8 @@ const aiModels = [
         description: "Change the color and style of the hair to blonde",
         icon: "✨",
         gradient: "linear-gradient(135deg, #6C5CE7 0%, #45B7D1 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/hair-style/female/Random.png"
+        image: "https://picfixcdn.com/picfix-usecase-image/hair-style/female/Random.png",
+        modelKey: "hair-style"
     },
     {
         id: 3,
@@ -28,7 +31,8 @@ const aiModels = [
         description: "Convert photo to professional headshot",
         icon: "🎯",
         gradient: "linear-gradient(135deg, #FF8C00 0%, #FF2D55 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/headshot/professional-headshot-wb2igq.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/headshot/professional-headshot-wb2igq.jpg",
+        modelKey: "headshot"
     },
 
     {
@@ -37,7 +41,8 @@ const aiModels = [
         description: "Remove text and watermarks from images",
         icon: "🎨",
         gradient: "linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/text-removal/poster from jerry.jpeg"
+        image: "https://picfixcdn.com/picfix-usecase-image/text-removal/poster from jerry.jpeg",
+        modelKey: "text-removal"
     },
     {
         id: 6,
@@ -45,7 +50,8 @@ const aiModels = [
         description: "Re-imagine yourself in a new",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-underwater-with-full-scuba-gear-surround-cznw15.jpg",
+        modelKey: "reimagine"
     },
     {
         id: 7,
@@ -53,7 +59,8 @@ const aiModels = [
         description: "Add both person in one frame where both should look natural.",
         icon: "📝",
         gradient: "linear-gradient(135deg, #20BF55 0%, #01BAEF 100%)",
-        image: "https://picfixcdn.com/picfix-usecase-image/combine-image/add-both-person-in-one-frame-where-both-should-loo-bstca2.jpg"
+        image: "https://picfixcdn.com/picfix-usecase-image/combine-image/add-both-person-in-one-frame-where-both-should-loo-bstca2.jpg",
+        modelKey: "combine-image"
     },
 
 
@@ -63,7 +70,8 @@ const aiModels = [
         description:"Restore old or damaged photos automatically",
         icon:"👤",
         gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/girlImg.jpg"
+        image:"/assets/girlImg.jpg",
+        modelKey: "restore-image"
     },
     {
         id:10,
@@ -71,7 +79,8 @@ const aiModels = [
         description:"Remove background from images",
         icon:"👤",
         gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/remove-background.jpg"
+        image:"/assets/remove-background.jpg",
+        modelKey: "remove-background"
     },
     {
         id:11,
@@ -79,7 +88,8 @@ const aiModels = [
         description:"Design your dream home with AI",
         icon:"👤",
         gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/Dream-Room.jpg"
+        image:"/assets/Dream-Room.jpg",
+        modelKey: "home-designer"
     }
 
 ];
@@ -213,9 +223,14 @@ const CardContent = styled(Box)({
 
 
 const ModelCards = () => {
+    const router = useRouter();
     const scrollContainerRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const handleModelClick = (modelKey) => {
+        router.push(`/ai-image-editor?model=${modelKey}`);
+    };
 
     const checkScrollability = () => {
         const container = scrollContainerRef.current;
@@ -326,6 +341,7 @@ const ModelCards = () => {
                                 component={motion.div}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => handleModelClick(model.modelKey)}
                             >
                                 <CardImage
                                     src={model.image}
@@ -366,6 +382,7 @@ const ModelCards = () => {
                                 component={motion.div}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => handleModelClick(model.modelKey)}
                             >
                                 <CardImage
                                     src={model.image}

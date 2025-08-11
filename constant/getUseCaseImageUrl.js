@@ -292,12 +292,12 @@ export const getUseCaseImageUrl = [
             {
                 id: 1,
                 "imagePath": "white-cat-original.jpg",
-                "outputImage": "white-cat-enhanced-restore-image.jpg"
+                "outputImage": "white-cat-enhanced-restore-image-free.jpg"
             },
             {
                 id: 2,
-                "imagePath": "girl-porttrait-image.jpg",
-                "outputImage": "girl-portrait-free.jpg"
+                "imagePath": "girl-portrait-free.jpg",
+                "outputImage": "girl-porttrait-image.jpg"
             }
         ]
     },
