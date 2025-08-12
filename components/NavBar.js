@@ -130,12 +130,13 @@ function NavBar({ open, setOpen }) {
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
+                    alignContent: 'center',
                     justifyContent: 'space-between',
                     padding: '0',
                     transition: 'all 0.3s ease'
                 }}>
                     {/* Logo */}
-                    <div style={{ marginLeft: isMobile ? '-15px' : '0px' }}>
+                    <div style={{ marginLeft: isMobile ? '-15px' : '0px', marginTop: isMobile ? '10px' : '4px' }}>
                         <Link href="/">
                             <Image style={imageStyle} src="/assets/PicFixAILogo.jpg" alt="Logo" width={210} height={40} />
                         </Link>

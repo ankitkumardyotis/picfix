@@ -74,7 +74,6 @@ const PaymentReceipt = () => {
                 <Divider />
                 <Typography variant="body2" mt={2} color="textSecondary">
                     For any inquiries, please contact software@dyotis.com <br />
-                    or call (+91) 0120 4-915-834.
                 </Typography>
             </Box>
             <Box m={2} maxWidth="sm" display="flex" gap="1em">

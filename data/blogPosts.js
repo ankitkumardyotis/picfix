@@ -33,7 +33,7 @@ export const blogPosts = [
     
           <h2>Final Thoughts: Enhancing Photos with AI</h2>
           <p>Using an <strong>AI photo enhancer</strong> is a great way to improve your images, whether you're looking to <strong>restore old pics</strong> or enhance recent photos. With free online tools, anyone can boost image resolution, sharpen details, and enjoy high-quality photos with minimal effort. So, next time you come across an old, faded photo, remember that AI is here to bring it back to life!</p>
-          <p>If you want to experience the power of AI for yourself, try it today on <a href="https://www.picfix.ai/restorePhoto">Picfix.ai's Restore Photo</a> page and watch as your old memories turn into high-resolution masterpieces!</p>
+          <p>If you want to experience the power of AI for yourself, try it today on <a href="https://picfix.ai/ai-image-editor?model=gfp-restore">Picfix.ai's Restore Photo</a> page and watch as your old memories turn into high-resolution masterpieces!</p>
         `,
     },
     {
@@ -73,7 +73,7 @@ export const blogPosts = [
           </ul>
       
           <h2>Get Started with Background Removal Today</h2>
-          <p>Experience the power of AI and make your photo editing easier. Try our <a href="https://www.picfix.ai/backgroundRemoval">AI background remover</a> today and transform your images with just a few clicks!</p>
+          <p>Experience the power of AI and make your photo editing easier. Try our <a href="https://picfix.ai/ai-image-editor?model=remove-background">AI background remover</a> today and transform your images with just a few clicks!</p>
         `
     },
     {
@@ -103,51 +103,9 @@ export const blogPosts = [
           </ul>
       
           <h2>How to Get Started</h2>
-          <p>To remove objects from your photos, all you need to do is upload your image to our <a href="https://www.picfix.ai/removeObject">Remove Object</a> tool, use the masking tool to highlight the object, and let the AI do its magic. You’ll get a clean, professional-looking photo in seconds.</p>
+          <p>To remove objects from your photos, all you need to do is upload your image to our <a href="https://picfix.ai/ai-image-editor?model=remove-object">Remove Object</a> tool, use the masking tool to highlight the object, and let the AI do its magic. You’ll get a clean, professional-looking photo in seconds.</p>
       
           <p>With AI-driven photo editing, you no longer need expensive software or advanced editing skills. Try it today and see how easy it is to <strong>remove unwanted objects from photos</strong> for free!</p>
-        `
-    },
-    {
-        "title": "Adding Stunning Colors to Black-and-White Photos Using AI",
-        "description": "Breathe new life into your old black-and-white photos with AI-driven colorization. Restore the vibrant hues of the past with ease and create vivid, stunning images.",
-        "image": "/assets/hedy lamar image-colorization-1600X900 .jpg",
-        "slug": "adding-stunning-colors-to-black-and-white-photos-using-ai",
-        "date": "2024-12-02",
-        "category": "AI Technology",
-        "content": `
-          <p>Black-and-white photos are a timeless treasure, offering a glimpse into the past. But imagine seeing those old memories come to life in full color! With our advanced <strong>AI-driven image colorization</strong> tool, you can easily transform your black-and-white photos into vivid, full-color masterpieces.</p>
-      
-          <h2>How AI Image Colorization Works</h2>
-          <p>Our <strong>AI colorization model</strong> uses deep learning to intelligently predict the colors of objects, landscapes, and people in old photos. By analyzing patterns and understanding how objects in the real world should appear, our AI fills in the details to create a beautifully colored image. This process is fast, easy, and provides stunning results that make your vintage photos look like new.</p>
-      
-          <h2>Why Use AI for Image Colorization?</h2>
-          <p>AI technology allows for a <strong>realistic photo enhancement</strong> that traditional methods can't match. Whether you have an old family portrait, a historic photograph, or any other black-and-white image, our AI model ensures the colors are as accurate as possible. The AI predicts and adds colors to your photo with <strong>photo enhancer</strong> capabilities that bring out vibrant details and clarity.</p>
-      
-          <h2>Reignite the Beauty of the Past</h2>
-          <p>AI image colorization is perfect for those looking to <strong>bring life back to old photographs</strong>. It’s not just about adding color; it's about restoring memories in a way that captures their true essence. With this tool, you can:</p>
-          <ul>
-            <li><strong>Enhance old family photos</strong> and relive cherished memories with new life.</li>
-            <li><strong>Preserve historical images</strong> by converting them into high-quality, colorized versions.</li>
-            <li><strong>Personalize your images</strong> with vibrant hues that reflect the beauty of the time captured.</li>
-          </ul>
-      
-          <h2>How to Get Started with Image Colorization</h2>
-          <p>Getting started with our <strong>image colorization tool</strong> is easy! Simply upload your black-and-white image to the <a href="https://www.picfix.ai/imageColorization">Image Colorization page</a>, and our AI will automatically start filling in the colors. In just a few moments, you’ll have a vibrant, colorized version of your photo ready for download.</p>
-      
-          <h2>Perfect for Photographers and History Buffs</h2>
-          <p>If you're a photographer or a history enthusiast, this tool is a must-try. Our <strong>AI photo editor</strong> brings depth and dimension to your images, enhancing their realism and impact. Whether you want to revive old portraits, scenic shots, or historical images, you’ll be amazed at how easily you can turn your photos into stunning visual stories.</p>
-      
-          <h2>Additional Features You’ll Love</h2>
-          <p>In addition to image colorization, our platform offers:</p>
-          <ul>
-            <li><strong>AI photo restoration:</strong> Improve the quality and clarity of old and low-resolution images.</li>
-            <li><strong>Background removal:</strong> Easily <strong>remove backgrounds</strong> from images with AI tools.</li>
-            <li><strong>Object removal:</strong> Remove unwanted elements from your photos using advanced AI technology.</li>
-          </ul>
-      
-          <h2>Start Colorizing Your Photos Today</h2>
-          <p>Don’t let your old black-and-white photos fade into obscurity. Use our AI-powered <strong>colorization tool</strong> to restore them with stunning colors and vivid details. With just a few clicks, you can turn your historic moments into timeless pieces of art. Visit <a href="https://www.picfix.ai/imageColorization">Image Colorization</a> and start transforming your memories today!</p>
         `
     },
     {
@@ -207,7 +165,7 @@ export const blogPosts = [
           </ul>
       
           <h2>Start Redesigning Your Space Today</h2>
-          <p>Transform your home with our <strong>AI-driven room planner</strong> and interior design tool. Whether you’re redecorating one room or planning a full home makeover, our AI can help you achieve the perfect look. Visit <a href="https://www.picfix.ai/aiHomeMakeover">AI Home Makeover</a> now and start designing your dream space today!</p>
+          <p>Transform your home with our <strong>AI-driven room planner</strong> and interior design tool. Whether you’re redecorating one room or planning a full home makeover, our AI can help you achieve the perfect look. Visit <a href="https://picfix.ai/ai-image-editor?model=home-designer">AI Home Makeover</a> now and start designing your dream space today!</p>
         `
     }
 ];

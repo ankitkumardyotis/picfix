@@ -99,7 +99,8 @@ const modelConfigurations = {
   'home-designer': {
     name: 'Home Designer',
     type: 'prompts',
-    creditCost: 2,
+    creditCost: 0,
+    free: true,
     options: [
       'a cheerful modernist bedroom',
       'a cozy living room with fireplace',

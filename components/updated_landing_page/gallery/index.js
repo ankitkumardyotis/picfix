@@ -87,8 +87,13 @@ const ImageOverlay = styled(Box)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
     marginTop: theme.spacing(4),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#333',
+    // backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
+    '&:hover': {
+        background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+        boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
+    },
+    color: 'white',
     fontWeight: 600,
     padding: theme.spacing(1.5, 4),
     borderRadius: theme.spacing(1),
@@ -96,11 +101,11 @@ const StyledButton = styled(Button)(({ theme }) => ({
     fontSize: '1.1rem',
     backdropFilter: 'blur(10px)',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-        backgroundColor: 'white',
-        transform: 'translateY(-2px)',
-        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.15)',
-    },
+    // '&:hover': {
+    //     backgroundColor: 'white',
+    //     transform: 'translateY(-2px)',
+    //     boxShadow: '0 15px 35px rgba(0, 0, 0, 0.15)',
+    // },
     transition: 'all 0.3s ease',
     [theme.breakpoints.down('md')]: {
         fontSize: '1rem',

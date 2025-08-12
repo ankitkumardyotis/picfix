@@ -61,7 +61,7 @@ function PaymentSuccessComponent({ status, amount, planName, currency, transacti
                 </Typography>
                 <Divider />
                 <Typography variant="body2" mt={2} color="textSecondary">
-                    For any inquiries, please contact software@dyotis.com <br />or call (+91) 0120 4-915-834.
+                    For any inquiries, please contact software@dyotis.com <br />
                 </Typography>
             </Box>
             {/* <Box mt={2}>

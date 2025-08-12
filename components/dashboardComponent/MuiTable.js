@@ -81,7 +81,7 @@ export default function MuiTable({ userHistory }) {
 
   const [rows, setRows] = React.useState(newDataAfterDateFormat);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = ( newPage) => {
     setPage(newPage);
   };
 

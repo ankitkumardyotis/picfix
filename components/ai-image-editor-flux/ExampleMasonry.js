@@ -796,12 +796,12 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
     activeTab === 'history' ? loadingHistoryImages :
       loadingS3Images;
 
-      const isMobile=useMediaQuery('(max-width: 600px)');
+  const isMobile = useMediaQuery('(max-width: 600px)');
 
   return (
     <Box sx={{ mt: 1 }}>
       {/* Toggle between Examples and Community */}
-      <Box sx={{ display: 'flex', flexDirection:isMobile ? 'column' : 'row',gap:isMobile ? '1rem' : '0px', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1rem' : '0px', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           {activeTab === 'community' ? 'Community Images' :
             activeTab === 'history' ? 'My History' :
@@ -825,11 +825,16 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
               borderRadius: '20px',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               '&.Mui-selected': {
-                backgroundColor: theme.palette.primary.main,
+                // backgroundColor: theme.palette.primary.main,
+                background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
                 color: 'white',
+                // '&:hover': {
+                //   backgroundColor: theme.palette.primary.dark,
+                // }
                 '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                }
+                  background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+                  boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
+                },
               }
             }
           }}
@@ -842,7 +847,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
       {/* Conditional Content Rendering */}
       {isLoading && (
-        (activeTab === 'history' && !hasHistoryImages()) || 
+        (activeTab === 'history' && !hasHistoryImages()) ||
         (activeTab !== 'history' && (!displayImages || displayImages.length === 0))
       ) ? (
         // Show loading skeleton when fetching images and no images exist
@@ -917,7 +922,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           </Masonry>
         </Box>
       ) : (
-        (activeTab === 'history' && !hasHistoryImages()) || 
+        (activeTab === 'history' && !hasHistoryImages()) ||
         (activeTab !== 'history' && (!displayImages || displayImages.length === 0))
       ) ? (
         // Show empty state when no images and not loading
@@ -936,39 +941,39 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
             (activeTab === 'history' && hasHistoryImages()) ||
             (activeTab !== 'history' && displayImages && displayImages.length > 0)
           ) && (
-            <Box sx={{ mb: 2, textAlign: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                <Skeleton variant="circular" width={16} height={16} animation="wave" />
-                <Skeleton
-                  variant="text"
-                  width={`${selectedModel === 'hair-style' && selectedGender ? 140 : 120}px`}
-                  height={20}
-                  animation="wave"
-                />
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                  <Skeleton variant="circular" width={16} height={16} animation="wave" />
+                  <Skeleton
+                    variant="text"
+                    width={`${selectedModel === 'hair-style' && selectedGender ? 140 : 120}px`}
+                    height={20}
+                    animation="wave"
+                  />
+                </Box>
               </Box>
-            </Box>
-          )}
+            )}
 
           {/* Render grouped history images */}
           {activeTab === 'history' && historyImages && typeof historyImages === 'object' ? (
             Object.entries(historyImages).map(([period, images]) => {
               if (!Array.isArray(images) || images.length === 0) return null;
-              
+
               return (
                 <Box key={period} sx={{ mb: 4 }}>
                   {/* Time period header */}
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 600, 
-                      mb: 2, 
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
                       color: theme.palette.text.primary,
                       fontSize: '1.1rem'
                     }}
                   >
                     {getTimePeriodLabel(period)} ({images.length})
                   </Typography>
-                  
+
                   {/* Images masonry for this period */}
                   <Masonry
                     columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
@@ -980,278 +985,278 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                     }}
                   >
                     {images.map((image, index) => (
-              <Card
-                key={image.id}
-                sx={{
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  padding: 0,
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                    '& .image-overlay': {
-                      opacity: 1,
-                    },
-                  },
-                }}
-                onClick={() => handleImagePreview(image, index)}
-              >
-                <Box sx={{ position: 'relative' }}>
-                  {imageLoadingStates[image.id] && (
-                    <Skeleton
-                      variant="rectangular"
-                      width="100%"
-                      height={image.height || 250}
-                      animation="wave"
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        zIndex: 1,
-                        borderRadius: 1,
-                      }}
-                    />
-                  )}
-
-                  {/* Community Badge */}
-                  {image.isCommunity && (
-                    <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
-                      <Chip
-                        label="Community"
-                        size="small"
+                      <Card
+                        key={image.id}
                         sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                          color: 'white',
-                          fontSize: '10px',
-                          height: 20
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  {/* History Badge */}
-                  {image.isHistory && (
-                    <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
-                      <Chip
-                        label={image.isPublished ? "Published" : "History"}
-                        size="small"
-                        sx={{
-                          backgroundColor: image.isPublished ?
-                            alpha(theme.palette.success.main, 0.9) :
-                            alpha(theme.palette.secondary.main, 0.9),
-                          color: 'white',
-                          fontSize: '10px',
-                          height: 20
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  <CardMedia
-                    component="img"
-                    image={selectedModel === 'combine-image' ? image.outputImage : image.url}
-                    alt={image.title || `Example Image ${index + 1}`}
-                    onLoad={() => handleImageLoad(image.id)}
-                    onLoadStart={() => handleImageLoadStart(image.id)}
-                    referrerPolicy="no-referrer"
-                    sx={{
-                      width: '100%',
-                      height: image.height || 250, // Default height if not specified
-                      objectFit: 'cover',
-                      transition: 'opacity 0.3s ease',
-                      opacity: imageLoadingStates[image.id] ? 0 : 1,
-                    }}
-                  />
-
-                  {/* Overlay */}
-                  <Box
-                    className="image-overlay"
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    {/* Top actions */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, p: 2, }}>
-                      <Tooltip title="Preview Image">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                            color: theme.palette.text.primary,
-                            '&:hover': {
-                              backgroundColor: theme.palette.background.paper,
+                          borderRadius: 2,
+                          overflow: 'hidden',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          padding: 0,
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[8],
+                            '& .image-overlay': {
+                              opacity: 1,
                             },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImagePreview(image, index);
-                          }}
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                          },
+                        }}
+                        onClick={() => handleImagePreview(image, index)}
+                      >
+                        <Box sx={{ position: 'relative' }}>
+                          {imageLoadingStates[image.id] && (
+                            <Skeleton
+                              variant="rectangular"
+                              width="100%"
+                              height={image.height || 250}
+                              animation="wave"
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                zIndex: 1,
+                                borderRadius: 1,
+                              }}
+                            />
+                          )}
 
-                      {/* Comparison button - only show if comparison is available */}
-                      {image.hasComparison && image.inputUrl && image.outputUrl && selectedModel !== 'combine-image' && (
-                        <Tooltip title="Compare Before/After">
-                          <IconButton
-                            size="small"
+                          {/* Community Badge */}
+                          {image.isCommunity && (
+                            <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                              <Chip
+                                label="Community"
+                                size="small"
+                                sx={{
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                                  color: 'white',
+                                  fontSize: '10px',
+                                  height: 20
+                                }}
+                              />
+                            </Box>
+                          )}
+
+                          {/* History Badge */}
+                          {image.isHistory && (
+                            <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                              <Chip
+                                label={image.isPublished ? "Published" : "History"}
+                                size="small"
+                                sx={{
+                                  backgroundColor: image.isPublished ?
+                                    alpha(theme.palette.success.main, 0.9) :
+                                    alpha(theme.palette.secondary.main, 0.9),
+                                  color: 'white',
+                                  fontSize: '10px',
+                                  height: 20
+                                }}
+                              />
+                            </Box>
+                          )}
+
+                          <CardMedia
+                            component="img"
+                            image={selectedModel === 'combine-image' ? image.outputImage : image.url}
+                            alt={image.title || `Example Image ${index + 1}`}
+                            onLoad={() => handleImageLoad(image.id)}
+                            onLoadStart={() => handleImageLoadStart(image.id)}
+                            referrerPolicy="no-referrer"
                             sx={{
-                              backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                              color: 'white',
-                              '&:hover': {
-                                backgroundColor: theme.palette.primary.main,
-                              },
+                              width: '100%',
+                              height: image.height || 250, // Default height if not specified
+                              objectFit: 'cover',
+                              transition: 'opacity 0.3s ease',
+                              opacity: imageLoadingStates[image.id] ? 0 : 1,
                             }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleComparisonOpen(image, index);
+                          />
+
+                          {/* Overlay */}
+                          <Box
+                            className="image-overlay"
+                            sx={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)',
+                              opacity: 0,
+                              transition: 'opacity 0.3s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
                             }}
                           >
-                            <CompareIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
+                            {/* Top actions */}
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, p: 2, }}>
+                              <Tooltip title="Preview Image">
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                                    color: theme.palette.text.primary,
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.background.paper,
+                                    },
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleImagePreview(image, index);
+                                  }}
+                                >
+                                  <VisibilityIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
 
-                      <Tooltip title="Download Image">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                            color: theme.palette.text.primary,
-                            '&:hover': {
-                              backgroundColor: theme.palette.background.paper,
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(image, image.title, image.prompt);
-                          }}
-                        >
-                          <DownloadIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                              {/* Comparison button - only show if comparison is available */}
+                              {image.hasComparison && image.inputUrl && image.outputUrl && selectedModel !== 'combine-image' && (
+                                <Tooltip title="Compare Before/After">
+                                  <IconButton
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                                      color: 'white',
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.primary.main,
+                                      },
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleComparisonOpen(image, index);
+                                    }}
+                                  >
+                                    <CompareIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
 
-                      {/* Delete button - only show for history images */}
-                      {image.isHistory && (
-                        <Tooltip title="Delete from History">
-                          <IconButton
-                            size="small"
-                            sx={{
-                              backgroundColor: alpha(theme.palette.error.main, 0.9),
-                              color: 'white',
-                              '&:hover': {
-                                backgroundColor: theme.palette.error.main,
-                                transform: 'scale(1.1)',
-                              },
-                              transition: 'all 0.2s ease',
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(image);
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
+                              <Tooltip title="Download Image">
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                                    color: theme.palette.text.primary,
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.background.paper,
+                                    },
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownload(image, image.title, image.prompt);
+                                  }}
+                                >
+                                  <DownloadIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
 
-                    {/* Bottom content */}
-                    <Box sx={{ p: 1 }}>
-                      {/* Community image title */}
-                      {image.isCommunity && image.title && (
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: 'white',
-                            fontWeight: 600,
-                            mb: 1,
-                            fontSize: '12px'
-                          }}
-                        >
-                          {image.title}
-                        </Typography>
-                      )}
+                              {/* Delete button - only show for history images */}
+                              {image.isHistory && (
+                                <Tooltip title="Delete from History">
+                                  <IconButton
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: alpha(theme.palette.error.main, 0.9),
+                                      color: 'white',
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.error.main,
+                                        transform: 'scale(1.1)',
+                                      },
+                                      transition: 'all 0.2s ease',
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(image);
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
 
-                      {/* Author info for community images */}
-                      {image.isCommunity && image.author && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: alpha('#ffffff', 0.8),
-                            fontSize: '10px',
-                            mb: 1,
-                            display: 'block'
-                          }}
-                        >
-                          by {image.author}
-                        </Typography>
-                      )}
+                            {/* Bottom content */}
+                            <Box sx={{ p: 1 }}>
+                              {/* Community image title */}
+                              {image.isCommunity && image.title && (
+                                <Typography
+                                  variant="subtitle2"
+                                  sx={{
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    mb: 1,
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  {image.title}
+                                </Typography>
+                              )}
 
-                      {/* Prompt chip - Only show for models that use prompts */}
-                      {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
-                        <Chip
-                          label="Use this prompt"
-                          size="small"
-                          clickable
-                          sx={{
-                            backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                            color: 'white',
-                            fontSize: '10px',
-                            height: 24,
-                            mr: 1,
-                            '&:hover': {
-                              backgroundColor: theme.palette.primary.main,
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePromptUse(image.prompt);
-                          }}
-                        />
-                      )}
+                              {/* Author info for community images */}
+                              {image.isCommunity && image.author && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: alpha('#ffffff', 0.8),
+                                    fontSize: '10px',
+                                    mb: 1,
+                                    display: 'block'
+                                  }}
+                                >
+                                  by {image.author}
+                                </Typography>
+                              )}
 
-                      {/* Publish chip for unpublished history images */}
-                      {image.isHistory && !image.isPublished && (
-                        <Chip
-                          label="Publish"
-                          size="small"
-                          clickable
-                          sx={{
-                            backgroundColor: alpha(theme.palette.success.main, 0.9),
-                            color: 'white',
-                            fontSize: '10px',
-                            height: 24,
-                            '&:hover': {
-                              backgroundColor: theme.palette.success.main,
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePublishFromHistory(image.historyId, image.title);
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </Box>
-                </Box>
-              </Card>
+                              {/* Prompt chip - Only show for models that use prompts */}
+                              {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
+                                <Chip
+                                  label="Use this prompt"
+                                  size="small"
+                                  clickable
+                                  sx={{
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                                    color: 'white',
+                                    fontSize: '10px',
+                                    height: 24,
+                                    mr: 1,
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.primary.main,
+                                    },
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePromptUse(image.prompt);
+                                  }}
+                                />
+                              )}
+
+                              {/* Publish chip for unpublished history images */}
+                              {image.isHistory && !image.isPublished && (
+                                <Chip
+                                  label="Publish"
+                                  size="small"
+                                  clickable
+                                  sx={{
+                                    backgroundColor: alpha(theme.palette.success.main, 0.9),
+                                    color: 'white',
+                                    fontSize: '10px',
+                                    height: 24,
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.success.main,
+                                    },
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePublishFromHistory(image.historyId, image.title);
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Card>
                     ))}
                   </Masonry>
                 </Box>

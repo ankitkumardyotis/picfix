@@ -66,29 +66,29 @@ const aiModels = [
 
     {
         id: 9,
-        title:"Restore Image",
-        description:"Restore old or damaged photos automatically",
-        icon:"👤",
-        gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/girlImg.jpg",
+        title: "Restore Image",
+        description: "Restore old or damaged photos automatically",
+        icon: "👤",
+        gradient: "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
+        image: "/assets/girlImg.jpg",
         modelKey: "restore-image"
     },
     {
-        id:10,
-        title:"Remove Background",
-        description:"Remove background from images",
-        icon:"👤",
-        gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/remove-background.jpg",
+        id: 10,
+        title: "Remove Background",
+        description: "Remove background from images",
+        icon: "👤",
+        gradient: "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
+        image: "/assets/remove-background.jpg",
         modelKey: "remove-background"
     },
     {
-        id:11,
-        title:"Home Designer",
-        description:"Design your dream home with AI",
-        icon:"👤",
-        gradient:"linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
-        image:"/assets/Dream-Room.jpg",
+        id: 11,
+        title: "Home Designer",
+        description: "Design your dream home with AI",
+        icon: "👤",
+        gradient: "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
+        image: "/assets/Dream-Room.jpg",
         modelKey: "home-designer"
     }
 
@@ -140,25 +140,20 @@ const NavigationContainer = styled(Box)({
 const ArrowButton = styled(IconButton)(({ theme, disabled }) => ({
     width: '50px',
     height: '50px',
-    // background:'linear-gradient(135deg,rgb(228, 217, 248) 0%,rgb(244, 172, 179) 50%,rgb(247, 214, 193) 100%)',
-    // color: disabled ? 'rgba(0, 0, 0, 0.3)' : '#333',
-    // border: '2px solid rgba(255, 255, 255, 0.2)',
+    background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
     borderRadius: '50%',
-    // backdropFilter: 'blur(10px)',
-    // boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
     transition: 'all 0.5s ease',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    
-    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
     color: 'white',
+
     '&:hover': {
-      background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-      transform: 'scale(1.1)',
+        background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+        boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
     },
     '&:active': {
         transform: disabled ? 'none' : 'translateY(0px)',
     },
-    
+
     '& .MuiSvgIcon-root': {
         fontSize: '1.2rem',
     },
@@ -244,7 +239,7 @@ const ModelCards = () => {
     const scrollLeft = () => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        
+
         const cardWidth = 250 + 32; // card width + margin
         const scrollAmount = cardWidth * 2; // scroll 2 cards at a time
         container.scrollLeft -= scrollAmount;
@@ -253,7 +248,7 @@ const ModelCards = () => {
     const scrollRight = () => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        
+
         const cardWidth = 250 + 32; // card width + margin
         const scrollAmount = cardWidth * 2; // scroll 2 cards at a time
         container.scrollLeft += scrollAmount;
@@ -276,7 +271,7 @@ const ModelCards = () => {
 
         container.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('scroll', handleScroll);
-        
+
         // Initial check
         checkScrollability();
 
@@ -425,11 +420,11 @@ const ModelCards = () => {
                         component={motion.button}
                         whileHover={{ scale: !canScrollLeft ? 1 : 1.1 }}
                         whileTap={{ scale: !canScrollLeft ? 1 : 0.95 }}
-                        
+
                     >
                         <SendIcon sx={{ transform: 'rotate(180deg)' }} />
                     </ArrowButton>
-                    
+
                     <ArrowButton
                         onClick={scrollRight}
                         disabled={!canScrollRight}

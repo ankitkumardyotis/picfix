@@ -10,17 +10,19 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import { styled, alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/router';
-import { 
-    Dashboard, 
-    PhotoLibrary, 
-    Article, 
+import {
+    Dashboard,
+    PhotoLibrary,
+    Article,
     Logout,
-    AccountBalanceRounded 
+    AccountBalanceRounded,
+    PriceChange
 } from '@mui/icons-material';
 
 const options = [
     { label: 'Dashboard', icon: <Dashboard sx={{ fontSize: 18 }} />, path: '/dashboard' },
     { label: 'Gallery', icon: <PhotoLibrary sx={{ fontSize: 18 }} />, path: '/gallery' },
+    { label: 'Pricing', icon: <PriceChange sx={{ fontSize: 18 }} />, path: '/price' },
     { label: 'Blog', icon: <Article sx={{ fontSize: 18 }} />, path: '/blog' },
     { label: 'Sign Out', icon: <Logout sx={{ fontSize: 18 }} />, path: '/logout' }
 ];
@@ -41,13 +43,18 @@ const StyledButton = styled(Button)(({ theme }) => ({
     fontWeight: 600,
     fontSize: '0.8rem',
     padding: theme.spacing(1, 2),
-    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+    // background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+    background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
     color: 'white',
     boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+    // '&:hover': {
+    //     background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
+    //     // transform: 'translateY(-2px)',
+    //     boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
+    // },
     '&:hover': {
-        background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-        // transform: 'translateY(-2px)',
-        boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
+        background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+        boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
     },
     '&.Mui-disabled': {
         background: theme.palette.action.disabledBackground,
@@ -65,13 +72,18 @@ const StyledDropdownButton = styled(Button)(({ theme }) => ({
     fontSize: '0.8rem',
     padding: theme.spacing(1, 1.5),
     minWidth: 'auto',
-    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+    background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
+    // background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
     color: 'white',
     boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+    // '&:hover': {
+    //     background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
+    //     // transform: 'translateY(-2px)',
+    //     boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
+    // },
     '&:hover': {
-        background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-        // transform: 'translateY(-2px)',
-        boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
+        background: 'linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%)',
+        boxShadow: '0 4px 16px rgba(58,28,113,0.12)',
     },
     transition: 'all 0.3s ease',
 }));
@@ -122,7 +134,7 @@ export default function SplitButton() {
     const handleMenuItemClick = (event, index) => {
         setSelectedIndex(index);
         setOpen(false);
-        
+
         const selectedOption = options[index];
         if (selectedOption.path === '/logout') {
             // Handle logout logic here
@@ -152,7 +164,7 @@ export default function SplitButton() {
                 aria-label="Navigation menu"
                 disableElevation
             >
-                <StyledButton 
+                <StyledButton
                     onClick={handleClick}
                     startIcon={options[selectedIndex].icon}
                     sx={{ flex: 1 }}
@@ -171,7 +183,7 @@ export default function SplitButton() {
                 </StyledDropdownButton>
             </StyledButtonGroup>
             <Popper
-                sx={{ 
+                sx={{
                     zIndex: 1300,
                     width: anchorRef.current?.offsetWidth || 'auto'
                 }}
@@ -192,8 +204,8 @@ export default function SplitButton() {
                     >
                         <StyledPaper>
                             <ClickAwayListener onClickAway={handleClose}>
-                                <MenuList 
-                                    id="split-button-menu" 
+                                <MenuList
+                                    id="split-button-menu"
                                     autoFocusItem
                                     sx={{ py: 1 }}
                                 >

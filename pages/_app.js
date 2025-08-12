@@ -63,6 +63,23 @@ export default function App({
       },
     },
   });
+  
+  // Google Analytics 4: track client-side route changes
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('config', 'G-SP5ZHMLMCR', {
+          page_path: url,
+        });
+      }
+    };
+    router.events.on('routeChangeComplete', handleRouteChange);
+    router.events.on('hashChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+      router.events.off('hashChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
   return (
     <>
       <SessionProvider session={session}>
@@ -88,6 +105,19 @@ export default function App({
               {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && router.pathname != '/gallery' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
+          {/* Google Analytics 4 */}
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=G-SP5ZHMLMCR`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga4-init" strategy="afterInteractive">{
+            `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-SP5ZHMLMCR', { page_path: window.location.pathname });
+            `
+          }</Script>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
         </SnackbarProvider>
       </SessionProvider >

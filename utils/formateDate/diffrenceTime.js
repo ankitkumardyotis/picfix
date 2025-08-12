@@ -11,13 +11,13 @@ const diffrenceTime = (date) => {
 
     let formattedDate;
     if (diffInMinutes < 1) {
-        formattedDate = 'just now';
+        formattedDate = 'Just now';
     } else if (diffInMinutes < 60) {
-        formattedDate = `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+        formattedDate = `${diffInMinutes} Minute${diffInMinutes !== 1 ? 's' : ''} ago`;
     } else if (diffInHours < 24) {
-        formattedDate = `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+        formattedDate = `${diffInHours} Hour${diffInHours !== 1 ? 's' : ''} ago`;
     } else {
-        formattedDate = `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+        formattedDate = `${diffInDays} Day${diffInDays !== 1 ? 's' : ''} ago`;
     }
 
     return formattedDate

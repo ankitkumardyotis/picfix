@@ -22,7 +22,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                 border: '1px solid rgba(58, 28, 113, 0.2)',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center',}}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
                     <div>
                         <h1 style={{
                             fontSize: '2.5rem',
@@ -51,7 +51,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             <Button
                                 variant="contained"
                                 sx={{
-                                    background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
+                                    background: 'linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%)',
                                     color: '#fff',
                                     fontWeight: 600,
                                     borderRadius: '8px',

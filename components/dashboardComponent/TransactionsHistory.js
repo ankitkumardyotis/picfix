@@ -120,7 +120,7 @@ function TransactionsHistory() {
                                                         <TableCell key={column.id} align={column.align}>
                                                             <Tooltip title="Click to View">
                                                                 {column.format && typeof value === 'number'
-                                                                    ? column.format(value)
+                                                                    ? column.id === 'amount' ? `$ ${column.format(value)}` : column.format(value)
                                                                     : value}
                                                             </Tooltip>
                                                         </TableCell>

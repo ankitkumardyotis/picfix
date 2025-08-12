@@ -2744,7 +2744,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Changing Hair Style...' : `Change Hair Style (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Changing Hair Style...' : `Change Hair Style`}
                   </Button>
                 </Box>
 
@@ -2824,7 +2824,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Removing Text...' : `Remove Text (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Removing Text...' : `Remove Text`}
                   </Button>
                 </Box>
               </>
@@ -2904,7 +2904,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Generating Headshot...' : `Generate Headshot (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Generating Headshot...' : `Generate Headshot`}
                   </Button>
                 </Box>
               </>
@@ -2983,7 +2983,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Restoring Image...' : `Restore Image`}
                   </Button>
                 </Box>
               </>
@@ -3061,7 +3061,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Restoring Image...' : `Restore Image (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Restoring Image...' : `Restore Image`}
                   </Button>
                 </Box>
               </>
@@ -3189,7 +3189,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={processingBackgroundRemoval ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {processingBackgroundRemoval ? 'Removing Background...' : `Remove Background (${currentConfig.creditCost || 0} credits)`}
+                    {processingBackgroundRemoval ? 'Removing Background...' : `Remove Background`}
                   </Button>
                 </Box>
 
@@ -3300,7 +3300,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'Removing Objects...' : `Remove Objects (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'Removing Objects...' : `Remove Objects`}
                   </Button>
                 </Box>
               </>
@@ -3376,7 +3376,7 @@ export default function AIImageEditor() {
                     }}
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
-                    {isLoading ? 'ReImagining...' : `ReImagine Scenarios (${currentConfig.creditCost || 0} credits)`}
+                    {isLoading ? 'ReImagining...' : 'ReImagine Scenarios'}
                   </Button>
                 </Box>
               </>

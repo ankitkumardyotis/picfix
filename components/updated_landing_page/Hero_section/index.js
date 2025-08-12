@@ -15,7 +15,6 @@ import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/router';
 const prompts = [
     "A futuristic city at sunset with neon lights.",
-    "A beach with crystal clear water, and palm trees.",
     "Change the color of the hair to blonde.",
     "Convert photo to professional headshot.",
     "Imagine Yourself as a bungee jumper from a helicopter."
@@ -23,11 +22,16 @@ const prompts = [
 
 const images = [
     "https://picfixcdn.com/picfix-usecase-image/generate-image/A futuristic city at sunset with neon lights.jpg",
-    "https://picfixcdn.com/picfix-usecase-image/generate-image/A peaceful beach with crystal clear water, palm trees, and a hammock.jpg",
     "https://picfixcdn.com/picfix-usecase-image/hair-style/female/Random.png",
     "https://picfixcdn.com/picfix-usecase-image/generate-image/A well-groomed man in his 30s, wearing a tailored navy blue suit, standing confidently with a soft smile in a modern office, natural lighting, professional portrait style.jpg",
-    "https://picfixcdn.com/picfix-usecase-image/re-imagine/reimagine-bungee-jumping-from-a-helicopter-pz5cst.jpg"
+    "https://picfixcdn.com/picfix-usecase-image/re-imagine/Floating in space as an astronaut.png"
 ];
+const model_name = [
+    "Generate Image",
+    "Hair Style",
+    "Headshot",
+    "Reimagine",
+]
 
 // Styled components
 const HeroContainer = styled(Box)(({ theme }) => ({
@@ -339,7 +343,7 @@ const PhotoAIHero = () => {
                                 </AnimatePresence>
 
                                 <EnhancedChip
-                                    label="✨ Enhanced by AI"
+                                    label={`✨  ${model_name[currentIndex]}`}
                                     size="small"
                                 />
                             </ImageContainer>

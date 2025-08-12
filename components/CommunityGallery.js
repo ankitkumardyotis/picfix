@@ -62,18 +62,18 @@ const CommunityGallery = () => {
       const response = await fetch('/api/images/getUnifiedGallery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           page: page,
           limit: IMAGES_PER_PAGE, // Only fetch 12 images per page
           sortBy: 'createdAt'
         })
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           const newImages = data.images;
-          
+
           console.log('Community gallery page fetched:', {
             page: page,
             count: newImages.length,
@@ -82,21 +82,21 @@ const CommunityGallery = () => {
             communityCount: data.communityCount,
             exampleCount: data.exampleCount
           });
-          
+
           // Update images (append for pagination, replace for initial load)
           if (append) {
             // For infinite scroll, preserve scroll position
             const currentScrollY = window.scrollY;
             const documentHeight = document.documentElement.scrollHeight;
-            
+
             setCommunityImages(prev => [...prev, ...newImages]);
-            
+
             // Use requestAnimationFrame to ensure DOM has updated
             requestAnimationFrame(() => {
               // Calculate how much the document grew
               const newDocumentHeight = document.documentElement.scrollHeight;
               const heightIncrease = newDocumentHeight - documentHeight;
-              
+
               // Only adjust scroll if content was added and user is still near the bottom
               if (heightIncrease > 0 && currentScrollY > 0) {
                 // Maintain relative position
@@ -110,23 +110,23 @@ const CommunityGallery = () => {
             setCommunityImages(newImages);
             setTotalImages(data.total || newImages.length);
           }
-          
+
           // Update pagination state
           setHasMore(data.hasMore || (page * IMAGES_PER_PAGE < (data.total || newImages.length)));
-          
+
           // Initialize loading states for new images - only for images that will be visible
           const loadingStates = {};
           newImages.forEach((image, index) => {
             const imageId = `community-${image.id || index}`;
             loadingStates[imageId] = true; // Start with loading = true
           });
-          
+
           if (append) {
             setImageLoadingStates(prev => ({ ...prev, ...loadingStates }));
           } else {
             setImageLoadingStates(loadingStates);
           }
-          
+
           // Reduced timeout to 5 seconds (prevents infinite loading)
           setTimeout(() => {
             setImageLoadingStates(prev => {
@@ -154,7 +154,7 @@ const CommunityGallery = () => {
           setTotalImages(0);
         }
       }
-      
+
     } catch (error) {
       console.error('Error fetching community images:', error);
       if (!append) {
@@ -172,10 +172,10 @@ const CommunityGallery = () => {
     if (isLoadingRef.current || !hasMore) {
       return;
     }
-    
+
     isLoadingRef.current = true;
     setIsLoadingMore(true);
-    
+
     try {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
@@ -195,13 +195,13 @@ const CommunityGallery = () => {
   // Infinite scroll effect with Intersection Observer
   useEffect(() => {
     const currentTrigger = loadMoreTriggerRef.current;
-    
+
     if (!currentTrigger) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        
+
         // Load more when trigger element is visible and we have more images
         if (entry.isIntersecting && hasMore && !loading && !isLoadingMore) {
           console.log('Infinite scroll triggered - loading more images');
@@ -230,7 +230,7 @@ const CommunityGallery = () => {
   const handleCommunityImageClick = (imageData) => {
     // Check if comparison data is available for this image
     const hasComparison = imageData.hasComparison && imageData.inputUrls && imageData.inputUrls.length > 0;
-    
+
     // Get comparison labels based on model
     const getComparisonLabels = (model) => {
       switch (model) {
@@ -255,10 +255,10 @@ const CommunityGallery = () => {
     };
 
     const labels = hasComparison ? getComparisonLabels(imageData.model) : null;
-    
+
     // Get input image URL for comparison
     const inputImageUrl = hasComparison && imageData.inputUrls.length > 0 ? imageData.inputUrls[0].url : null;
-    
+
     // Special handling for combine-image model
     const combineData = imageData.model === 'combine-image' && imageData.inputImage1 && imageData.inputImage2 ? {
       inputImage1: imageData.inputImage1,
@@ -313,10 +313,10 @@ const CommunityGallery = () => {
     setCurrentImageIndex(newIndex);
     if (communityImages[newIndex]) {
       const currentImage = communityImages[newIndex];
-      
+
       // Check if comparison data is available for this image
       const hasComparison = currentImage.hasComparison && currentImage.inputUrls && currentImage.inputUrls.length > 0;
-      
+
       // Get comparison labels based on model
       const getComparisonLabels = (model) => {
         switch (model) {
@@ -341,10 +341,10 @@ const CommunityGallery = () => {
       };
 
       const labels = hasComparison ? getComparisonLabels(currentImage.model) : null;
-      
+
       // Get input image URL for comparison
       const inputImageUrl = hasComparison && currentImage.inputUrls.length > 0 ? currentImage.inputUrls[0].url : null;
-      
+
       // Special handling for combine-image model
       const combineData = currentImage.model === 'combine-image' && currentImage.inputImage1 && currentImage.inputImage2 ? {
         inputImage1: currentImage.inputImage1,
@@ -392,7 +392,7 @@ const CommunityGallery = () => {
       'reimagine': '/ai-image-editor',
       'combine-image': '/ai-image-editor'
     };
-    
+
     const route = modelRoutes[model] || '/ai-image-editor';
     router.push(route);
   };
@@ -439,7 +439,7 @@ const CommunityGallery = () => {
 
     try {
       const action = currentlyLiked ? 'unlike' : 'like';
-      
+
       const requestBody = {
         action: action,
         publishedImageId: image.publishedImageId
@@ -453,10 +453,10 @@ const CommunityGallery = () => {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Update the community image in the state
         const updateFunction = (img) => {
-          return img.publishedImageId === image.publishedImageId 
+          return img.publishedImageId === image.publishedImageId
             ? { ...img, likes: data.likes, userLiked: data.userLiked }
             : img;
         };
@@ -464,7 +464,7 @@ const CommunityGallery = () => {
         setCommunityImages(prev => prev.map(updateFunction));
 
         enqueueSnackbar(
-          action === 'like' ? '❤️ Liked!' : '💔 Unliked', 
+          action === 'like' ? '❤️ Liked!' : '💔 Unliked',
           { variant: 'success' }
         );
       } else {
@@ -510,8 +510,8 @@ const CommunityGallery = () => {
           <Typography variant="body2" color="textSecondary" sx={{ mb: 4, fontStyle: 'italic' }}>
             💡 Create images in the AI editor and click the "Publish" button to share them here. You'll also see curated example images!
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => router.push('/ai-image-editor')}
             sx={{
               background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -529,34 +529,33 @@ const CommunityGallery = () => {
 
   return (
     <Container maxWidth="lg" ref={containerRef}>
-      <Box sx={{ textAlign: 'center', mb: 1}}>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          sx={{ 
+      <Box sx={{ textAlign: 'center', mb: 1 }}>
+        <Typography
+          variant="h3"
+          component="h2"
+          sx={{
             fontWeight: 700,
-            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-            backgroundClip: 'text',
+            background: 'linear-gradient(135deg,rgb(244,0,123) 0%, #d76d77 50%, #ff8418 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            mb: 2
+            backgroundClip: 'text',
           }}
         >
           AI Gallery
         </Typography>
-        <Typography 
-          variant="h6" 
-          color="textSecondary" 
+        <Typography
+          variant="h6"
+          color="textSecondary"
           sx={{ mb: 2, maxWidth: 600, mx: 'auto' }}
         >
           Discover amazing AI-generated images from our community and curated examples
         </Typography>
-        
+
         {totalImages > 0 && (
-          <Chip 
+          <Chip
             label={`${totalImages} total images`}
             variant="outlined"
-            sx={{ 
+            sx={{
               fontSize: '0.9rem',
               borderColor: theme.palette.primary.main,
               color: theme.palette.primary.main
@@ -637,9 +636,9 @@ const CommunityGallery = () => {
                     overflow: 'hidden'
                   }}
                 >
-                  <Skeleton 
-                    variant="rectangular" 
-                    width="100%" 
+                  <Skeleton
+                    variant="rectangular"
+                    width="100%"
                     height="100%"
                     animation="wave"
                     sx={{
@@ -650,9 +649,9 @@ const CommunityGallery = () => {
                 </Box>
               )}
 
-                            {/* Model and Type Badges */}
+              {/* Model and Type Badges */}
               <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 2, display: 'flex', gap: 0.5, flexDirection: 'column' }}>
-                <Chip 
+                <Chip
                   label={getModelDisplayName(image.model)}
                   size="small"
                   sx={{
@@ -719,10 +718,10 @@ const CommunityGallery = () => {
               {/* Like button overlay (top-right) - Only for community images */}
               {image.isCommunity && (
                 <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
                       backgroundColor: alpha('#000000', 0.75),
                       borderRadius: 3,
                       px: 1.5,
@@ -866,7 +865,7 @@ const CommunityGallery = () => {
                       by {image.author}
                     </Typography>
                   )}
-                  
+
                   {image.prompt && (
                     <Chip
                       label="Use this prompt"
@@ -899,9 +898,9 @@ const CommunityGallery = () => {
         {loading && communityImages.length === 0 && (
           Array(IMAGES_PER_PAGE).fill(null).map((_, index) => (
             <Box key={`skeleton-${index}`} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-              <Skeleton 
-                variant="rectangular" 
-                width="100%" 
+              <Skeleton
+                variant="rectangular"
+                width="100%"
                 height={Math.floor(Math.random() * 100) + 200}
                 animation="wave"
               />
@@ -923,7 +922,7 @@ const CommunityGallery = () => {
               // backgroundColor: 'rgba(255, 0, 0, 0.1)'
             }}
           />
-          
+
           {/* Loading indicator for infinite scroll */}
           {(loading || isLoadingMore) && (
             <Box sx={{ mt: 2 }}>
@@ -933,7 +932,7 @@ const CommunityGallery = () => {
               </Typography>
             </Box>
           )}
-          
+
           {/* Progress indicator */}
           {!loading && !isLoadingMore && (
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
@@ -949,7 +948,7 @@ const CommunityGallery = () => {
           <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
             ✨ You've reached the end! Showing all {totalImages} images
           </Typography>
-          
+
           <Box sx={{ p: 4, borderRadius: 3, backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
             <Typography variant="h6" gutterBottom>
               🎨 Ready to create your own masterpiece?

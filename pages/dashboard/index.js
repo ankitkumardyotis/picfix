@@ -91,7 +91,7 @@ function Home() {
                         throw new Error('Failed to fetch plan data');
                     }
                     const data = await response.json();
-                    setUserHistory(data.history)
+                   setUserHistory(data.history)
                 } catch (error) {
                     console.error('Error fetching plan data:', error);
                 }

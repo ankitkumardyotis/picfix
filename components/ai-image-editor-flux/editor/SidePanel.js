@@ -18,7 +18,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
         background: isMobile ? 'transparent' : alpha(theme.palette.background.default, 0.5),
         backdropFilter: 'blur(10px)',
         borderRight: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        padding: theme.spacing(1, 3),
+        padding: theme.spacing(1, isMobile ? 1 : 3),
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing(2),
@@ -99,7 +99,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                         borderRadius: 2,
                         '& .MuiSelect-select': {
                             padding: '.5rem',
-                            paddingLeft: '1rem',
+                            // paddingLeft: '1rem',
                             fontSize: '12px',
                             fontWeight: 400,
                         },
@@ -114,7 +114,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                             sx={{
                                 fontSize: '12px',
                                 fontWeight: 400,
-
+                                marginLeft: '-.5rem',
                             }}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
@@ -146,6 +146,8 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                                                 // border: '1px solid #ff9800'
                                             })
                                         }}
+
+                                        
                                     >
                                         {config.free ? 'Free' : 'Pro'}
                                     </Box>
@@ -160,113 +162,206 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     ))}
                 </Select>
             </FormControl >
+            
+            {/* Aspect Ratio - Side by side with Number of Outputs on mobile */}
             {selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && (
-                <FormControl fullWidth variant="outlined">
-                    <InputLabel>Aspect Ratio</InputLabel>
-                    <Select
-                        value={aspectRatio}
-                        onChange={(e) => setAspectRatio(e.target.value)}
-                        label="Aspect Ratio"
-                        sx={{
-                            borderRadius: 2,
-                            '& .MuiSelect-select': {
-                                padding: '.5rem',
-                                paddingLeft: '1rem',
-                                fontSize: '2px',
-                                fontWeight: 400,
-                            },
-                        }}
-                    >
-                        {getAspectRatioOptions().map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                                    <Box
-                                        sx={{
-                                            width: 24,
-                                            height: 24,
-                                            // backgroundColor: alpha(theme.palette.grey[300], 0.3),
-                                            borderRadius: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                width: option.value === '1:1' ? 16 : option.value === '16:9' ? 20 : option.value === '9:16' ? 10 :
-                                                    option.value === '2:3' ? 12 : option.value === '3:4' ? 14 : option.value === '1:2' ? 10 :
-                                                        option.value === '2:1' ? 20 : option.value === '4:5' ? 16 : option.value === '3:2' ? 18 : 16,
-                                                height: option.value === '1:1' ? 16 : option.value === '16:9' ? 11 : option.value === '9:16' ? 18 :
-                                                    option.value === '2:3' ? 18 : option.value === '3:4' ? 18 : option.value === '1:2' ? 20 :
-                                                        option.value === '2:1' ? 10 : option.value === '4:5' ? 20 : option.value === '3:2' ? 12 : 12,
-                                                // backgroundColor: theme.palette.primary.main,
-                                                borderRadius: 0.5,
-                                            }}
-                                        />
-                                    </Box>
-                                    <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 500, }}>{option.label}</Typography>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: isMobile ? 'row' : 'column', 
+                    gap: isMobile ? 1 : 2 
+                }}>
+                    {/* Aspect Ratio Control */}
+                    <Box sx={{ flex: isMobile ? 1 : 'auto' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
+                            Aspect Ratio
+                        </Typography>
+                        <FormControl fullWidth variant="outlined">
+                            <Select
+                                value={aspectRatio}
+                                onChange={(e) => setAspectRatio(e.target.value)}
+                                sx={{
+                                    borderRadius: 2,
+                                    '& .MuiSelect-select': {
+                                        padding: '.5rem',
+                                        fontSize: '12px',
+                                        fontWeight: 400,
+                                    },
+                                }}
+                            >
+                                {getAspectRatioOptions().map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', marginLeft: '-1.5rem' }}>
+                                            <Box
+                                                sx={{
+                                                    width: 24,
+                                                    height: 24,
+                                                    borderRadius: 1,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    position: 'relative',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        width: option.value === '1:1' ? 16 : option.value === '16:9' ? 20 : option.value === '9:16' ? 10 :
+                                                            option.value === '2:3' ? 12 : option.value === '3:4' ? 14 : option.value === '1:2' ? 10 :
+                                                                option.value === '2:1' ? 20 : option.value === '4:5' ? 16 : option.value === '3:2' ? 18 : 16,
+                                                        height: option.value === '1:1' ? 16 : option.value === '16:9' ? 11 : option.value === '9:16' ? 18 :
+                                                            option.value === '2:3' ? 18 : option.value === '3:4' ? 18 : option.value === '1:2' ? 20 :
+                                                                option.value === '2:1' ? 10 : option.value === '4:5' ? 20 : option.value === '3:2' ? 12 : 12,
+                                                        borderRadius: 0.5,
+                                                    }}
+                                                />
+                                            </Box>
+                                            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 500 }}>
+                                                {option.label}
+                                            </Typography>
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    {/* Number of Outputs - Side by side with Aspect Ratio on mobile */}
+                    {selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
+                        <Box sx={{ flex: isMobile ? 1 : 'auto' }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
+                                Number of Outputs
+                            </Typography>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                                    borderRadius: 2,
+                                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                    height: '40px', // Match the height of the Select component
+                                }}
+                            >
+                                <IconButton
+                                    onClick={() => {
+                                        if (numOutputs > 1) {
+                                            setNumOutputs(prev => prev - 1);
+                                            setGeneratedImages(Array(numOutputs - 1).fill(null));
+                                        }
+                                    }}
+                                    disabled={numOutputs <= 1}
+                                    sx={{
+                                        color: theme.palette.text.secondary,
+                                        '&:hover': {
+                                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                        },
+                                        '&.Mui-disabled': {
+                                            color: alpha(theme.palette.text.secondary, 0.3),
+                                        }
+                                    }}
+                                >
+                                    <Remove />
+                                </IconButton>
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        px: 2,
+                                        minWidth: '60px',
+                                        fontWeight: 600,
+                                        fontSize: '1.1rem',
+                                        color: theme.palette.text.primary,
+                                    }}
+                                >
+                                    {numOutputs}
                                 </Box>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                                <IconButton
+                                    onClick={() => {
+                                        if (numOutputs < 4) {
+                                            setNumOutputs(prev => prev + 1);
+                                            setGeneratedImages(Array(numOutputs + 1).fill(null));
+                                        }
+                                    }}
+                                    disabled={numOutputs >= 4}
+                                    sx={{
+                                        color: theme.palette.text.secondary,
+                                        '&:hover': {
+                                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                        },
+                                        '&.Mui-disabled': {
+                                            color: alpha(theme.palette.text.secondary, 0.3),
+                                        }
+                                    }}
+                                >
+                                    <Add />
+                                </IconButton>
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
             )}
 
             {/* Hair Style Specific Sidebar Controls */}
             {
                 selectedModel === 'hair-style' && (
                     <>
-                        {/* Hair Color Selection */}
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel>Hair Color</InputLabel>
-                            <Select
-                                value={selectedHairColor}
-                                onChange={(e) => setSelectedHairColor(e.target.value)}
-                                label="Hair Color"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.hairColors.map((color, index) => (
-                                    <MenuItem key={index} value={color} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {color}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        {/* Hair Color and Gender Selection - Side by side on mobile */}
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: isMobile ? 'row' : 'column', 
+                            gap: isMobile ? 1 : 2 
+                        }}>
+                            {/* Hair Color Selection */}
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Hair Color</InputLabel>
+                                <Select
+                                    value={selectedHairColor}
+                                    onChange={(e) => setSelectedHairColor(e.target.value)}
+                                    label="Hair Color"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.hairColors.map((color, index) => (
+                                        <MenuItem key={index} value={color} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {color}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
-                        {/* Gender Selection */}
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={selectedGender}
-                                onChange={(e) => setSelectedGender(e.target.value)}
-                                label="Gender"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.genders.map((gender, index) => (
-                                    <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {gender}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                            {/* Gender Selection */}
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Gender</InputLabel>
+                                <Select
+                                    value={selectedGender}
+                                    onChange={(e) => setSelectedGender(e.target.value)}
+                                    label="Gender"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.genders.map((gender, index) => (
+                                        <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {gender}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Box>
                     </>
                 )
             }
@@ -274,55 +369,62 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             {
                 selectedModel === 'headshot' && (
                     <>
-                        {/* Gender Selection */}
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={selectedHeadshotGender}
-                                onChange={(e) => setSelectedHeadshotGender(e.target.value)}
-                                label="Gender"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.genders.map((gender, index) => (
-                                    <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {gender}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        {/* Gender and Background Selection - Side by side on mobile */}
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: isMobile ? 'row' : 'column', 
+                            gap: isMobile ? 1 : 2 
+                        }}>
+                            {/* Gender Selection */}
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Gender</InputLabel>
+                                <Select
+                                    value={selectedHeadshotGender}
+                                    onChange={(e) => setSelectedHeadshotGender(e.target.value)}
+                                    label="Gender"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.genders.map((gender, index) => (
+                                        <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {gender}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
-                        {/* Background Selection */}
-                        <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
-                            <InputLabel>Background</InputLabel>
-                            <Select
-                                value={selectedHeadshotBackground}
-                                onChange={(e) => setSelectedHeadshotBackground(e.target.value)}
-                                label="Background"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.backgrounds.map((background, index) => (
-                                    <MenuItem key={index} value={background} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {background}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                            {/* Background Selection */}
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Background</InputLabel>
+                                <Select
+                                    value={selectedHeadshotBackground}
+                                    onChange={(e) => setSelectedHeadshotBackground(e.target.value)}
+                                    label="Background"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.backgrounds.map((background, index) => (
+                                        <MenuItem key={index} value={background} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {background}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Box>
                     </>
                 )
             }
@@ -331,133 +433,62 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             {
                 selectedModel === 're-imagine' && (
                     <>
-                        {/* Gender Selection */}
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={selectedReimagineGender}
-                                onChange={(e) => setSelectedReimagineGender(e.target.value)}
-                                label="Gender"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.genders.map((gender, index) => (
-                                    <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {gender}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
-                            <InputLabel>Reimagine Yourself</InputLabel>
-                            <Select
-                                value={selectedScenario}
-                                onChange={(e) => setSelectedScenario(e.target.value)}
-                                label="Reimagine Yourself"
-                                sx={{
-                                    borderRadius: 2,
-                                    '& .MuiSelect-select': {
-                                        padding: '.5rem',
-                                        paddingLeft: '1rem',
-                                        fontSize: '12px',
-                                        fontWeight: 400,
-                                    },
-                                }}
-                            >
-                                {currentConfig.scenarios.map((scenario, index) => (
-                                    <MenuItem key={index} value={scenario} sx={{ fontSize: '12px', fontWeight: 400, }}>
-                                        {scenario}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </>
-                )
-            }
-
-            {
-                selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
-                    <Box sx={{ mt: -1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
-                            Number of Outputs
-                        </Typography>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                                borderRadius: 2,
-                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                '& .MuiSelect-select': {
-                                    padding: '.5rem',
-                                    paddingLeft: '1rem',
-                                },
-                            }}
-                        >
-                            <IconButton
-                                onClick={() => {
-                                    if (numOutputs > 1) {
-                                        setNumOutputs(prev => prev - 1);
-                                        setGeneratedImages(Array(numOutputs - 1).fill(null));
-                                    }
-                                }}
-                                disabled={numOutputs <= 1}
-                                sx={{
-                                    color: theme.palette.text.secondary,
-                                    '&:hover': {
-                                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                    },
-                                    '&.Mui-disabled': {
-                                        color: alpha(theme.palette.text.secondary, 0.3),
-                                    }
-                                }}
-                            >
-                                <Remove />
-                            </IconButton>
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    px: 2,
-                                    minWidth: '60px',
-                                    fontWeight: 600,
-                                    fontSize: '1.1rem',
-                                    color: theme.palette.text.primary,
-                                }}
-                            >
-                                {numOutputs}
-                            </Box>
-                            <IconButton
-                                onClick={() => {
-                                    if (numOutputs < 4) {
-                                        setNumOutputs(prev => prev + 1);
-                                        setGeneratedImages(Array(numOutputs + 1).fill(null));
-                                    }
-                                }}
-                                disabled={numOutputs >= 4}
-                                sx={{
-                                    color: theme.palette.text.secondary,
-                                    '&:hover': {
-                                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                    },
-                                    '&.Mui-disabled': {
-                                        color: alpha(theme.palette.text.secondary, 0.3),
-                                    }
-                                }}
-                            >
-                                <Add />
-                            </IconButton>
+                        {/* Gender and Scenario Selection - Side by side on mobile */}
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: isMobile ? 'row' : 'column', 
+                            gap: isMobile ? 1 : 2 
+                        }}>
+                            {/* Gender Selection */}
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Gender</InputLabel>
+                                <Select
+                                    value={selectedReimagineGender}
+                                    onChange={(e) => setSelectedReimagineGender(e.target.value)}
+                                    label="Gender"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.genders.map((gender, index) => (
+                                        <MenuItem key={index} value={gender} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {gender}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            
+                            <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
+                                <InputLabel>Reimagine Yourself</InputLabel>
+                                <Select
+                                    value={selectedScenario}
+                                    onChange={(e) => setSelectedScenario(e.target.value)}
+                                    label="Reimagine Yourself"
+                                    sx={{
+                                        borderRadius: 2,
+                                        '& .MuiSelect-select': {
+                                            padding: '.5rem',
+                                            paddingLeft: '1rem',
+                                            fontSize: '12px',
+                                            fontWeight: 400,
+                                        },
+                                    }}
+                                >
+                                    {currentConfig.scenarios.map((scenario, index) => (
+                                        <MenuItem key={index} value={scenario} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                            {scenario}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
                         </Box>
-                    </Box>
+                    </>
                 )
             }
 
