@@ -39,12 +39,25 @@ export const authOptions = {
   },
   secret: secret,
   callbacks: {
-    // Add user ID to session from token
+    // Add user ID and role to session from token
     session: async ({ session, token }) => {
       if (session?.user) {
         session.user.id = token.sub
+        session.user.role = token.role
       }
       return session
+    },
+    // Add role to JWT token
+    jwt: async ({ token, user }) => {
+      if (user) {
+        // Fetch user role from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true }
+        })
+        token.role = dbUser?.role || 'user'
+      }
+      return token
     }
   }
 }

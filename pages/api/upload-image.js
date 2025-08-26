@@ -17,8 +17,6 @@ export default async function handler(req, res) {
   try {
     const { imageData, fileName = 'image.jpg' } = req.body;
 
-    console.log('Upload request received:', { fileName, hasImageData: !!imageData });
-
     if (!imageData) {
       return res.status(400).json({ error: 'Image data is required' });
     }
@@ -29,8 +27,6 @@ export default async function handler(req, res) {
     // Convert base64 to buffer
     const imageBuffer = Buffer.from(base64Data, 'base64');
     
-    console.log('Image buffer created, size:', imageBuffer.length);
-    
     // Determine content type from original data URL or default to jpeg
     let contentType = 'image/jpeg';
     if (imageData.startsWith('data:image/png')) {
@@ -39,12 +35,8 @@ export default async function handler(req, res) {
       contentType = 'image/webp';
     }
 
-    console.log('Content type determined:', contentType);
-
     // Upload to R2
     const result = await uploadFileToR2(imageBuffer, fileName, contentType);
-
-    console.log('Upload successful:', result);
 
     res.status(200).json({ 
       success: true, 

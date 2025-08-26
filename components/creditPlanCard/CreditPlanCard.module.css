@@ -56,7 +56,7 @@
   font-weight: 700;
   color: white;
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .accentText {
@@ -74,8 +74,8 @@
 /* Cards container */
 .cardContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
   max-width: 1200px;
   width: 100%;
   padding: 0 20px;
@@ -92,9 +92,9 @@
   position: relative;
   transition: all 0.3s ease;
   border: 1px solid rgba(76, 205, 196, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  /* display: flex; */
+  /* flex-direction: column; */
+  height: 105%;
   animation: slideUp 0.6s ease-out;
   animation-fill-mode: both;
 }
@@ -104,6 +104,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -117,8 +118,8 @@
 
 /* Popular card highlighting */
 .popularCard {
-  /* background: linear-gradient(135deg, #1a0d31 0%, #351c1f 50%, #412817 100%); */
-  color: white;
+  background: linear-gradient(135deg, #1a0d31 0%, #351c1f 50%, #412817 100%);
+  color: black;
   transform: scale(1.05);
   border: none;
   position: relative;
@@ -131,7 +132,7 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, #1a0d31, #351c1f, #412817);
+  /* background: linear-gradient(135deg, #1a0d31, #351c1f, #412817); */
   border-radius: 22px;
   z-index: -1;
 }
@@ -141,7 +142,7 @@
 }
 
 .popularCard .planBadge {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(153, 0, 0,.3) !important;
   color: white !important;
 }
 
@@ -150,14 +151,10 @@
 }
 
 .popularCard .planDescription {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.popularCard .featureItem {
   color: white;
 }
 
-.popularCard .checkIcon {
+.popularCard .featureItem {
   color: white;
 }
 
@@ -230,35 +227,44 @@
 
 /* CTA Button */
 .ctaButton {
-  background: linear-gradient(45deg, #667eea 30%, #764ba2 90%);
+  /* background: linear-gradient(45deg, #667eea 30%, #764ba2 90%); */
+  background: linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%);
   color: white;
   border: none;
   border-radius: 12px;
-  padding: 16px 24px;
-  font-size: 1rem;
+  padding: 16px 18px;
+  position: absolute;
+  bottom: 20px;
+  /* left: 20px; */
+  /* right: 20px; */
+  /* margin-top: 50px; */
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
-  width: 100%;
-  margin-top: auto;
+  width: 80%;
+  /* margin-top: auto; */
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
 }
 
 .ctaButton:hover {
-  background: linear-gradient(45deg, #764ba2 30%, #667eea 90%);
+  background: linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%);
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
 }
 
 .popularCard .ctaButton {
-  background: white;
-  color: #3a1c71;
+  /* background:  linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%); */
+  background: linear-gradient(135deg,rgb(251,1,118) 0%, #d76d77 50%, #fbc901 100%);
+  /* border: 1px solid #e68a4a; */
+  /* border: 3px solid  linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%); */
+  color: #fff;
   box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
 }
 
 .popularCard .ctaButton:hover {
-  background: rgba(255, 255, 255, 0.95);
+  /* background:  linear-gradient(135deg, #2d0e5e 0%, #b94e5e 50%, #e68a4a 100%); */
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
 }
@@ -269,32 +275,32 @@
     padding: 60px 15px;
     gap: 40px;
   }
-  
+
   .mainTitle {
     font-size: 2.5rem;
   }
-  
+
   .subtitle {
     font-size: 1.1rem !important;
   }
-  
+
   .cardContainer {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .card {
     padding: 30px 25px;
   }
-  
+
   .popularCard {
     transform: none;
   }
-  
+
   .popularCard:hover {
     transform: translateY(-5px);
   }
-  
+
   .price {
     font-size: 3rem;
   }
@@ -304,15 +310,15 @@
   .creditCardPlan {
     padding: 40px 10px;
   }
-  
+
   .mainTitle {
     font-size: 2rem;
   }
-  
+
   .card {
     padding: 25px 20px;
   }
-  
+
   .price {
     font-size: 2.5rem;
   }

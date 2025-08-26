@@ -55,7 +55,7 @@ const aiModels = [
         key: 'reimagine',
         name: 'ReImagine Scenarios',
         icon: <PsychologyIcon sx={{ fontSize: 18 }} />,
-        description: 'Create ReImagine Scenarios'  
+        description: 'Create ReImagine Scenarios'
     },
     {
         key: 'combine-image',
@@ -210,49 +210,51 @@ function NavBar({ open, setOpen }) {
                                 >
 
 
-                                    {aiModels.map((model) => (
-                                        <MenuItem
-                                            key={model.key}
-                                            onClick={() => handleModelSelect(model.key)}
-                                            sx={{
-                                                px: 2,
-                                                py: 1.5,
-                                                gap: 1.5,
-                                                '&:hover': {
-                                                    backgroundColor: 'rgba(102, 126, 234, 0.05)',
-                                                    '& .MuiTypography-root': {
-                                                        color: '#ffa726',
+                                    {aiModels.
+                                        filter((model) => model.name !== 'Background Removal')
+                                        .map((model) => (
+                                            <MenuItem
+                                                key={model.key}
+                                                onClick={() => handleModelSelect(model.key)}
+                                                sx={{
+                                                    px: 2,
+                                                    py: 1.5,
+                                                    gap: 1.5,
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                                                        '& .MuiTypography-root': {
+                                                            color: '#ffa726',
+                                                        }
                                                     }
-                                                }
-                                            }}
-                                        >
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                width: 32,
-                                                height: 32,
-                                                borderRadius: '8px',
-                                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                                color: '#ffa726'
-                                            }}>
-                                                {model.icon}
-                                            </Box>
-                                            <Box sx={{ flex: 1 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
-                                                    {model.name}
-                                                </Typography>
-                                                <Typography variant="caption" sx={{ color: '#666', fontSize: '11px' }}>
-                                                    {model.description}
-                                                </Typography>
-                                            </Box>
-                                        </MenuItem>
-                                    ))}
+                                                }}
+                                            >
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '8px',
+                                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                                    color: '#ffa726'
+                                                }}>
+                                                    {model.icon}
+                                                </Box>
+                                                <Box sx={{ flex: 1 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
+                                                        {model.name}
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ color: '#666', fontSize: '11px' }}>
+                                                        {model.description}
+                                                    </Typography>
+                                                </Box>
+                                            </MenuItem>
+                                        ))}
                                 </Menu>
                             </Box>
 
                             {/* Price Link */}
-                            <Link href="/price" style={{ textDecoration: 'none' }}>
+                            <Link href="/pricing" style={{ textDecoration: 'none' }}>
                                 <Box
                                     sx={{
                                         display: 'flex',

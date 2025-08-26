@@ -22,7 +22,7 @@ import {
 const options = [
     { label: 'Dashboard', icon: <Dashboard sx={{ fontSize: 18 }} />, path: '/dashboard' },
     { label: 'Gallery', icon: <PhotoLibrary sx={{ fontSize: 18 }} />, path: '/gallery' },
-    { label: 'Pricing', icon: <PriceChange sx={{ fontSize: 18 }} />, path: '/price' },
+    { label: 'Pricing', icon: <PriceChange sx={{ fontSize: 18 }} />, path: '/pricing' },
     { label: 'Blog', icon: <Article sx={{ fontSize: 18 }} />, path: '/blog' },
     { label: 'Sign Out', icon: <Logout sx={{ fontSize: 18 }} />, path: '/logout' }
 ];

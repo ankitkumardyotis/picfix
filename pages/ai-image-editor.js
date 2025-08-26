@@ -78,10 +78,12 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 const MainEditor = styled(Box)(({ theme }) => ({
   flex: 1,
   padding: theme.spacing(1, 3),
+  paddingBottom: "100px",
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(1),
   overflow: 'auto',
+  // marginBottom: isMobile ? "100px" : "0px",
   background: alpha(theme.palette.background.default, 0.5),
 }));
 
@@ -491,6 +493,12 @@ export default function AIImageEditor() {
     if (model && modelConfigurations[model]) {
       setSelectedModel(model);
 
+      // Update browser history without page reload
+      if (window.history && window.history.replaceState) {
+        const newUrl = `${window.location.pathname}?model=${model}`;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
+
       // Reset states when model changes from URL
       setSelectedItems([]);
       setSelectedStyles([]);
@@ -750,11 +758,9 @@ export default function AIImageEditor() {
 
     // Set number of outputs based on model
     if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine') {
-      console.log(`Setting model ${newModel} to 1 output`);
       setNumOutputs(1);
       setGeneratedImages([null]);
     } else {
-      console.log(`Setting model ${newModel} to 2 outputs`);
       setNumOutputs(1);
       setGeneratedImages([null, null]);
     }
@@ -801,19 +807,12 @@ export default function AIImageEditor() {
 
     setIsLoading(true);
     setError(null);
-    console.log('Setting up generatedImages array with numOutputs:', numOutputs);
     setGeneratedImages(Array(numOutputs).fill(null));
 
     // Smooth scroll to image generation section
     scrollToImageGeneration();
 
     try {
-      console.log('About to generate with:', {
-        selectedModel,
-        numOutputs,
-        aspectRatio,
-        promptLength: inputPrompt?.length
-      });
 
       const config = {
         generate_flux_images: true,
@@ -822,7 +821,6 @@ export default function AIImageEditor() {
         num_outputs: numOutputs
       };
 
-      console.log('API Config being sent:', config);
 
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
@@ -838,22 +836,14 @@ export default function AIImageEditor() {
       }
 
       const data = await response.json();
-      console.log('Frontend received data:', data);
-      console.log('Data type:', typeof data, 'Is array:', Array.isArray(data));
 
       // Handle new response format with historyId
       if (Array.isArray(data) && data.length > 0 && data[0] && data[0].imageUrl) {
         // New format: [{ imageUrl, historyId }, ...]
         const imageUrls = data.map(item => item.imageUrl);
-        console.log('Extracted imageUrls:', imageUrls);
-        console.log('Current numOutputs when setting images:', numOutputs);
-        console.log('Setting generatedImages to:', imageUrls);
+
         setGeneratedImages(imageUrls);
-        console.log('Images stored in history with IDs:', data.map(item => item.historyId));
       } else {
-        // Fallback to old format
-        console.log('Using fallback format, setting data directly:', data);
-        console.log('Current numOutputs when setting fallback:', numOutputs);
         setGeneratedImages(data);
       }
 
@@ -861,7 +851,7 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -931,7 +921,7 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -996,7 +986,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Combined image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format
         setGeneratedImages([data]);
@@ -1006,7 +995,7 @@ export default function AIImageEditor() {
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1067,7 +1056,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Text removal image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1081,12 +1069,11 @@ export default function AIImageEditor() {
         }
       }
 
-      console.log("Text removal response data:", data);
       enqueueSnackbar('Text removed successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1150,7 +1137,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Headshot image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1163,13 +1149,11 @@ export default function AIImageEditor() {
           setGeneratedImages([null]);
         }
       }
-
-      console.log("Headshot response data:", data);
       enqueueSnackbar('Professional headshot generated successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1230,7 +1214,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Restore image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1244,12 +1227,11 @@ export default function AIImageEditor() {
         }
       }
 
-      console.log("Restore image response data:", data);
       enqueueSnackbar('Image restored successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1307,7 +1289,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('GFP restore image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1321,12 +1302,11 @@ export default function AIImageEditor() {
         }
       }
 
-      console.log("GFP restore response data:", data);
       enqueueSnackbar('Image restored successfully', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1391,7 +1371,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Home designer image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1405,12 +1384,11 @@ export default function AIImageEditor() {
         }
       }
 
-      console.log("Home designer response data:", data);
       enqueueSnackbar('Home design generated successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1462,7 +1440,7 @@ export default function AIImageEditor() {
 
     // Refresh history to show the new image
     refreshHistoryAfterGeneration();
-    
+
     // Refresh user credits to show updated balance
     refreshUserCredits();
   };
@@ -1536,7 +1514,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Remove object image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1549,13 +1526,11 @@ export default function AIImageEditor() {
           setGeneratedImages([null]);
         }
       }
-
-      console.log("Remove object response data:", data);
       enqueueSnackbar('Objects removed successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1624,7 +1599,6 @@ export default function AIImageEditor() {
       if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
-        console.log('Reimagine image stored in history with ID:', data.historyId);
       } else {
         // Fallback to old format - Make sure we have a valid image URL or data URL
         if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
@@ -1638,12 +1612,11 @@ export default function AIImageEditor() {
         }
       }
 
-      console.log("ReImagine response data:", data);
       enqueueSnackbar('Impossible scenario generated successfully!', { variant: 'success' });
 
       // Refresh history to show the new image
       refreshHistoryAfterGeneration();
-      
+
       // Refresh user credits to show updated balance
       refreshUserCredits();
     } catch (err) {
@@ -1746,13 +1719,7 @@ export default function AIImageEditor() {
 
   // Log when generatedImages changes
   useEffect(() => {
-    console.log("generatedImages state updated:", generatedImages);
-    console.log("Valid images count:", generatedImages.filter(img => img !== null).length);
-    generatedImages.forEach((img, index) => {
-      if (img) {
-        console.log(`Image ${index + 1}:`, img.substring(0, 100) + '...');
-      }
-    });
+
   }, [generatedImages]);
 
 
@@ -1846,7 +1813,6 @@ export default function AIImageEditor() {
 
   const getAllStyleItems = () => {
     if (!currentConfig) return [];
-    console.log(currentConfig);
     if (selectedGender === "Male") {
       return currentConfig.hairStylesMale || [];
     } else if (selectedGender === "Female") {
@@ -2320,13 +2286,7 @@ export default function AIImageEditor() {
       // Generate meaningful prompt based on model configuration
       const generatedPrompt = generateModelPrompt(selectedModel, currentState, inputPrompt);
 
-      console.log('Publishing image:', {
-        model: selectedModel,
-        title,
-        prompt: generatedPrompt,
-        inputImages: inputImages.length,
-        modelParams
-      });
+
 
       // Publish the image
       const response = await fetch('/api/images/publish', {
@@ -2346,7 +2306,6 @@ export default function AIImageEditor() {
       if (response.ok) {
         const result = await response.json();
         enqueueSnackbar('🎉 Image published to community successfully!', { variant: 'success' });
-        console.log('Published image:', result.image);
 
         // Refresh community images to show the newly published image
         if (exampleMasonryRef.current) {
@@ -2365,15 +2324,279 @@ export default function AIImageEditor() {
 
 
 
+  // Function to generate dynamic SEO data based on selected model
+  const generateModelSEO = (model) => {
+    const seoData = {
+      'generate-image': {
+        title: 'AI Image Generator - Create Stunning Images with AI | PicFix.AI',
+        description: 'Generate beautiful, high-quality images from text descriptions using our advanced AI. Create art, landscapes, portraits, and more with just a prompt. Best free AI photo editor online for AI image editing and AI photo editing.',
+        keywords: 'AI image generator, text to image, AI art generator, image creation, AI picture generator, free AI art, generate images from text, AI image maker, artificial intelligence art, creative AI tool, AI photo editing, AI image editing, best free photo editor online',
+        ogTitle: 'AI Image Generator - Create Stunning Images with AI',
+        ogDescription: 'Generate beautiful images from text using advanced AI technology. Best free AI photo editor online for AI image editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Image Generator",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered image generation tool that creates high-quality images from text descriptions"
+        }
+      },
+      'hair-style': {
+        title: 'AI Hair Style - Transform Hair Styles & Colors | PicFix.AI',
+        description: 'Change hair styles and colors with AI technology. Transform your look with different hairstyles, colors, and cuts. AI face photo editing tool for professional hair editing. Fix photo online with our AI photo editing tool.',
+        keywords: 'hair style changer, AI hair color, hair style editor, change hair style, hair color changer, AI hair transformation, virtual hair try on, hair style app, photo hair editor, AI face photo editing tool, fix photo online, AI photo editing',
+        ogTitle: 'AI Hair Style - Transform Hair Styles & Colors',
+        ogDescription: 'Change hair styles and colors with AI technology. AI face photo editing tool for professional hair editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Hair Style",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for changing hair styles and colors in photos"
+        }
+      },
+      'headshot': {
+        title: 'Professional Headshot - AI Portrait Creator | PicFix.AI',
+        description: 'Create professional headshots with AI technology. Transform casual photos into polished, business-ready portraits. Perfect for LinkedIn, resumes, and professional profiles. AI face photo editing tool for business portraits. Fix photo online with our AI photo editing.',
+        keywords: 'professional headshot, AI portrait, business headshot, LinkedIn photo, resume photo, professional photo, AI headshot generator, portrait creator, business portrait, AI face photo editing tool, fix photo online, AI photo editing',
+        ogTitle: 'Professional Headshot - AI Portrait Creator',
+        ogDescription: 'Create professional headshots with AI technology. AI face photo editing tool for business portraits.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Professional Headshot ",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for creating professional headshots and business portraits"
+        }
+      },
+      'restore-image': {
+        title: 'Photo Restoration AI - Restore Old & Damaged Photos | PicFix.AI',
+        description: 'Restore old, damaged, and faded photos with AI technology. Bring back memories with our advanced photo restoration tool. Fix photo online with AI tool to fix blurry photos. Best free photo editor online for photo restoration.',
+        keywords: 'photo restoration, restore old photos, AI photo restoration, fix damaged photos, photo repair, old photo restoration, AI photo fix, restore faded photos, photo enhancement, fix photo online, AI tool to fix blurry photos, best free photo editor online',
+        ogTitle: 'Photo Restoration AI - Restore Old & Damaged Photos',
+        ogDescription: 'Restore old, damaged, and faded photos with AI technology. Fix photo online with AI tool to fix blurry photos.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Photo Restoration AI",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for restoring old, damaged, and faded photographs"
+        }
+      },
+      'gfp-restore': {
+        title: 'Free Photo Restoration - AI Image Enhancement | PicFix.AI',
+        description: 'Free AI photo restoration tool. Enhance image quality, fix blurry photos, and restore old images. No registration required - restore photos instantly. Fix photo online with AI tool to fix blurry photos. Best free photo editor online.',
+        keywords: 'free photo restoration, AI image enhancement, free photo fix, blurry photo fix, image quality improvement, free AI tool, photo restoration free, enhance photos online, fix photo online, AI tool to fix blurry photos, best free photo editor online',
+        ogTitle: 'Free Photo Restoration - AI Image Enhancement',
+        ogDescription: 'Free AI photo restoration tool. Fix photo online with AI tool to fix blurry photos.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Free Photo Restoration",
+          "applicationCategory": "MultimediaApplication",
+          "description": "Free AI-powered tool for photo restoration and image enhancement"
+        }
+      },
+      'background-removal': {
+        title: 'Background Removal Tool - Remove Image Backgrounds | PicFix.AI',
+        description: 'Remove backgrounds from images instantly with AI technology. Free background removal tool for product photos, portraits, and any image. Download transparent PNG images. Remove background online free AI. Best free photo editor online.',
+        keywords: 'background removal, remove background, AI background remover, transparent background, product photo editor, remove image background, background remover free, PNG background removal, remove background online free AI, best free photo editor online',
+        ogTitle: 'Background Removal Tool - Remove Image Backgrounds',
+        ogDescription: 'Remove backgrounds from images instantly with AI technology. Remove background online free AI.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Background Removal Tool",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for removing backgrounds from images with instant results"
+        }
+      },
+      'remove-object': {
+        title: 'Object Removal Tool - Remove Unwanted Objects from Photos | PicFix.AI',
+        description: 'Remove unwanted objects from photos with AI technology. Clean up images by removing people, objects, and distractions. Professional photo editing tool. Fix photo online with AI photo editing.',
+        keywords: 'object removal, remove objects from photos, AI object remover, photo cleanup, remove people from photos, remove distractions, photo editing tool, AI photo cleaner, fix photo online, AI photo editing',
+        ogTitle: 'Object Removal Tool - Remove Unwanted Objects from Photos',
+        ogDescription: 'Remove unwanted objects from photos with AI technology. Fix photo online with AI photo editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Object Removal Tool",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for removing unwanted objects and distractions from photos"
+        }
+      },
+      'combine-image': {
+        title: 'Image Combiner AI - Merge & Blend Images | PicFix.AI',
+        description: 'Combine and merge multiple images with AI technology. Blend photos seamlessly, create composites, and merge images naturally. Advanced image combination tool. Fix photo online with AI image editing.',
+        keywords: 'image combiner, merge images, blend photos, combine photos, AI image merger, photo composite, image blending, merge multiple images, photo combination tool, fix photo online, AI image editing',
+        ogTitle: 'Image Combiner AI - Merge & Blend Images',
+        ogDescription: 'Combine and merge multiple images with AI technology. Fix photo online with AI image editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Image Combiner AI",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for combining and merging multiple images seamlessly"
+        }
+      },
+      'text-removal': {
+        title: 'Watermark & Text Removal Tool - Clean Images | PicFix.AI',
+        description: 'Remove watermarks, text, and unwanted elements from images with AI. Clean up photos by removing logos, signatures, and text overlays. Professional image cleaning tool. Online photo fixer no watermark. Fix photo online with AI photo editing.',
+        keywords: 'watermark removal, text removal, remove watermarks, AI text remover, clean images, remove logos, remove signatures, image cleaning tool, watermark remover, online photo fixer no watermark, fix photo online, AI photo editing',
+        ogTitle: 'Watermark & Text Removal Tool - Clean Images',
+        ogDescription: 'Remove watermarks, text, and unwanted elements from images with AI. Online photo fixer no watermark.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Watermark & Text Removal Tool",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for removing watermarks, text, and unwanted elements from images"
+        }
+      },
+      're-imagine': {
+        title: 'Re-imagine AI - Transform Photos with AI Scenarios | PicFix.AI',
+        description: 'Re-imagine yourself in different scenarios with AI technology. Transform photos into space adventures, underwater scenes, and fantasy scenarios. Creative AI photo transformation. Fix photo online with AI photo editing.',
+        keywords: 're-imagine AI, photo transformation, AI scenarios, fantasy photos, space photos, underwater photos, creative AI, photo reimagining, AI photo effects, scenario transformation, fix photo online, AI photo editing',
+        ogTitle: 'Re-imagine AI - Transform Photos with AI Scenarios',
+        ogDescription: 'Re-imagine yourself in different scenarios with AI technology. Fix photo online with AI photo editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Re-imagine AI",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for transforming photos into different scenarios and fantasy environments"
+        }
+      },
+      'home-designer': {
+        title: 'AI Home Designer - Interior Design with AI | PicFix.AI',
+        description: 'Design your dream home with AI technology. Transform room photos with different interior design styles. Free AI home makeover tool for interior designers and homeowners. Best free photo editor online for AI photo editing.',
+        keywords: 'AI home designer, interior design AI, home makeover, room design, AI interior designer, home renovation, interior design tool, AI home decor, room transformation, best free photo editor online, AI photo editing',
+        ogTitle: 'AI Home Designer - Interior Design with AI',
+        ogDescription: 'Design your dream home with AI technology. Best free photo editor online for AI photo editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Home Designer",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for interior design and home makeover visualization"
+        }
+      }
+    };
+
+    return seoData[model] || seoData['generate-image'];
+  };
+
+  // Get current SEO data based on selected model
+  const currentSEO = generateModelSEO(selectedModel);
+
+  // Update page title when model changes
+  useEffect(() => {
+    if (currentSEO && currentSEO.title) {
+      document.title = currentSEO.title;
+    }
+  }, [selectedModel, currentSEO]);
+
   return (
     <>
       <Head>
-        <title>AI Image Editor | PicFix.AI</title>
-        <meta name="description" content="Advanced AI-powered image editing tools" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Primary Meta Tags */}
+        <title>{currentSEO.title}</title>
+        <meta name="title" content={currentSEO.title} />
+        <meta name="description" content={currentSEO.description} />
+        <meta name="keywords" content={currentSEO.keywords} />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="language" content="English" />
+        <meta name="author" content="PicFix.AI" />
+        <meta name="copyright" content="© 2024 PicFix.AI. All rights reserved." />
+        <meta name="rating" content="General" />
+        <meta name="distribution" content="Global" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="PicFix.AI" />
+        <meta property="og:title" content={currentSEO.ogTitle} />
+        <meta property="og:description" content={currentSEO.ogDescription} />
+        <meta property="og:url" content={`https://www.picfix.ai/ai-image-editor?model=${selectedModel}`} />
+        <meta property="og:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta property="og:image:alt" content="PicFix.AI - AI Image Editor" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="en_US" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@PicFixAI" />
+        <meta name="twitter:creator" content="@PicFixAI" />
+        <meta name="twitter:title" content={currentSEO.ogTitle} />
+        <meta name="twitter:description" content={currentSEO.ogDescription} />
+        <meta name="twitter:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta name="twitter:image:alt" content="PicFix.AI - AI Image Editor" />
+
+        {/* Additional SEO Meta Tags */}
+        <meta name="theme-color" content="#3a1c71" />
+        <meta name="msapplication-TileColor" content="#3a1c71" />
+        <meta name="application-name" content="PicFix.AI" />
+        <meta name="apple-mobile-web-app-title" content="PicFix.AI" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={`https://www.picfix.ai/ai-image-editor?model=${selectedModel}`} />
+
+        {/* Favicon and Icons */}
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/assets/PicFixAILogo.jpg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+
+        {/* Preconnect for Performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://picfixcdn.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+        {/* Structured Data - SoftwareApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(currentSEO.structuredData)
+          }}
+        />
+
+        {/* Structured Data - BreadcrumbList */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://www.picfix.ai"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "AI Image Editor",
+                  "item": "https://www.picfix.ai/ai-image-editor"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": currentSEO.structuredData.name,
+                  "item": `https://www.picfix.ai/ai-image-editor?model=${selectedModel}`
+                }
+              ]
+            })
+          }}
+        />
       </Head>
 
-      <StyledPaper elevation={0}>
+      <StyledPaper elevation={0} sx={{ paddingTop: isMobile ? '.1rem' : '0px' }}>
         {/* <MenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
         </MenuButton> */}
@@ -2401,6 +2624,49 @@ export default function AIImageEditor() {
 
           {/* Main Editor Area */}
           <MainEditor>
+            {/* Dynamic H1 Heading with Model Name and Tagline */}
+            <Box sx={{
+              textAlign: 'center',
+              // mb: 3,
+              pt: 2,
+              background: 'linear-gradient(135deg, rgba(58, 28, 113, 0.05) 0%, rgba(215, 109, 119, 0.05) 50%, rgba(255, 175, 123, 0.05) 100%)',
+              borderRadius: 3,
+              p: 3,
+              border: '1px solid rgba(58, 28, 113, 0.1)'
+            }}>
+              <Typography
+                variant="h1"
+                component="h1"
+                sx={{
+                  fontSize: { xs: '1.5rem', md: '2rem', lg: '2rem' },
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  mb: 1,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              >
+                {currentSEO.structuredData.name}
+              </Typography>
+              <Typography
+                variant="h6"
+                component="p"
+                sx={{
+                  fontSize: { xs: '.8rem', md: '1rem' },
+                  color: 'text.secondary',
+                  fontWeight: 400,
+                  maxWidth: '800px',
+                  mx: 'auto',
+                  lineHeight: 1.4,
+                  opacity: 0.8
+                }}
+              >
+                {currentSEO.description}
+              </Typography>
+            </Box>
+
             {/* Hair Style Scrollable Strip for Hair Style Model */}
             {isMobile && <Box sx={{}}>
               <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
@@ -2633,7 +2899,7 @@ export default function AIImageEditor() {
                             transition: 'all 0.3s ease',
                           }}
                           title={
-                            selectedModel === 'generate-image' 
+                            selectedModel === 'generate-image'
                               ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(currentConfig.creditCost || 0) * numOutputs} credits)`
                               : `Generate ${currentConfig.name || 'Image'} (${currentConfig.creditCost || 0} credits)`
                           }

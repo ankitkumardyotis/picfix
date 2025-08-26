@@ -24,13 +24,6 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
         gap: theme.spacing(2),
         overflow: 'auto',
         boxShadow: isMobile ? 'none' : '4px 0 24px rgba(0,0,0,0.08)',
-        // [theme.breakpoints.down('md')]: {
-        //     width: '100%',
-        //     position: 'absolute',
-        //     zIndex: 1000,
-        //     transform: 'translateX(-100%)',
-        //     transition: 'transform 0.3s ease',
-        // },
     }));
 
 
@@ -107,7 +100,10 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
                     }}
                 >
-                    {Object.entries(modelConfigurations).map(([key, config]) => (
+                    {Object.entries(modelConfigurations)
+                        .filter(([key, config]) => !isMobile || key !== 'background-removal')
+                        .map(([key, config]) => (
+                        // 
                         <MenuItem
                             key={key}
                             value={key}

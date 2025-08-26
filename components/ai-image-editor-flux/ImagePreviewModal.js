@@ -30,11 +30,11 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import modelConfigurations from '@/constant/ModelConfigurations';
 import ImageComparisonSlider from './ImageComparisonSlider';
 
-const ImagePreviewModal = ({ 
-  open, 
-  onClose, 
-  images, 
-  currentIndex, 
+const ImagePreviewModal = ({
+  open,
+  onClose,
+  images,
+  currentIndex,
   onImageChange,
   selectedModel,
   imageInfo = null,
@@ -91,10 +91,10 @@ const ImagePreviewModal = ({
   const generatePreviewFileName = (model, imageInfo, originalIndex) => {
     const config = modelConfigurations[model];
     const usesPrompts = config?.type === 'prompts';
-    
+
     // Generate random string
     const randomString = Math.random().toString(36).substring(2, 8);
-    
+
     if (usesPrompts && imageInfo?.prompt && imageInfo.prompt.trim()) {
       // Use prompt for filename
       const cleanPrompt = imageInfo.prompt
@@ -103,7 +103,7 @@ const ImagePreviewModal = ({
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 50); // Limit length to 50 characters
-      
+
       return `${cleanPrompt}-${randomString}.jpg`;
     } else if (model === 'hair-style' && imageInfo?.selectedHairStyle && imageInfo.selectedHairStyle !== 'No change') {
       // Use selected hair style for hair-style model
@@ -112,7 +112,7 @@ const ImagePreviewModal = ({
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 30); // Limit length to 30 characters
-      
+
       return `hair-style-${cleanStyle}-${randomString}.jpg`;
     } else if (model === 'reimagine' && imageInfo?.selectedScenario && imageInfo.selectedScenario !== 'Random') {
       // Use selected scenario for reimagine model
@@ -121,7 +121,7 @@ const ImagePreviewModal = ({
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 40); // Limit length to 40 characters
-      
+
       return `reimagine-${cleanScenario}-${randomString}.jpg`;
     } else if (imageInfo?.title && imageInfo.title.trim() && !imageInfo.title.includes('Generated Image')) {
       // Use title for filename (but not generic "Generated Image" titles)
@@ -131,7 +131,7 @@ const ImagePreviewModal = ({
         .replace(/[^a-z0-9\s]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .substring(0, 30); // Limit length to 30 characters
-      
+
       return `${cleanTitle}-${randomString}.jpg`;
     } else {
       // Use model name with random string
@@ -140,7 +140,7 @@ const ImagePreviewModal = ({
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-');
-      
+
       return `${cleanModelName}-${randomString}.jpg`;
     }
   };
@@ -149,7 +149,7 @@ const ImagePreviewModal = ({
     if (currentImage) {
       // Generate intelligent filename
       const filename = generatePreviewFileName(selectedModel, imageInfo, currentImageData.originalIndex);
-      
+
       if (currentImage.startsWith('data:')) {
         const link = document.createElement('a');
         link.href = currentImage;
@@ -197,7 +197,14 @@ const ImagePreviewModal = ({
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
-      'combine-image': 'Image Combiner'
+      'combine-image': 'Image Combiner',
+      'background-removal': 'Background Removal',
+      'remove-object': 'Object Removal',
+      'gfp-restore': 'Free Image Restoration',
+      'home-designer': 'Home Designer',
+      'restore-image': 'Image Restoration',
+      'text-removal': 'Text/Watermark Removal',
+      'reimagine': 'ReImagine Scenarios',
     };
     return names[model] || model;
   };
@@ -289,7 +296,7 @@ const ImagePreviewModal = ({
         createdAt: imageInfo.createdAt ? imageInfo.createdAt : null
       };
     }
-    
+
     return {
       // title: `Generated Image ${(currentImageData?.originalIndex || 0) + 1}`,
       model: getModelDisplayName(selectedModel),
@@ -300,7 +307,6 @@ const ImagePreviewModal = ({
   };
 
   const info = formatImageInfo();
-  console.log("info", info);
 
   if (!currentImage) return null;
 
@@ -320,10 +326,10 @@ const ImagePreviewModal = ({
         },
       }}
     >
-      <DialogContent 
-        sx={{ 
-          padding: 0, 
-          display: 'flex', 
+      <DialogContent
+        sx={{
+          padding: 0,
+          display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           backgroundColor: 'rgba(0, 0, 0, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -443,7 +449,7 @@ const ImagePreviewModal = ({
                 afterLabel={afterLabel}
                 className="modal-comparison"
               />
-              
+
               {/* Exit Comparison Button - Top Left Corner */}
               <Box
                 sx={{
@@ -489,14 +495,14 @@ const ImagePreviewModal = ({
                     <IconButton
                       onClick={toggleComparisonMode}
                       sx={{
-                        backgroundColor: comparisonMode 
+                        backgroundColor: comparisonMode
                           ? alpha(theme.palette.primary.main, 0.9)
                           : alpha(theme.palette.background.paper, 0.9),
-                        color: comparisonMode 
+                        color: comparisonMode
                           ? 'white'
                           : theme.palette.text.primary,
                         '&:hover': {
-                          backgroundColor: comparisonMode 
+                          backgroundColor: comparisonMode
                             ? theme.palette.primary.dark
                             : theme.palette.background.paper,
                         },
@@ -506,7 +512,7 @@ const ImagePreviewModal = ({
                     </IconButton>
                   </Tooltip>
                 )}
-                
+
                 {/* Zoom Controls */}
                 <Tooltip title="Zoom In">
                   <IconButton
@@ -584,20 +590,33 @@ const ImagePreviewModal = ({
                 />
               )}
 
-              <img
-                src={currentImage}
-                alt="Preview"
-                referrerPolicy="no-referrer"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  transform: `scale(${zoom})`,
-                  transition: 'transform 0.2s ease',
-                  cursor: zoom > 1 ? 'grab' : 'default',
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 2,
                 }}
-              />
+              >
+                <img
+                  src={currentImage}
+                  alt="Preview"
+                  referrerPolicy="no-referrer"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    transform: `scale(${zoom})`,
+                    transition: 'transform 0.2s ease',
+                    cursor: zoom > 1 ? 'grab' : 'default',
+                  }}
+                />
+              </Box>
             </>
           )}
         </Box>
@@ -612,6 +631,8 @@ const ImagePreviewModal = ({
             display: 'flex',
             flexDirection: 'column',
             borderRadius: 0,
+            maxHeight: isMobile ? '100%' : 'none',
+            overflow: isMobile ? 'auto' : 'visible',
           }}
         >
           {/* Header */}
@@ -619,10 +640,10 @@ const ImagePreviewModal = ({
             {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
               {info.title}
             </Typography> */}
-            <Chip 
-              label={info.model} 
-              size="small" 
-              color="primary" 
+            <Chip
+              label={info.model}
+              size="small"
+              color="primary"
               sx={{ mb: 2 }}
             />
           </Box>
@@ -656,9 +677,9 @@ const ImagePreviewModal = ({
                     Created
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {new Date(info.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
+                    {new Date(info.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
                       day: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
@@ -672,7 +693,7 @@ const ImagePreviewModal = ({
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
                     Prompt Used
                   </Typography>
-                  <Typography variant="body2" sx={{ 
+                  <Typography variant="body2" sx={{
                     fontWeight: 400,
                     fontStyle: 'italic',
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -691,7 +712,7 @@ const ImagePreviewModal = ({
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
                     Configuration Used
                   </Typography>
-                  <Typography variant="body2" sx={{ 
+                  <Typography variant="body2" sx={{
                     fontWeight: 400,
                     fontStyle: 'italic',
                     backgroundColor: alpha(theme.palette.secondary.main, 0.1),
@@ -700,7 +721,7 @@ const ImagePreviewModal = ({
                     fontSize: '0.8rem',
                     whiteSpace: 'pre-line'
                   }}>
-                    {info.modelParams 
+                    {info.modelParams
                       ? generateDetailedConfigDisplay(info.model, info.modelParams)
                       : info.modelConfig
                     }

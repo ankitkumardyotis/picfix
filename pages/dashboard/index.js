@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import HomeIcon from '@mui/icons-material/Home';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import PanoramaIcon from '@mui/icons-material/Panorama';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { Box, Button, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 // import prisma from '@/lib/prisma';
 import { useSession } from 'next-auth/react'
@@ -16,38 +17,12 @@ import TransactionsHistory from '@/components/dashboardComponent/TransactionsHis
 import AllModelsContainer from '@/components/AllModelsContainer';
 import Link from 'next/link';
 import { styled } from '@mui/material/styles';
+import { isAdmin } from '@/lib/adminAuth';
+import UserSplitButton from '@/components/UserSplitButton';
 // import CountUp from 'react-countup';
 
 
-const StyledButton = styled(Button)(({ theme }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    gap: '1em',
-    borderRadius: theme.spacing(3),
-    textTransform: 'none',
-    fontWeight: 600,
-    fontSize: '0.8rem',
-    width: '80%',
-    margin: '0 auto',
-    marginBottom: '1em',
-    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-    color: 'white',
-    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-    '&:hover': {
-        background: 'linear-gradient(45deg, #764ba2 30%, #667eea 90%)',
-        // transform: 'translateY(-2px)',
-        boxShadow: '0 6px 30px rgba(102, 126, 234, 0.4)',
-    },
-    '&.Mui-disabled': {
-        background: theme.palette.action.disabledBackground,
-        color: theme.palette.action.disabled,
-        // transform: 'none',
-        boxShadow: 'none',
-    },
-    transition: 'all 0.3s ease',
-}));
+
 function Home() {
 
     const theme = useTheme();
@@ -76,7 +51,8 @@ function Home() {
                     }
                     const data = await response.json();
                     if (data.plan === null) {
-                        router.push('/price');
+                        // router.push('/pricing');
+                        setLoadindSession(false);
                     } else {
                         setUserPlan(data.plan);
                     }
@@ -120,11 +96,11 @@ function Home() {
             <CircularProgress />
         </div>
     }
-    if (!userPlan) {
-        return <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <CircularProgress />
-        </div>
-    }
+    // if (!userPlan) {
+    //     return <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    //         <CircularProgress />
+    //     </div>
+    // }
 
     return (
         <>
@@ -178,11 +154,47 @@ function Home() {
                                     <span style={{ flex: 1 }}><ReceiptLongIcon /></span>
                                     <h4 style={{ flex: 3 }}>Transactions</h4>
                                 </Box>
+
+                                {/* Admin Panel Navigation - Only show for admin users */}
+                                {isAdmin(session) && (
+                                    <Box 
+                                        onClick={() => router.push('/admin-dashboard')} 
+                                        sx={{ 
+                                            backgroundColor: '#e3f2fd', 
+                                            border: '2px solid #1976d2',
+                                            padding: '12px', 
+                                            borderRadius: '10px', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            cursor: 'pointer', 
+                                            marginTop: '8px',
+                                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
+                                            "&:hover": { 
+                                                backgroundColor: '#bbdefb', 
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                                transition: '.2s ease-in-out' 
+                                            } 
+                                        }}
+                                    >
+                                        <span style={{ flex: 1, color: '#1976d2' }}>
+                                            <AdminPanelSettingsIcon />
+                                        </span>
+                                        <h4 style={{ 
+                                            flex: 3, 
+                                            color: '#1976d2', 
+                                            margin: 0,
+                                            fontWeight: '600',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            Admin Panel
+                                        </h4>
+                                    </Box>
+                                )}
                             </div>
-                            <StyledButton onClick={() => router.push('/ai-image-editor')} >
-                                <span><PanoramaIcon /></span>
-                                <h4 >AI Studio</h4>
-                            </StyledButton>
+                            <div style={{ padding: '0 1em', marginBottom: '1em' }}>
+                                <UserSplitButton session={session} />
+                            </div>
                         </div>
                     )}
 
@@ -198,6 +210,40 @@ function Home() {
                         {selectComponent === 'transactions' && < TransactionsHistory />}
                         {selectComponent === 'ai-studio' && <div style={{ padding: '1rem' }}><AiStudio /></div>}
                         {/* {selectComponent === 'models' && <div style={{ padding: '1rem' }}><AllModelsContainer /></div>} */}
+                        
+                        {/* Mobile Admin Panel Access - Show floating button on mobile for admin users */}
+                        {!matches && isAdmin(session) && (
+                            <div style={{
+                                position: 'fixed',
+                                bottom: '80px',
+                                right: '20px',
+                                zIndex: 1100
+                            }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => router.push('/admin-dashboard')}
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                                        borderRadius: '50px',
+                                        padding: '12px 20px',
+                                        boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
+                                        '&:hover': {
+                                            background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 6px 25px rgba(25, 118, 210, 0.5)',
+                                        },
+                                        transition: 'all 0.3s ease',
+                                        textTransform: 'none',
+                                        fontWeight: '600',
+                                        fontSize: '0.9rem',
+                                        gap: '8px'
+                                    }}
+                                    startIcon={<AdminPanelSettingsIcon />}
+                                >
+                                    Admin Panel
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>)
             }

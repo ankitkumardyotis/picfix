@@ -23,6 +23,11 @@ function CreditPlanCard() {
     try {
       if (!session) {
         router.push("/login");
+        return;
+      }
+      if(price === 0){
+        router.push("/ai-image-editor");
+        return;
       }
 
       if (session) {
@@ -61,10 +66,12 @@ function CreditPlanCard() {
 
   const getPlanBadge = (planName) => {
     switch (planName) {
+      case "free":
+        return { label: "FREE PLAN", color: "#e68a4a" };
       case "standard":
         return { label: "BASIC PLAN", color: "#4ecdc4" };
       case "popular":
-        return { label: "PROFESSIONAL PLAN", color: "#3a1c71" };
+        return { label: "POPULAR PLAN", color: "#3a1c71" };
       case "premium":
         return { label: "PREMIUM PLAN", color: "#d76d77" };
       default:
@@ -72,14 +79,42 @@ function CreditPlanCard() {
     }
   };
 
-  const getFeatures = (item) => [
-    `${item.creditPoints - item.extraCreditPoints} Photo Credits`,
-    ...(item.extraCreditPoints != 0 ? [`+${item.extraCreditPoints} Credits Extra`] : []),
-    "Free Remove Background",
-    `Storage: ${item.storage}`,
-    "Access of all Models",
-    `Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`
-  ];
+  // const getFeatures = (item) => [
+  //   `${item.creditPoints - item.extraCreditPoints} Photo Credits`,
+  //   ...(item.extraCreditPoints != 0 ? [`+${item.extraCreditPoints} Credits Extra`] : []),
+  //   "Free access of 3 models",
+  //   `Storage: ${item.storage}`,
+  //   item.name === "free" ? "Limited access of models" : "Access of all Models",
+  //   `Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`
+  // ];
+  const getFeatures = (item) => {
+    const features = [];
+
+    // Only add photo credits if not free plan or if it has credits
+    if (item.name !== "free" && (item.creditPoints - item.extraCreditPoints) > 0) {
+      features.push(`${item.creditPoints - item.extraCreditPoints} Photo Credits`);
+    }
+
+    // Add extra credits if applicable
+    if (item.extraCreditPoints != 0) {
+      features.push(`+${item.extraCreditPoints} Credits Extra`);
+    }
+
+    if (item.name === "free") {
+      features.push("Free access of 3 models");
+      features.push("No Storage");
+    } else {
+      features.push(`Storage: ${item.storage}`);
+    }
+    features.push(item.name === "free" ? "Limited access of models" : "Access of all Models");
+
+    // Only add expiry info for non-free plans
+    if (item.name !== "free") {
+      features.push(`Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`);
+    }
+
+    return features;
+  };
 
   return (
     <div className={styles.creditCardPlan}>
@@ -128,7 +163,7 @@ function CreditPlanCard() {
 
               {/* Description */}
               <p className={styles.planDescription}>
-                Perfect for {item.name === 'standard' ? 'individuals getting started' : item.name === 'popular' ? 'professionals and businesses' : 'power users and agencies'} with comprehensive image editing needs.
+                Perfect for {item.name === 'free' ? 'indivisual getting started' : item.name === 'standard' ? 'individuals getting started' : item.name === 'popular' ? 'professionals and businesses' : 'power users and agencies'} with comprehensive image editing needs.
               </p>
 
               {/* Features */}
@@ -148,7 +183,7 @@ function CreditPlanCard() {
                 className={styles.ctaButton}
                 onClick={() => successPaymentHandler(item.price)}
               >
-                Click here to get started
+                {item.name === "free" ? "Try Now" : "Click here to get started"}
               </button>
             </div>
           );

@@ -109,30 +109,15 @@ const GeneratedImages = ({
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedImageForPublish, setSelectedImageForPublish] = useState({ url: null, index: null });
 
-  console.log("GeneratedImages component received:", {
-    images,
-    isLoading,
-    numOutputs,
-    selectedModel,
-    hasImages: images.some(img => img !== null)
-  });
 
   // Test image loading outside of the complex component structure
   React.useEffect(() => {
     const validImages = images.filter(img => img !== null);
     if (validImages.length > 0) {
       validImages.forEach((imageUrl, index) => {
-        console.log(`Testing direct image load for image ${index + 1}:`, imageUrl);
-
         // Create a test image element
         const testImg = new Image();
-        testImg.onload = () => {
-          console.log(`✅ Direct test load successful for image ${index + 1}:`, imageUrl);
-          console.log(`Direct load dimensions:`, testImg.naturalWidth, 'x', testImg.naturalHeight);
-        };
-        testImg.onerror = (e) => {
-          console.error(`❌ Direct test load failed for image ${index + 1}:`, imageUrl, e);
-        };
+      
         testImg.src = imageUrl;
       });
     }
@@ -203,18 +188,6 @@ const GeneratedImages = ({
                         height: '100%',
                         objectFit: 'cover',
                       }}
-                      onLoad={(e) => {
-                        console.log(`✅ Image ${index + 1} loaded successfully:`, image);
-                        console.log(`Image natural dimensions:`, e.target.naturalWidth, 'x', e.target.naturalHeight);
-                        console.log(`Image display dimensions:`, e.target.width, 'x', e.target.height);
-                      }}
-                      onError={(e) => {
-                        console.error(`❌ Image ${index + 1} failed to load:`, image);
-                        console.error(`Error details:`, e);
-                        console.error(`Error type:`, e.type);
-                        console.error(`Target src:`, e.target.src);
-                      }}
-                      onLoadStart={() => console.log(`🔄 Image ${index + 1} loading started:`, image)}
                     />
                     <ResponsiveImageOverlay className="image-overlay">
                       <Tooltip title="Preview Image">

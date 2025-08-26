@@ -30,8 +30,7 @@ export default async function handler(req, res) {
         const userId = session.user.id;
         const isExampleImage = !!exampleImageId;
 
-        console.log('Example Image ID:--------------->', exampleImageId);
-
+ 
         // Check if the image exists (published or example)
         let imageExists = false;
         let currentLikes = 0;
@@ -42,7 +41,6 @@ export default async function handler(req, res) {
                 where: { imageId: exampleImageId }
             });
 
-            console.log('Example Stats:--------------->', exampleStats);
 
             if (!exampleStats) {
                 // Create stats record for new example image
@@ -56,8 +54,7 @@ export default async function handler(req, res) {
                         downloads: 0,
                         views: 0
                     }
-                });
-                console.log('Example Stats Created:--------------->', exampleStats);
+                    });
             }
             imageExists = true;
             currentLikes = exampleStats.likes;
@@ -74,7 +71,7 @@ export default async function handler(req, res) {
             imageExists = true;
             currentLikes = publishedImage.likes;
         }
-        console.log('Action:--------------->', action);
+
         if (action === 'like') {
             // Check if user already liked this image
             let existingLike;

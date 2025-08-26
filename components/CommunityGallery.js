@@ -74,14 +74,7 @@ const CommunityGallery = () => {
         if (data.success) {
           const newImages = data.images;
 
-          console.log('Community gallery page fetched:', {
-            page: page,
-            count: newImages.length,
-            total: data.total,
-            hasMore: data.hasMore,
-            communityCount: data.communityCount,
-            exampleCount: data.exampleCount
-          });
+    
 
           // Update images (append for pagination, replace for initial load)
           if (append) {
@@ -133,7 +126,6 @@ const CommunityGallery = () => {
               const updated = { ...prev };
               Object.keys(loadingStates).forEach(imageId => {
                 if (updated[imageId] === true) {
-                  console.log('Timeout: Clearing loading state for', imageId);
                   updated[imageId] = false;
                 }
               });
@@ -204,7 +196,6 @@ const CommunityGallery = () => {
 
         // Load more when trigger element is visible and we have more images
         if (entry.isIntersecting && hasMore && !loading && !isLoadingMore) {
-          console.log('Infinite scroll triggered - loading more images');
           loadMoreImages();
         }
       },
@@ -406,7 +397,6 @@ const CommunityGallery = () => {
   }, []);
 
   const handleImageError = useCallback((imageId) => {
-    console.log('Image error:', imageId);
     setImageLoadingStates(prev => ({
       ...prev,
       [imageId]: false

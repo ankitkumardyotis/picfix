@@ -37,6 +37,13 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     backdropFilter: 'blur(16px)',
+    [theme.breakpoints.down('md')]: {
+      width: '100vw',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      borderRadius: 0,
+      margin: 0,
+    },
   },
   '& .MuiBackdrop-root': {
     backgroundColor: 'rgba(15, 23, 42, 0.5)',
@@ -52,12 +59,18 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(255,255,255,0.95) 100%)',
   backdropFilter: 'blur(20px)',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(2, 3),
+  },
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(4),
   overflow: 'visible',
   background: 'transparent',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(2),
+  },
 }));
 
 const ImageCard = styled(Card)(({ theme, variant }) => ({
@@ -83,10 +96,17 @@ const ImageCard = styled(Card)(({ theme, variant }) => ({
       opacity: 1,
     },
   },
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    '&:hover': {
+      transform: 'none',
+    },
     '& .image-overlay': {
       opacity: 0.9,
     },
+  },
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: theme.spacing(2),
   },
 }));
 
@@ -112,6 +132,20 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   border: '1px solid rgba(255,255,255,0.2)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+  [theme.breakpoints.down('md')]: {
+    width: '40px',
+    height: '40px',
+    '& .MuiSvgIcon-root': {
+      fontSize: '1.2rem',
+    },
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: '36px',
+    height: '36px',
+    '& .MuiSvgIcon-root': {
+      fontSize: '1rem',
+    },
+  },
   // '&:hover': {
   //   backgroundColor: 'rgba(99, 102, 241, 1)',
   //   transform: 'scale(1.15)',
@@ -126,8 +160,13 @@ const ArrowContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   minHeight: '400px',
   [theme.breakpoints.down('md')]: {
-    minHeight: '80px',
+    minHeight: '60px',
     transform: 'rotate(90deg)',
+    margin: theme.spacing(2, 0),
+  },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: '40px',
+    margin: theme.spacing(1, 0),
   },
 }));
 
@@ -152,7 +191,10 @@ const PlusIcon = styled(AddIcon)(({ theme }) => ({
     },
   },
   [theme.breakpoints.down('md')]: {
-    fontSize: '2.5rem',
+    fontSize: '2rem',
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.5rem',
   },
 }));
 
@@ -179,7 +221,10 @@ const EqualsIcon = styled(DragHandleIcon)(({ theme }) => ({
     },
   },
   [theme.breakpoints.down('md')]: {
-    fontSize: '2.5rem',
+    fontSize: '2rem',
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.5rem',
   },
 }));
 
@@ -199,6 +244,12 @@ const ImageLabel = styled(Typography)(({ theme, variant }) => ({
   zIndex: 2,
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.75rem',
+    padding: theme.spacing(0.5, 1.5),
+    top: theme.spacing(1),
+    left: theme.spacing(1),
+  },
 }));
 
 const PlaceholderCard = styled(Box)(({ theme }) => ({
@@ -213,6 +264,13 @@ const PlaceholderCard = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(16px)',
   color: alpha(theme.palette.text.secondary, 0.8),
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  [theme.breakpoints.down('md')]: {
+    height: '250px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: '200px',
+    borderRadius: theme.spacing(2),
+  },
 }));
 
 const CombineImageModal = ({
@@ -243,7 +301,7 @@ const CombineImageModal = ({
       if (isDragging && zoom > 1) {
         const newPanX = e.clientX - dragStart.x;
         const newPanY = e.clientY - dragStart.y;
-        
+
         // Limit pan to reasonable bounds
         const maxPan = 200 * zoom;
         setPanX(Math.max(-maxPan, Math.min(maxPan, newPanX)));
@@ -342,7 +400,7 @@ const CombineImageModal = ({
     if (isDragging && zoom > 1 && e.touches.length === 1) {
       const newPanX = e.touches[0].clientX - dragStart.x;
       const newPanY = e.touches[0].clientY - dragStart.y;
-      
+
       // Limit pan to reasonable bounds
       const maxPan = 200 * zoom;
       setPanX(Math.max(-maxPan, Math.min(maxPan, newPanX)));
@@ -395,14 +453,14 @@ const CombineImageModal = ({
         </StyledDialogTitle>
 
         <StyledDialogContent>
-                   <Grid container spacing={4} alignItems="center">
-           {/* First Input Image */}
-           <Grid item xs={12} md={3}>
+          <Grid container spacing={{ xs: 2, md: 4 }} alignItems="center">
+            {/* First Input Image */}
+            <Grid item xs={12} md={3}>
               <ImageCard variant="input">
                 <ImageLabel variant="input">Input 1</ImageLabel>
                 <CardMedia
                   component="img"
-                  height={isMobile ? "300" : "300"}
+                  height={isMobile ? "200" : "300"}
                   image={displayImage1}
                   referrerPolicy='no-referrer'
                   alt="First input image"
@@ -410,6 +468,12 @@ const CombineImageModal = ({
                     objectFit: 'contain',
                     backgroundColor: '#f8fafc',
                     transition: 'all 0.3s ease',
+                    [theme.breakpoints.down('md')]: {
+                      height: '200px',
+                    },
+                    [theme.breakpoints.down('sm')]: {
+                      height: '150px',
+                    },
                   }}
                 />
                 <ImageOverlay className="image-overlay">
@@ -426,26 +490,36 @@ const CombineImageModal = ({
                     </Tooltip>
                   )}
                 </ImageOverlay>
-
               </ImageCard>
             </Grid>
-\
-             <ArrowContainer>
-               <PlusIcon />
-             </ArrowContainer>
-           <Grid item xs={12} md={3}>
+
+            {/* Plus Icon */}
+            <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
+              <ArrowContainer>
+                <PlusIcon />
+              </ArrowContainer>
+            </Grid>
+
+            {/* Second Input Image */}
+            <Grid item xs={12} md={3}>
               <ImageCard variant="input">
                 <ImageLabel variant="input">Input 2</ImageLabel>
                 <CardMedia
                   component="img"
-                  height={isMobile ? "300" : "300"}
+                  height={isMobile ? "200" : "300"}
                   image={displayImage2}
                   referrerPolicy='no-referrer'
                   alt="Second input image"
                   sx={{
                     objectFit: 'contain',
                     backgroundColor: '#f8fafc',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    [theme.breakpoints.down('md')]: {
+                      height: '200px',
+                    },
+                    [theme.breakpoints.down('sm')]: {
+                      height: '150px',
+                    },
                   }}
                 />
                 <ImageOverlay className="image-overlay">
@@ -475,6 +549,13 @@ const CombineImageModal = ({
                       borderRadius: 1,
                       fontSize: '0.875rem',
                       textAlign: 'center',
+                      [theme.breakpoints.down('sm')]: {
+                        fontSize: '0.75rem',
+                        padding: 1,
+                        bottom: 8,
+                        left: 8,
+                        right: 8,
+                      },
                     }}
                   >
                     Sample Image - Upload your own
@@ -483,18 +564,18 @@ const CombineImageModal = ({
               </ImageCard>
             </Grid>
 
-                       {/* Equals Icon */}
-           {/* <Grid item xs={12} md={1}> */}
-             <ArrowContainer>
-               <EqualsIcon />
-             </ArrowContainer>
-           {/* </Grid> */}
+            {/* Equals Icon */}
+            <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
+              <ArrowContainer>
+                <EqualsIcon />
+              </ArrowContainer>
+            </Grid>
 
-           {/* Output Image */}
-           <Grid item xs={12} md={4}>
+            {/* Output Image */}
+            <Grid item xs={12} md={4}>
               {isLoading ? (
                 <PlaceholderCard>
-                  <EnhancedLoader 
+                  <EnhancedLoader
                     selectedModel="combine-image"
                     size="large"
                   />
@@ -505,14 +586,20 @@ const CombineImageModal = ({
                     <ImageLabel variant="output">Combined Result</ImageLabel>
                     <CardMedia
                       component="img"
-                      height={isMobile ? "300" : "300"}
+                      height={isMobile ? "200" : "300"}
                       image={displayOutput}
                       referrerPolicy='no-referrer'
                       alt="Combined output image"
                       sx={{
                         objectFit: 'contain',
                         backgroundColor: '#f8fafc',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        [theme.breakpoints.down('md')]: {
+                          height: '200px',
+                        },
+                        [theme.breakpoints.down('sm')]: {
+                          height: '150px',
+                        },
                       }}
                     />
                     <ImageOverlay className="image-overlay">
@@ -542,6 +629,13 @@ const CombineImageModal = ({
                           borderRadius: 1,
                           fontSize: '0.875rem',
                           textAlign: 'center',
+                          [theme.breakpoints.down('sm')]: {
+                            fontSize: '0.75rem',
+                            padding: 1,
+                            bottom: 8,
+                            left: 8,
+                            right: 8,
+                          },
                         }}
                       >
                         Sample Result - Generate your own
@@ -553,7 +647,19 @@ const CombineImageModal = ({
             </Grid>
           </Grid>
 
-        
+          {/* Mobile Arrow Indicators */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mt: 2, gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <PlusIcon sx={{ fontSize: '1.5rem' }} />
+              <Typography variant="body2" color="text.secondary">Combine</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <EqualsIcon sx={{ fontSize: '1.5rem' }} />
+              <Typography variant="body2" color="text.secondary">Result</Typography>
+            </Box>
+          </Box>
+
+
         </StyledDialogContent>
       </StyledDialog>
 
@@ -590,18 +696,20 @@ const CombineImageModal = ({
             onClick={handlePreviewClose}
             sx={{
               position: 'absolute',
-              top: 20,
-              right: 20,
+              top: { xs: 10, md: 20 },
+              right: { xs: 10, md: 20 },
               color: 'white',
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(10px)',
               zIndex: 1000,
+              width: { xs: '40px', md: '48px' },
+              height: { xs: '40px', md: '48px' },
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
               },
             }}
           >
-            <CloseIcon />
+            <CloseIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
           </IconButton>
 
           {/* Image Title */}
@@ -664,15 +772,15 @@ const CombineImageModal = ({
           <Box
             sx={{
               position: 'absolute',
-              bottom: 20,
+              bottom: { xs: 10, md: 20 },
               left: '50%',
               transform: 'translateX(-50%)',
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: { xs: 0.5, md: 1 },
               zIndex: 1000,
               backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              padding: '8px 12px',
+              padding: { xs: '6px 8px', md: '8px 12px' },
               borderRadius: 2,
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -680,17 +788,20 @@ const CombineImageModal = ({
           >
             <Tooltip title="Zoom Out">
               <span>
-                <IconButton 
-                  onClick={handleZoomOut} 
+                <IconButton
+                  onClick={handleZoomOut}
                   disabled={zoom <= 0.25}
-                  sx={{ 
+                  size="small"
+                  sx={{
                     color: 'white',
+                    width: { xs: '32px', md: '40px' },
+                    height: { xs: '32px', md: '40px' },
                     '&.Mui-disabled': {
                       color: 'rgba(255, 255, 255, 0.3)',
                     },
                   }}
                 >
-                  <ZoomOutIcon />
+                  <ZoomOutIcon sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }} />
                 </IconButton>
               </span>
             </Tooltip>
@@ -702,40 +813,47 @@ const CombineImageModal = ({
                 backgroundColor: 'rgba(99, 102, 241, 0.8)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,0.2)',
-                fontSize: '0.75rem',
+                fontSize: { xs: '0.7rem', md: '0.75rem' },
                 fontWeight: 600,
-                minWidth: '60px',
+                minWidth: { xs: '50px', md: '60px' },
+                height: { xs: '28px', md: '32px' },
               }}
             />
             <Tooltip title="Reset Zoom">
               <span>
-                <IconButton 
+                <IconButton
                   onClick={handleResetZoom}
                   disabled={zoom === 1}
-                  sx={{ 
+                  size="small"
+                  sx={{
                     color: 'white',
+                    width: { xs: '32px', md: '40px' },
+                    height: { xs: '32px', md: '40px' },
                     '&.Mui-disabled': {
                       color: 'rgba(255, 255, 255, 0.3)',
                     },
                   }}
                 >
-                  <RestartAltIcon />
+                  <RestartAltIcon sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }} />
                 </IconButton>
               </span>
             </Tooltip>
             <Tooltip title="Zoom In">
               <span>
-                <IconButton 
+                <IconButton
                   onClick={handleZoomIn}
                   disabled={zoom >= 3}
-                  sx={{ 
+                  size="small"
+                  sx={{
                     color: 'white',
+                    width: { xs: '32px', md: '40px' },
+                    height: { xs: '32px', md: '40px' },
                     '&.Mui-disabled': {
                       color: 'rgba(255, 255, 255, 0.3)',
                     },
                   }}
                 >
-                  <ZoomInIcon />
+                  <ZoomInIcon sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }} />
                 </IconButton>
               </span>
             </Tooltip>
@@ -746,16 +864,21 @@ const CombineImageModal = ({
             variant="body1"
             sx={{
               position: 'absolute',
-              bottom: 80,
+              bottom: { xs: 60, md: 80 },
               left: '50%',
               transform: 'translateX(-50%)',
               color: 'rgba(255, 255, 255, 0.7)',
               textAlign: 'center',
-              fontSize: '0.9rem',
-              maxWidth: '80%',
+              fontSize: { xs: '0.8rem', md: '0.9rem' },
+              maxWidth: '90%',
+              px: 2,
+              [theme.breakpoints.down('sm')]: {
+                fontSize: '0.75rem',
+                bottom: 50,
+              },
             }}
           >
-            Use zoom controls to inspect details • Click and drag to pan when zoomed • Press ESC or click close to exit
+            {isMobile ? 'Pinch to zoom • Tap and drag to pan • Tap close to exit' : 'Use zoom controls to inspect details • Click and drag to pan when zoomed • Press ESC or click close to exit'}
           </Typography>
         </Box>
       </Dialog>

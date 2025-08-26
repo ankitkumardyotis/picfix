@@ -50,7 +50,6 @@ export default function MuiTable({ userHistory }) {
   const newDataAfterDateFormat = sortedUserHistory.map((item, idx) => {
     const diffrenceInTime = diffrenceTime(item.createdAt);
     let model;
-    console.log("item.model=====", item.model);
     if (item.model === "tencentarc/gfpgan") {
       model = "Restore Photos";
     } else if (item.model === "allenhooo/lama") {

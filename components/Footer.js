@@ -47,43 +47,72 @@ function Footer() {
                 </Box>
             </Grid>
 
-            <Grid item xs={6} md={6} lg={3} >
+            <Grid item xs={6} md={6} lg={2} >
                 <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 'bold' }}>
                     AI-Models
                 </Typography>
                 <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=restore-image'), context.setFileUrl("") }} >
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                       Restore Image
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Restore Image
                     </Typography>
                 </Box>
-
-                {matches && <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=generate-image'), context.setFileUrl("") }} >
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Generate Image
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=gfp-restore'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Restore Image (Free)
+                    </Typography>
+                </Box>
+                {matches && <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=background-removal'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Background Removal (Free)
                     </Typography>
                 </Box>}
-                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=combine-image'), context.setFileUrl("") }} >
-
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Combine Image
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=generate-image'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        AI Image Generator
                     </Typography>
                 </Box>
-                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=remove-object'), context.setFileUrl("") }} >
-
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Remove Object
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=hair-style'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Hair Style Changer
                     </Typography>
                 </Box>
                 <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=headshot'), context.setFileUrl("") }} >
-
-                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
-                        Headshot
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Professional Headshot
                     </Typography>
                 </Box>
 
             </Grid>
-            <Grid item xs={6} md={6} lg={3} >
-                <Typography variant="h6" component="div" sx={{ ml: matches ? '' : 3, mb: 2, fontWeight: 'bold' }}>
+            <Grid item xs={6} md={6} lg={2} mt={matches ? 6 : 0} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=combine-image'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Combine Images
+                    </Typography>
+                </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=text-removal'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Text/Watermark Removal
+                    </Typography>
+                </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=remove-object'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Remove Object
+                    </Typography>
+                </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=re-imagine'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Re-imagine
+                    </Typography>
+                </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=home-designer'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        Home Designer (Free)
+                    </Typography>
+                </Box>
+
+            </Grid>
+            <Grid item xs={6} md={6} lg={2} >
+                <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 'bold' }}>
                     Legal
                 </Typography>
                 {/* <Typography variant="body2" sx={{ ml: matches ? '' : 3, mb: 3, fontSize: '1em', color: 'rgb(87 83 78)' }}>
@@ -93,22 +122,22 @@ function Footer() {
                     Contact Us
                 </Typography> */}
                 <Box sx={buttonSX} onClick={() => { router.push('/privacy'); }} >
-                    <Typography variant="body2" sx={{ ml: matches ? '' : 3, mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         Privacy Policy
                     </Typography>
                 </Box>
                 <Box sx={buttonSX} onClick={() => { router.push('/term'); }} >
-                    <Typography variant="body2" sx={{ ml: matches ? '' : 3, mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         Terms of Service
                     </Typography>
                 </Box>
                 <Box sx={buttonSX} onClick={() => { router.push('/refundpolicy'); }} >
-                    <Typography variant="body2" sx={{ ml: matches ? '' : 3, mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                    <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         Refund Policy
                     </Typography>
                 </Box>
             </Grid>
-            <Grid item xs={12} md={6} lg={3} >
+            <Grid item xs={6} md={6} lg={3} >
                 <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 'bold' }}>
                     Resources
                 </Typography>
@@ -119,6 +148,13 @@ function Footer() {
                     <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         FAQ
                     </Typography>
+                </Box>
+                <Box sx={buttonSX}>
+                    <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                        <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                            Sitemap
+                        </Typography>
+                    </a>
                 </Box>
 
                 {/* <Typography variant="body2" sx={{ mb: 3, fontSize: '1em', color: 'rgb(87 83 78)' }}>

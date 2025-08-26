@@ -43,8 +43,7 @@ export default async function handler(req, res) {
       }
     });
     
-    console.log(`Found ${history.length} history records for user ${session.user.id}`);
-    
+
     // Transform data for frontend
     const transformedHistory = history.map(record => {
       const baseRecord = {

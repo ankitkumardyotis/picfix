@@ -93,7 +93,7 @@ export default function App({
         >
           <ThemeProvider theme={theme}>
             <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
-              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
+              {router.pathname != '/ai-image-editor' && router.pathname != '/admin-dashboard' && router.pathname != '/dashboard' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
               }
               {isMobile && <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />}
               {useMemo(() => <Component {...pageProps} />, [fileUrl,
@@ -102,7 +102,7 @@ export default function App({
                 removeImageFromTransformerJs,
                 pageProps,
                 timerForRunModel])}
-              {router.pathname != '/ai-image-editor' && router.pathname != '/dashboard' && router.pathname != '/gallery' && <Footer />}
+              {router.pathname != '/ai-image-editor' && router.pathname != '/admin-dashboard' && router.pathname != '/dashboard' && router.pathname != '/gallery' && <Footer />}
             </AppContext.Provider>
           </ThemeProvider>
           {/* Google Analytics 4 */}

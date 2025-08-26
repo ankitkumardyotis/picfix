@@ -24,7 +24,6 @@ async function deleteFromR2(imagePath) {
     });
 
     await r2Client.send(command);
-    console.log('Successfully deleted from R2:', imagePath);
     return { success: true };
   } catch (error) {
     console.error('Error deleting from R2:', imagePath, error);
@@ -50,7 +49,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'History ID is required' });
     }
 
-    console.log('Deleting history record:', historyId, 'for user:', session.user.id);
 
     // 1. First, fetch the history record to get file paths
     const historyRecord = await prisma.history.findUnique({
@@ -63,8 +61,7 @@ export default async function handler(req, res) {
       }
     });
 
-    console.log('History record:', historyRecord);
-
+ 
     if (!historyRecord) {
       return res.status(404).json({ error: 'History record not found or access denied' });
     }
@@ -86,13 +83,11 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('Images to delete from R2:', imagesToDelete);
 
     // 3. Delete published image if it exists (cascade deletion)
     let deletedPublishedImage = null;
     if (historyRecord.publishedImageId) {
-      console.log('Deleting associated published image:', historyRecord.publishedImageId);
-      
+
       // Delete image likes first (foreign key constraint)
       await prisma.imageLike.deleteMany({
         where: {
@@ -136,7 +131,6 @@ export default async function handler(req, res) {
       }
     });
 
-    console.log('✅ Successfully deleted history record from database:', historyId);
 
     // 6. Calculate deletion stats
     const successfulDeletions = deletionResults.filter(

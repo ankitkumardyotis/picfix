@@ -19,7 +19,6 @@ export default async function handler(req, res) {
         const session = await getServerSession(req, res, authOptions);
         const currentUserId = session?.user?.id;
 
-        console.log('Fetching unified gallery (community + example images)');
 
         // Calculate pagination
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -71,8 +70,7 @@ export default async function handler(req, res) {
             totalExampleImages += modelData.useCaseImages.length;
         }
         
-        console.log(`Total example images available: ${totalExampleImages}`);
-
+       
         // 3. Efficiently paginate example images without loading all
         const exampleSkip = Math.ceil(skip / 2);
         const exampleTake = Math.floor(take / 2);
@@ -147,7 +145,7 @@ export default async function handler(req, res) {
         allExampleImages.sort((a, b) => b.likes - a.likes);
         const selectedExampleImages = allExampleImages.slice(exampleSkip, exampleSkip + exampleTake);
         
-        console.log(`Selected ${selectedExampleImages.length} example images for processing`);
+       
 
         // 4. Process community images with public URLs (instant loading)
         const processedCommunityImages = communityImages.map((dbImage, idx) => {
@@ -211,14 +209,14 @@ export default async function handler(req, res) {
         });
 
         // 5. Process example images with public URLs (instant loading)
-        console.log(`Processing ${selectedExampleImages.length} selected example images`);
+       
         const processedExampleImages = selectedExampleImages.map((exampleImg, idx) => {
             try {
                 const height = [280, 260, 290, 240, 310, 270, 320, 250, 300, 330];
                 const model = exampleImg.model;
                 const imageData = exampleImg.imageData;
                 
-                console.log(`Processing example image ${idx + 1}: ${model}/${imageData.outputImage}`);
+               
                 
                 // Generate public URLs for example images (instant, no API calls)
                 const outputUrl = generatePublicUrl(`picfix-usecase-image/${model}/${imageData.outputImage}`);
@@ -274,7 +272,7 @@ export default async function handler(req, res) {
                     inputImage2: inputImage2Url
                 };
                 
-                console.log(`Successfully processed example image: ${processedImage.id}`);
+               
                 return processedImage;
             } catch (error) {
                 console.error(`Error processing example image ${idx + 1}:`, error, {
@@ -286,7 +284,7 @@ export default async function handler(req, res) {
         });
          
          const validExampleImages = processedExampleImages.filter(img => img !== null);
-         console.log(`Successfully processed ${validExampleImages.length} example images`);
+        
 
         // 6. Combine and shuffle both types
         const allImages = [

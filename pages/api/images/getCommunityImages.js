@@ -13,7 +13,6 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Model type is required' });
         }
 
-        console.log('Fetching community images for model:', model);
 
         // Fetch community images from database (paths only)
         const communityImages = await prisma.publishedImage.findMany({
@@ -32,7 +31,6 @@ export default async function handler(req, res) {
             }
         });
 
-        console.log(`Found ${communityImages.length} community images for model: ${model}`);
 
         // Generate public URLs for all images (instant loading)
         const processedImages = communityImages.map((dbImage, idx) => {

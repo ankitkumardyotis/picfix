@@ -40,8 +40,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Model type is required' });
         }
 
-        console.log('Publishing image for user:', session.user.id, 'model:', model);
-
+   
         const publishedImage = await handleImagePublish({
             outputImage,
             inputImages: inputImages || [],

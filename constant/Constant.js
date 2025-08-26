@@ -27,6 +27,16 @@ const priceStructure = [
         extraCreditPoints: process.env.NEXT_PUBLIC_PREMIUM_EXTRA_CREDIT_POINTS_IN,
     },
     {
+        id: 0,
+        name: "free",
+        country: "Others Country",
+        currency: "USD",
+        storage: "1GB",
+        price: 0,
+        creditPoints: 0,
+        extraCreditPoints: 0
+    },
+    {
         id: 4,
         name: "standard",
         country: "Others Country",
@@ -55,7 +65,8 @@ const priceStructure = [
         price: process.env.NEXT_PUBLIC_PREMIUM_VARIANT_PRICE_US,
         creditPoints: process.env.NEXT_PUBLIC_PREMIUM_TOTAL_CREDIT_POINTS_US,
         extraCreditPoints: process.env.NEXT_PUBLIC_PREMIUM_EXTRA_CREDIT_POINTS_US
-    }
+    },
+
 ]
 
 

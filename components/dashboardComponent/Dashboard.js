@@ -3,7 +3,9 @@ import MuiTable from './MuiTable'
 import TabNavigation from '../mobileTabNavigation/TabNavigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Button } from '@mui/material'
+import { Button, Chip } from '@mui/material'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+import { isAdmin, isSuperAdmin } from '@/lib/adminAuth'
 
 function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches }) {
     if (matches) return (
@@ -24,30 +26,52 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
                     <div>
-                        <h1 style={{
-                            fontSize: '2.5rem',
-                            fontWeight: '600',
-                            marginBottom: '0.5rem',
-                            background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                            fontFamily: 'Roboto, sans-serif'
-                        }}>
-                            Hello, {session?.user.name} 👋
-                        </h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                            <h1 style={{
+                                fontSize: '2.5rem',
+                                fontWeight: '600',
+                                margin: 0,
+                                background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Hello, {session?.user.name} 👋
+                            </h1>
+                            {/* Admin Badge */}
+                            {isAdmin(session) && (
+                                <Chip
+                                    icon={<AdminPanelSettingsIcon />}
+                                    label={isSuperAdmin(session) ? "Super Admin" : "Admin"}
+                                    color="primary"
+                                    variant="filled"
+                                    sx={{
+                                        background: isSuperAdmin(session)
+                                            ? 'linear-gradient(45deg, #dc2626 30%, #ef4444 90%)'
+                                            : 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                                        color: 'white',
+                                        fontWeight: '600',
+                                        fontSize: '0.75rem',
+                                        '& .MuiChip-icon': {
+                                            color: 'white'
+                                        }
+                                    }}
+                                />
+                            )}
+                        </div>
                         <p style={{
                             fontSize: '1.1rem',
                             color: '#000',
                             fontWeight: '400',
                             fontFamily: 'Roboto, sans-serif'
                         }}>
-                            Welcome back!
+                            Welcome back! {isAdmin(session) && "You have administrative privileges."}
                         </p>
                     </div>
                     <div>
                         {/* Upgrade Plan Button */}
-                        <Link href="/price" passHref legacyBehavior>
+                        <Link href="/pricing" passHref legacyBehavior>
                             <Button
                                 variant="contained"
                                 sx={{
@@ -119,7 +143,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             lineHeight: '1',
                             fontFamily: 'Roboto, sans-serif'
                         }}>
-                            {userPlan?.remainingPoints}
+                            {userPlan?.remainingPoints ? userPlan?.remainingPoints : 0}
                         </span>
                         <span style={{
                             fontSize: '1.5rem',
@@ -130,14 +154,14 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                             credits
                         </span>
                     </div>
-                    <p style={{
+                    {userPlan?.remainingPoints && <p style={{
                         fontSize: '0.875rem',
                         color: '#000',
                         fontWeight: '400',
                         fontFamily: 'Roboto, sans-serif'
                     }}>
                         Renews on: <span style={{ fontWeight: '600', color: '#000' }}>{userPlan && renewAt}</span>
-                    </p>
+                    </p>}
                 </div>
 
                 <div className="stats-card" style={{
@@ -207,7 +231,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                                 fontWeight: '400',
                                 fontFamily: 'Roboto, sans-serif'
                             }}>
-                                Total Credits Used
+                               { userPlan?.remainingPoints && "Total Credits Used"}
                             </div>
                         </div>
                     </div>
@@ -303,25 +327,48 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
                             <div>
-                                <h2 style={{
-                                    fontSize: '1.5rem',
-                                    fontWeight: '600',
-                                    marginBottom: '0.25rem',
-                                    background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                    fontFamily: 'Roboto, sans-serif'
-                                }}>
-                                    Hello, {session?.user.name}
-                                </h2>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                    <h2 style={{
+                                        fontSize: '1.5rem',
+                                        fontWeight: '600',
+                                        margin: 0,
+                                        background: 'linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                        fontFamily: 'Roboto, sans-serif'
+                                    }}>
+                                        Hello, {session?.user.name}
+                                    </h2>
+                                    {/* Mobile Admin Badge */}
+                                    {isAdmin(session) && (
+                                        <Chip
+                                            icon={<AdminPanelSettingsIcon />}
+                                            label={isSuperAdmin(session) ? "Super Admin" : "Admin"}
+                                            size="small"
+                                            sx={{
+                                                background: isSuperAdmin(session)
+                                                    ? 'linear-gradient(45deg, #dc2626 30%, #ef4444 90%)'
+                                                    : 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                                                color: 'white',
+                                                fontWeight: '600',
+                                                fontSize: '0.7rem',
+                                                '& .MuiChip-icon': {
+                                                    color: 'white',
+                                                    fontSize: '0.9rem'
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </div>
                                 <p style={{
                                     fontSize: '0.875rem',
                                     color: '#000',
                                     fontWeight: '400',
-                                    fontFamily: 'Roboto, sans-serif'
+                                    fontFamily: 'Roboto, sans-serif',
+                                    margin: 0
                                 }}>
-                                    Welcome back! 👋
+                                    Welcome back! 👋 {isAdmin(session) && "You have admin privileges."}
                                 </p>
                             </div>
 

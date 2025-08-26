@@ -15,8 +15,6 @@ export default async function handler(req, res) {
         const session = await getServerSession(req, res, authOptions);
         const currentUserId = session?.user?.id;
 
-        console.log('Fetching all community images from all models');
-
         // Fetch community images from ALL models in one database query
         const communityImages = await prisma.publishedImage.findMany({
             where: {
@@ -37,7 +35,6 @@ export default async function handler(req, res) {
             }
         });
 
-        console.log(`Found ${communityImages.length} total community images from all models`);
 
         // Generate public URLs for all images (instant loading)
         const processedImages = communityImages.map((dbImage, idx) => {

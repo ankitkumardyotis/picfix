@@ -280,7 +280,7 @@ export default function AccountMenu() {
         <MenuItem
           onClick={() => {
             context.setFileUrl("");
-            router.push("/price"), localStorage.setItem("path", "/price");
+            router.push("/pricing"), localStorage.setItem("path", "/pricing");
             // context.setFileUrl('')
           }}
         >

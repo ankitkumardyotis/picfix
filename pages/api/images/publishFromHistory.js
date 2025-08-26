@@ -19,8 +19,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'History ID is required' });
     }
     
-    console.log('Publishing from history:', { historyId, title, userId: session.user.id });
-    
+
     const publishedImage = await publishFromHistory(historyId, {
       title: title || null,
       description: description || null

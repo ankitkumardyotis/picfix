@@ -97,8 +97,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           image.outputImage.startsWith(`${genderPrefix}/`)
         );
       }
-      console.log("filteredUseCaseImage", useCaseImage);
-
       const response = await fetch('/api/getS3ImageUrls', {
         method: 'POST',
         headers: {
@@ -109,7 +107,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
       if (response.ok) {
         const data = await response.json();
-        console.log("data=============", data);
         if (data.success) {
           // Cache the results
           imageCache.set(cacheKey, data.images);
@@ -160,7 +157,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Community images data:", data);
         if (data.success) {
           // Cache the results
           imageCache.set(communityCacheKey, data.images);
@@ -255,7 +251,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
       if (response.ok) {
         const data = await response.json();
-        console.log("User history data:", data);
         if (data.success) {
           // Transform history data to match masonry format
           const transformedHistory = data.history.map(record => ({
@@ -543,7 +538,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
       });
 
       if (response.ok) {
-        console.log('Image published successfully');
         // Refresh history to update the published status
         const historyCacheKey = `history-${selectedModel}`;
         imageCache.delete(historyCacheKey); // Clear cache
@@ -578,7 +572,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
       if (response.ok) {
         const result = await response.json();
-        console.log('History item deleted successfully:', result);
 
         // Remove the item from local state immediately - handle both grouped and flat structures
         if (typeof historyImages === 'object' && !Array.isArray(historyImages)) {
@@ -605,8 +598,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
         setDeleteDialogOpen(false);
         setItemToDelete(null);
 
-        // Optional: Show success message if you have a notification system
-        console.log(`Deleted ${result.details.totalFiles} files from storage and database record`);
+
       } else {
         const errorData = await response.json();
         console.error('Error deleting history item:', errorData.error);
@@ -769,7 +761,6 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
   const displayImages = activeTab === 'community' ? communityImages :
     activeTab === 'history' ? historyImages :
       (s3Images.length > 0 ? s3Images : []);
-  console.log("displayImages", displayImages, "activeTab:", activeTab);
 
   // Helper function to get time period label
   const getTimePeriodLabel = (period) => {
@@ -840,7 +831,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           }}
         >
           <ToggleButton value="examples">Examples</ToggleButton>
-          <ToggleButton value="history">My History</ToggleButton>
+          {selectedModel !== "background-removal" && <ToggleButton value="history">My History</ToggleButton>}
           <ToggleButton value="community">Community</ToggleButton>
         </ToggleButtonGroup>
       </Box>

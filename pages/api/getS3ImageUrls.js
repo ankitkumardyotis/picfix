@@ -35,7 +35,6 @@ export default async function handler(req, res) {
             }
             
             if (element.outputImage) {
-                console.log("outputImage", `picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
                 outputUrl = generatePublicUrl(`picfix-usecase-image/${imagesPath.model}/${element.outputImage}`);
             }
             
