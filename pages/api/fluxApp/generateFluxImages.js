@@ -629,6 +629,61 @@ export default async function handler(req, res) {
         // Fallback to original behavior if storage fails
         res.status(200).json(processedOutput);
       }
+    } else if (config.edit_image) {
+
+      const input = {
+        prompt: config.prompt,
+        image_input: [config.input_image]
+      };
+
+
+      const output = await replicate.run("google/nano-banana", { input });
+
+
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store edit image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          modelParams: config,
+          aspectRatio: null, // Edit image preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing remove object image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+
     } else {
       res.status(400).json("Invalid request");
     }

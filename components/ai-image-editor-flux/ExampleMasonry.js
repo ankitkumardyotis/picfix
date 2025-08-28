@@ -1201,7 +1201,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                               )}
 
                               {/* Prompt chip - Only show for models that use prompts */}
-                              {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
+                              {image.prompt && ['generate-image','edit-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
                                 <Chip
                                   label="Use this prompt"
                                   size="small"
@@ -1490,7 +1490,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                         )}
 
                         {/* Prompt chip - Only show for models that use prompts */}
-                        {image.prompt && ['generate-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
+                        {image.prompt && ['generate-image', 'edit-image', 'combine-image', 'home-designer'].includes(selectedModel) && (
                           <Chip
                             label="Use this prompt"
                             size="small"

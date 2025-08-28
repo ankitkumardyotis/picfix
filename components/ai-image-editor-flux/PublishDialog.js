@@ -106,7 +106,8 @@ const PublishDialog = ({
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
-      'combine-image': 'Image Combiner'
+      'combine-image': 'Image Combiner',
+      'edit-image': 'AI Image Editor',
     };
     return modelNames[selectedModel] || selectedModel;
   };

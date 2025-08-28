@@ -72,7 +72,10 @@ export default function MuiTable({ userHistory }) {
       model = "Restore Image";
     } else if (item.model === "gfp-restore") {
       model = "Restore Image (Free)";
-    } else {
+    } else if (item.model === "edit-image") {
+      model = "Edit Image";
+    }
+    else {
       model = item.model;
     }
     return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1, cost: item.cost || 0 };

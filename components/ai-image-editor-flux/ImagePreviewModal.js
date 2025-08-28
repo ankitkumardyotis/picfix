@@ -205,6 +205,7 @@ const ImagePreviewModal = ({
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
+      'edit-image': 'AI Image Editor',
     };
     return names[model] || model;
   };

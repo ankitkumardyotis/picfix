@@ -96,6 +96,13 @@ const getModelInfo = (selectedModel) => {
       color: '#667eea',
       estimatedTime: '20-40 seconds'
     },
+    'edit-image': {
+      icon: <EditIcon />,
+      title: 'Editing Image',
+      description: 'Editing your image...',
+      color: '#667eea',
+      estimatedTime: '15-30 seconds'
+    }
   };
 
   return modelConfigs[selectedModel] || modelConfigs['generate-image'];

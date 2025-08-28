@@ -249,6 +249,11 @@ export default function AIImageEditor() {
   const [uploadingCombine1, setUploadingCombine1] = useState(false);
   const [uploadingCombine2, setUploadingCombine2] = useState(false);
 
+  // Edit image specific states
+  const [editImage, setEditImage] = useState(null);
+  const [editImageUrl, setEditImageUrl] = useState(null);
+  const [uploadingEditImage, setUploadingEditImage] = useState(false);
+
 
 
   // Preview modal states
@@ -669,6 +674,13 @@ export default function AIImageEditor() {
       setAspectRatio('1:1');
       setInputPrompt('');
     }
+
+    if (newModel !== 'edit-image') {
+      setInputPrompt('');
+      setUploadedImage(null);
+      setUploadedImageUrl(null);
+      setUploadingEditImage(false);
+    }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
       setTextRemovalImage(null);
@@ -927,6 +939,77 @@ export default function AIImageEditor() {
     } catch (err) {
       enqueueSnackbar(err.message || 'Error changing hair style', { variant: 'error' });
       console.error('Error changing hair style:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateEditImage = async () => {
+    if (!editImageUrl) {
+      enqueueSnackbar('Please upload an image to edit first', { variant: 'warning' });
+      return;
+    }
+
+    if (!inputPrompt.trim()) {
+      enqueueSnackbar('Please enter a prompt describing the edit', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setGeneratedImages([null]); // Edit image model returns only 1 image
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
+    try {
+      enqueueSnackbar('Editing image...', { variant: 'info' });
+
+      const response = await fetch('/api/fluxApp/generateFluxImages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          config: {
+            edit_image: true,
+            prompt: inputPrompt,
+            input_image: editImageUrl
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.detail || errorData || 'Failed to edit image');
+      }
+
+      const data = await response.json();
+
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+      } else {
+        // Fallback to old format
+        setGeneratedImages([data]);
+      }
+
+      enqueueSnackbar('Image edited successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
+
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
+    } catch (err) {
+      enqueueSnackbar(err.message || 'Error editing image', { variant: 'error' });
+      console.error('Error editing image:', err);
     } finally {
       setIsLoading(false);
     }
@@ -1643,7 +1726,7 @@ export default function AIImageEditor() {
 
 
   const handleChipClick = (option) => {
-    if (currentConfig.type === 'prompts') {
+    if (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image') {
       // For text prompts, just set the input
       setInputPrompt(option);
     } else {
@@ -2341,6 +2424,20 @@ export default function AIImageEditor() {
           "description": "AI-powered image generation tool that creates high-quality images from text descriptions"
         }
       },
+      'edit-image': {
+        title: 'AI Image Editor - Edit Images with AI | PicFix.AI',
+        description: 'Edit images with AI technology. Transform your photos with different styles, colors, and effects. AI image editing tool for professional photo editing. Fix photo online with our AI photo editing tool.',
+        keywords: 'AI image editor, edit images, AI photo editing, photo editing tool, AI image transformation, photo editing tool, AI photo editing, best free photo editor online',
+        ogTitle: 'AI Image Editor - Edit Images with AI',
+        ogDescription: 'Edit images with AI technology. AI image editing tool for professional photo editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Image Editor",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for editing images with different styles, colors, and effects"
+        }
+      },
       'hair-style': {
         title: 'AI Hair Style - Transform Hair Styles & Colors | PicFix.AI',
         description: 'Change hair styles and colors with AI technology. Transform your look with different hairstyles, colors, and cuts. AI face photo editing tool for professional hair editing. Fix photo online with our AI photo editing tool.',
@@ -2795,7 +2892,11 @@ export default function AIImageEditor() {
                       {currentConfig.options && currentConfig.options.map((option, index) => (
                         <Button
                           key={index}
-                          variant={selectedItems.includes(option) ? "contained" : "outlined"}
+                          variant={
+                            (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image') 
+                              ? (inputPrompt === option ? "contained" : "outlined")
+                              : (selectedItems.includes(option) ? "contained" : "outlined")
+                          }
                           onClick={() => handleChipClick(option)}
                           sx={{
                             borderRadius: '50px',
@@ -2803,20 +2904,24 @@ export default function AIImageEditor() {
                             padding: '4px 14px',
                             fontSize: '12px',
                             fontWeight: 400,
-                            borderColor: selectedItems.includes(option)
-                              ? 'transparent'
-                              : alpha(theme.palette.divider, 0.5),
-                            backgroundColor: selectedItems.includes(option)
-                              ? theme.palette.primary.main
-                              : 'transparent',
-                            color: selectedItems.includes(option)
-                              ? 'white'
-                              : theme.palette.text.primary,
+                            borderColor: 
+                              (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
+                                ? (inputPrompt === option ? 'transparent' : alpha(theme.palette.divider, 0.5))
+                                : (selectedItems.includes(option) ? 'transparent' : alpha(theme.palette.divider, 0.5)),
+                            backgroundColor: 
+                              (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
+                                ? (inputPrompt === option ? theme.palette.primary.main : 'transparent')
+                                : (selectedItems.includes(option) ? theme.palette.primary.main : 'transparent'),
+                            color: 
+                              (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
+                                ? (inputPrompt === option ? 'white' : theme.palette.text.primary)
+                                : (selectedItems.includes(option) ? 'white' : theme.palette.text.primary),
                             '&:hover': {
                               borderColor: theme.palette.primary.main,
-                              backgroundColor: selectedItems.includes(option)
-                                ? theme.palette.primary.dark
-                                : alpha(theme.palette.primary.main, 0.04),
+                              backgroundColor: 
+                                (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
+                                  ? (inputPrompt === option ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.04))
+                                  : (selectedItems.includes(option) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.04)),
                             },
                             minWidth: 'auto',
                             whiteSpace: 'nowrap',
@@ -2870,12 +2975,13 @@ export default function AIImageEditor() {
                           />
                         )}
                         <IconButton
-                          onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
-                            selectedModel === 'text-removal' ? generateTextRemovalImage :
-                              selectedModel === 'home-designer' ? generateHomeDesignerImage :
-                                selectedModel === 'background-removal' ? generateBackgroundRemovalImage :
-                                  selectedModel === 'remove-object' ? generateRemoveObjectImage :
-                                    selectedModel === 'combine-image' ? generateCombineImages :
+                                                  onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
+                          selectedModel === 'text-removal' ? generateTextRemovalImage :
+                            selectedModel === 'home-designer' ? generateHomeDesignerImage :
+                              selectedModel === 'background-removal' ? generateBackgroundRemovalImage :
+                                selectedModel === 'remove-object' ? generateRemoveObjectImage :
+                                  selectedModel === 'combine-image' ? generateCombineImages :
+                                    selectedModel === 'edit-image' ? generateEditImage :
                                       generateFluxImages}
                           disabled={isLoading ||
                             (selectedModel === 'text-removal' ? !textRemovalImageUrl :
@@ -2883,7 +2989,8 @@ export default function AIImageEditor() {
                                 selectedModel === 'background-removal' ? (!backgroundRemovalImage || backgroundRemovalStatus !== 'Ready') :
                                   selectedModel === 'remove-object' ? (!removeObjectImageUrl || !hasMaskDrawn) :
                                     selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
-                                      !inputPrompt.trim())}
+                                      selectedModel === 'edit-image' ? (!editImageUrl || !inputPrompt.trim()) :
+                                        !inputPrompt.trim())}
                           sx={{
                             padding: 0.7,
                             background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -3742,6 +3849,51 @@ export default function AIImageEditor() {
                 </Grid>
               </>
             )}
+            {selectedModel === 'edit-image' && (
+              <>
+
+                <ImageUploader
+                  title="Upload Image to Edit"
+                  uploadedImage={editImage}
+                  uploadingImage={uploadingEditImage}
+                  placeholderText="Click to upload an image to edit"
+                  height="120px"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setEditImage(base64Data);
+
+                        // Immediately upload to R2
+                        setUploadingEditImage(true);
+                        enqueueSnackbar('Uploading first image...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'edit-image-input.jpg');
+                        if (url) {
+                          setEditImageUrl(url);
+                        } else {
+                          setEditImage(null); // Reset if upload failed
+                        }
+                        setUploadingEditImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setEditImage(null);
+                    setEditImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+              </>
+            )}
+
 
 
 

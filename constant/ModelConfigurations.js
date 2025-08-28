@@ -6,6 +6,15 @@ const modelConfigurations = {
     creditCost: 2,
     options: ['A sunset over mountains', 'Futuristic city', 'Abstract art', 'Nature landscape', 'Portrait photography']
   },
+  'edit-image': {
+    name: 'Edit Image',
+    type: 'edit-image',
+    creditCost: 2,
+    options: [
+      "Make the person in the image taller",
+      "Person should be wearing a red shirt",
+    ]
+  },
   'hair-style': {
     name: 'Hair Style',
     type: 'hair-style',
@@ -171,7 +180,7 @@ const modelConfigurations = {
       "Levitating with magical energy",
       "Standing on top of Mount Everest"
     ]
-  }
+  },
 };
 
 export default modelConfigurations; 

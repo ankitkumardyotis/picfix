@@ -160,7 +160,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             </FormControl >
             
             {/* Aspect Ratio - Side by side with Number of Outputs on mobile */}
-            {selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && (
+            {selectedModel !== 'edit-image' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && (
                 <Box sx={{ 
                     display: 'flex', 
                     flexDirection: isMobile ? 'row' : 'column', 
@@ -222,7 +222,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     </Box>
 
                     {/* Number of Outputs - Side by side with Aspect Ratio on mobile */}
-                    {selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
+                    {selectedModel !== 'edit-image' && selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
                         <Box sx={{ flex: isMobile ? 1 : 'auto' }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
                                 Number of Outputs

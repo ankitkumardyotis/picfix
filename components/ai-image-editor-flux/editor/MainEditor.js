@@ -40,6 +40,7 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
             fontSize: '14px',
         },
     }));
+    
 
     return (
         <MainEditor>
@@ -1134,6 +1135,51 @@ function MainEditor({ selectedModel, inputSectionRef, selectedGender, selectedHa
                     </Grid>
                 </>
             )}
+
+            {/* Edit Image Specific Controls */}
+            {selectedModel === 'edit-image' && (
+                <>
+                    {/* Image Upload Section */}
+                    <ImageUploader
+                        title="Upload Image to Edit"
+                        uploadedImage={editImage}
+                        uploadingImage={uploadingEditImage}
+                        placeholderText="Click to upload an image to edit"
+                        onImageUpload={async (e) => {
+                            const file = e.target.files[0];
+                            if (file && file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = async (event) => {
+                                    const base64Data = event.target.result;
+                                    setEditImage(base64Data);
+
+                                    // Immediately upload to R2
+                                    setUploadingEditImage(true);
+                                    const url = await uploadImageToR2(base64Data, 'edit-image-input.jpg');
+                                    if (url) {
+                                        setEditImageUrl(url);
+
+                                    } else {
+                                        setEditImage(null); // Reset if upload failed
+                                    }
+                                    setUploadingEditImage(false);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        }}
+                        onImageRemove={() => {
+                            setEditImage(null);
+                            setEditImageUrl(null);
+                        }}
+                        isDragging={isDragging}
+                        isLoading={isLoading}
+                        error={error}
+                        handleDragOver={handleDragOver}
+                        handleDragLeave={handleDragLeave}
+                        handleDrop={handleDrop}
+                    />
+                </>
+            )}  
 
 
 
