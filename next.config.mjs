@@ -34,6 +34,16 @@ const nextConfig = {
       sizeLimit: "16mb", // Adjust this value as needed
     },
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/restorePhoto/runModel',
+        destination: '/ai-image-editor?model=gfp-restore',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;

@@ -41,7 +41,7 @@ export default function Home({ open, setOpen }) {
         <meta property="og:title" content="PicFix.AI - AI Photo Editor & Image Enhancement Tools | Free Online Photo Editing" />
         <meta property="og:description" content="Transform your photos with PicFix.AI's powerful AI tools. Free photo restoration, background removal, AI image generation, professional headshots, and 14+ AI models. No software download required!" />
         <meta property="og:url" content="https://www.picfix.ai/" />
-        <meta property="og:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta property="og:image" content="https://www.picfix.ai/assets/logo.jpg" />
         <meta property="og:image:alt" content="PicFix.AI - AI Photo Editor Logo" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -53,7 +53,7 @@ export default function Home({ open, setOpen }) {
         <meta name="twitter:creator" content="@PicFixAI" />
         <meta name="twitter:title" content="PicFix.AI - AI Photo Editor & Image Enhancement Tools" />
         <meta name="twitter:description" content="Transform your photos with PicFix.AI's powerful AI tools. Free photo restoration, background removal, AI image generation, and 14+ AI models. Edit photos online instantly!" />
-        <meta name="twitter:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta name="twitter:image" content="https://www.picfix.ai/assets/logo.jpg" />
         <meta name="twitter:image:alt" content="PicFix.AI - AI Photo Editor" />
         
         {/* Additional SEO Meta Tags */}
@@ -70,7 +70,7 @@ export default function Home({ open, setOpen }) {
         
         {/* Favicon and Icons */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="apple-touch-icon" href="/assets/PicFixAILogo.jpg" />
+        <link rel="apple-touch-icon" href="/assets/logo.jpg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         
         {/* Preconnect for Performance */}
@@ -88,7 +88,7 @@ export default function Home({ open, setOpen }) {
               "@type": "Organization",
               "name": "PicFix.AI",
               "url": "https://www.picfix.ai",
-              "logo": "https://www.picfix.ai/assets/PicFixAILogo.jpg",
+              "logo": "https://www.picfix.ai/assets/logo.jpg",
               "description": "AI-powered photo editing and image enhancement platform with 14+ AI tools including photo restoration, background removal, and image generation.",
               "sameAs": [
                 "https://twitter.com/PicFixAI",
@@ -134,7 +134,7 @@ export default function Home({ open, setOpen }) {
               "operatingSystem": "Web Browser",
               "description": "AI-powered online photo editor with 14+ AI models for photo restoration, background removal, image generation, professional headshots, and more.",
               "url": "https://www.picfix.ai",
-              "screenshot": "https://www.picfix.ai/assets/banner-new.jpg",
+              "screenshot": "https://www.picfix.ai/assets/PicFixAILogo.jpg",
               "softwareVersion": "2.0",
               "datePublished": "2024-01-01",
               "author": {
