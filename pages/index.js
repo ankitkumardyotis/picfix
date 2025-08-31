@@ -8,8 +8,10 @@ import Script from 'next/script';
 // import PicFixHero from "@/components/updated_landing_page/Hero_section";
 import PhotoAIHero from "@/components/updated_landing_page/Hero_section";
 import ModelCards from "@/components/updated_landing_page/ModelCards";
+import AIImageEditingSection from "@/components/updated_landing_page/AIImageEditingSection";
 import MiniBlog from "@/components/updated_landing_page/MiniBlog";
 import Gallery from "@/components/updated_landing_page/gallery";
+import CTA from "@/components/updated_landing_page/CTA";
 
 export default function Home({ open, setOpen }) {
   const { data: session } = useSession()
@@ -232,8 +234,10 @@ export default function Home({ open, setOpen }) {
         {/* <Footer /> */}
         <PhotoAIHero/>
         <ModelCards/>
+        {/* <AIImageEditingSection/> */}
         <Gallery/>
         <MiniBlog/>
+        {/* <CTA/> */}
         
       </main>
 

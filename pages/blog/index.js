@@ -16,6 +16,9 @@ export const metadata = {
 export default function BlogPage() {
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
+
+
+    const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date) - new Date(a.date));
     return (
         <ThemeProvider theme={theme}>
             <Box
@@ -36,7 +39,7 @@ export default function BlogPage() {
                         </Typography>
                     </Box>
                     <Grid container spacing={4}>
-                        {blogPosts.map((post) => (
+                        {sortedPosts.map((post) => (
                             <Grid item key={post.slug} xs={12} sm={6} md={4} p={0}>
                                 <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
                                     <Card sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: 6 } }}>

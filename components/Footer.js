@@ -84,6 +84,11 @@ function Footer() {
 
             </Grid>
             <Grid item xs={6} md={6} lg={2} mt={matches ? 6 : 0} >
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=edit_image '), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                       AI Image Edit
+                    </Typography>
+                </Box>
                 <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=combine-image'), context.setFileUrl("") }} >
                     <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
                         Combine Images
