@@ -7,7 +7,7 @@ import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-materi
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SplitButton from '../SplitButton';
 
-function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, setSelectedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
+function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, switchModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
 
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
@@ -32,7 +32,6 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
     };
 
 
-    // Dynamic aspect ratio options based on selected model
     const getAspectRatioOptions = () => {
         if (selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'home-designer' || selectedModel === 're-imagine') {
             return currentConfig.aspectRatios.map(ratio => {
@@ -103,68 +102,115 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     {Object.entries(modelConfigurations)
                         .filter(([key, config]) => !isMobile || key !== 'background-removal')
                         .map(([key, config]) => (
-                        // 
-                        <MenuItem
-                            key={key}
-                            value={key}
-                            sx={{
-                                fontSize: '12px',
-                                fontWeight: 400,
-                                marginLeft: '-.5rem',
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            minWidth: '40px',
-                                            height: '12px',
-                                            borderRadius: '10px',
-                                            marginRight: '5px',
-                                            paddingLeft: '-10px',
-                                            fontSize: '10px',
-                                            fontWeight: 600,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px',
-                                            // opacity: 0,
-                                            transform: 'translateX(10px)',
-                                            transition: 'all 0.2s ease-in-out',
-                                            ...(config.free ? {
-                                                backgroundColor: '#e8f5e8',
-                                                color: '#2e7d32',
-                                                // border: '1px solid #4caf50'
-                                            } : {
-                                                backgroundColor: '#fff3e0',
-                                                color: '#f57c00',
-                                                // border: '1px solid #ff9800'
-                                            })
-                                        }}
+                            // 
+                            <MenuItem
+                                key={key}
+                                value={key}
+                                sx={{
+                                    fontSize: '12px',
+                                    fontWeight: 400,
+                                    marginLeft: '-.5rem',
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: '40px',
+                                                height: '12px',
+                                                borderRadius: '10px',
+                                                marginRight: '5px',
+                                                paddingLeft: '-10px',
+                                                fontSize: '10px',
+                                                fontWeight: 600,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                // opacity: 0,
+                                                transform: 'translateX(10px)',
+                                                transition: 'all 0.2s ease-in-out',
+                                                ...(config.free ? {
+                                                    backgroundColor: '#e8f5e8',
+                                                    color: '#2e7d32',
+                                                    // border: '1px solid #4caf50'
+                                                } : {
+                                                    backgroundColor: '#fff3e0',
+                                                    color: '#f57c00',
+                                                    // border: '1px solid #ff9800'
+                                                })
+                                            }}
 
-                                        
-                                    >
-                                        {config.free ? 'Free' : 'Pro'}
+
+                                        >
+                                            {config.free ? 'Free' : 'Pro'}
+                                        </Box>
+                                        <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                                            {config.name}
+                                        </Typography>
                                     </Box>
-                                    <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
-                                        {config.name}
-                                    </Typography>
-                                </Box>
-                                {/* Free/Pro Label - Hidden by default, shown on hover */}
+                                    {/* Free/Pro Label - Hidden by default, shown on hover */}
 
-                            </Box>
-                        </MenuItem>
-                    ))}
+                                </Box>
+                            </MenuItem>
+                        ))}
                 </Select>
             </FormControl >
-            
+
+            {
+                selectedModel === 'edit-image' && (
+                    < FormControl fullWidth variant="outlined" >
+                        <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>Select Model</InputLabel>
+                        <Select
+                            value={switchedModel || 'nano-banana'}
+                            onChange={(e) => setSwitchedModel(e.target.value)}
+                            label="Select Model"
+                            sx={{
+                                borderRadius: 2,
+                                '& .MuiSelect-select': {
+                                    padding: '.5rem',
+                                    fontSize: '12px',
+                                    fontWeight: 400,
+                                },
+
+
+                            }}
+                        >
+                            {switchModels.map((config, index) => (
+                                //
+                                <MenuItem
+                                    key={config.model}
+                                    value={config.model}
+                                    sx={{
+                                        fontSize: '12px',
+                                        fontWeight: 400,
+                                        marginLeft: '-.5rem',
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'space-between' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                                                {config.name}
+                                            </Typography>
+                                        </Box>
+                                        {/* Free/Pro Label - Hidden by default, shown on hover */}
+
+                                    </Box>
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                )
+            }
+
             {/* Aspect Ratio - Side by side with Number of Outputs on mobile */}
             {selectedModel !== 'edit-image' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && (
-                <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: isMobile ? 'row' : 'column', 
-                    gap: isMobile ? 1 : 2 
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: isMobile ? 'row' : 'column',
+                    gap: isMobile ? 1 : 2
                 }}>
                     {/* Aspect Ratio Control */}
                     <Box sx={{ flex: isMobile ? 1 : 'auto' }}>
@@ -303,10 +349,10 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                 selectedModel === 'hair-style' && (
                     <>
                         {/* Hair Color and Gender Selection - Side by side on mobile */}
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: isMobile ? 'row' : 'column', 
-                            gap: isMobile ? 1 : 2 
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'row' : 'column',
+                            gap: isMobile ? 1 : 2
                         }}>
                             {/* Hair Color Selection */}
                             <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
@@ -366,10 +412,10 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                 selectedModel === 'headshot' && (
                     <>
                         {/* Gender and Background Selection - Side by side on mobile */}
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: isMobile ? 'row' : 'column', 
-                            gap: isMobile ? 1 : 2 
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'row' : 'column',
+                            gap: isMobile ? 1 : 2
                         }}>
                             {/* Gender Selection */}
                             <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
@@ -430,10 +476,10 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                 selectedModel === 're-imagine' && (
                     <>
                         {/* Gender and Scenario Selection - Side by side on mobile */}
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: isMobile ? 'row' : 'column', 
-                            gap: isMobile ? 1 : 2 
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'row' : 'column',
+                            gap: isMobile ? 1 : 2
                         }}>
                             {/* Gender Selection */}
                             <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
@@ -459,7 +505,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                                     ))}
                                 </Select>
                             </FormControl>
-                            
+
                             <FormControl fullWidth={!isMobile} sx={{ flex: isMobile ? 1 : 'auto' }} variant="outlined">
                                 <InputLabel>Reimagine Yourself</InputLabel>
                                 <Select

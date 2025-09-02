@@ -36,17 +36,6 @@ import SendIcon from '@mui/icons-material/Send';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import ImageIcon from '@mui/icons-material/Image';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import BrushIcon from '@mui/icons-material/Brush';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon from '@mui/icons-material/Close';
-import MenuIcon from '@mui/icons-material/Menu';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import DownloadIcon from '@mui/icons-material/Download';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { FaCrown, FaGift } from "react-icons/fa";
 import Head from 'next/head';
 import { useSnackbar } from 'notistack';
 import GeneratedImages from '../components/ai-image-editor-flux/GeneratedImages';
@@ -265,6 +254,32 @@ export default function AIImageEditor() {
   const [exampleImageInfo, setExampleImageInfo] = useState(null);
   const [autoOpenComparison, setAutoOpenComparison] = useState(false);
 
+
+
+  // Switch model states
+  const switchModels = [
+    {
+      name: 'Qwen Image',
+      description: 'qwen/qwen-image-edit',
+      model: 'qwen-image-edit',
+    },
+    {
+      name: 'Nano Banana',
+      description: 'google/nano-banana',
+      model: 'nano-banana',
+    },
+    {
+      name: 'Flux Kontext Pro',
+      description: 'black-forest-labs/flux-kontext-pro',
+      model: 'flux-kontext-pro',
+    }
+  ]
+
+
+
+  const [switchedModel, setSwitchedModel] = useState('nano-banana'); // Default to nano-banana
+
+
   // Combine image modal state
   const [combineModalOpen, setCombineModalOpen] = useState(false);
 
@@ -467,6 +482,7 @@ export default function AIImageEditor() {
     localStorage.setItem('path', '/ai-image-editor');
     router.push('/login');
   };
+
 
   // Function to check authentication before API calls
   const checkAuthBeforeAction = () => {
@@ -778,6 +794,17 @@ export default function AIImageEditor() {
     }
   };
 
+
+
+  // switched model handler
+  const handleSwitchModel = (event) => {
+    const newModel = event.target.value;
+    setSwitchedModel(newModel);
+    setSelectedModel(newModel);
+    setSelectedItems([]);
+    setSelectedStyles([]);
+  };
+
   // Helper function to upload image to R2 immediately
   const uploadImageToR2 = async (imageData, fileName) => {
     try {
@@ -970,6 +997,19 @@ export default function AIImageEditor() {
     try {
       enqueueSnackbar('Editing image...', { variant: 'info' });
 
+      // Determine which model config to use based on switched model
+      const modelConfig = {};
+      if (switchedModel === 'qwen-image-edit') {
+        modelConfig.qwen_image = true;
+      } else if (switchedModel === 'nano-banana') {
+        modelConfig.edit_image = true;
+      } else if (switchedModel === 'flux-kontext-pro') {
+        modelConfig.flux_context_pro = true;
+      } else {
+        // Default to nano-banana if no model is selected
+        modelConfig.edit_image = true;
+      }
+
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
         headers: {
@@ -977,9 +1017,10 @@ export default function AIImageEditor() {
         },
         body: JSON.stringify({
           config: {
-            edit_image: true,
+            ...modelConfig,
             prompt: inputPrompt,
-            input_image: editImageUrl
+            input_image: editImageUrl,
+            switched_model: switchedModel // Pass the switched model for reference
           }
         }),
       });
@@ -2615,7 +2656,7 @@ export default function AIImageEditor() {
         <meta property="og:title" content={currentSEO.ogTitle} />
         <meta property="og:description" content={currentSEO.ogDescription} />
         <meta property="og:url" content={`https://www.picfix.ai/ai-image-editor?model=${selectedModel}`} />
-        <meta property="og:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta property="og:image" content="https://www.picfix.ai/assets/logo.jpg" />
         <meta property="og:image:alt" content="PicFix.AI - AI Image Editor" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -2627,7 +2668,7 @@ export default function AIImageEditor() {
         <meta name="twitter:creator" content="@PicFixAI" />
         <meta name="twitter:title" content={currentSEO.ogTitle} />
         <meta name="twitter:description" content={currentSEO.ogDescription} />
-        <meta name="twitter:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
+        <meta name="twitter:image" content="https://www.picfix.ai/assets/logo.jpg" />
         <meta name="twitter:image:alt" content="PicFix.AI - AI Image Editor" />
 
         {/* Additional SEO Meta Tags */}
@@ -2644,7 +2685,7 @@ export default function AIImageEditor() {
 
         {/* Favicon and Icons */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="apple-touch-icon" href="/assets/PicFixAILogo.jpg" />
+        <link rel="apple-touch-icon" href="/assets/logo.jpg" />
         <link rel="shortcut icon" href="/favicon.ico" />
 
         {/* Preconnect for Performance */}
@@ -2716,8 +2757,8 @@ export default function AIImageEditor() {
             />
           )} */}
 
-          {!isMobile && <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
-          }
+                    {!isMobile && <SidePanel switchModels={switchModels} handleSwitchModel={handleSwitchModel} switchedModel={switchedModel} setSwitchedModel={setSwitchedModel} aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+}
 
           {/* Main Editor Area */}
           <MainEditor>
@@ -2766,7 +2807,7 @@ export default function AIImageEditor() {
 
             {/* Hair Style Scrollable Strip for Hair Style Model */}
             {isMobile && <Box sx={{}}>
-              <SidePanel aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+              <SidePanel switchModels={switchModels} handleSwitchModel={handleSwitchModel} switchedModel={switchedModel} setSwitchedModel={setSwitchedModel} aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
             </Box>
             }
             {selectedModel === 'hair-style' ? (
@@ -2893,7 +2934,7 @@ export default function AIImageEditor() {
                         <Button
                           key={index}
                           variant={
-                            (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image') 
+                            (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
                               ? (inputPrompt === option ? "contained" : "outlined")
                               : (selectedItems.includes(option) ? "contained" : "outlined")
                           }
@@ -2904,21 +2945,21 @@ export default function AIImageEditor() {
                             padding: '4px 14px',
                             fontSize: '12px',
                             fontWeight: 400,
-                            borderColor: 
+                            borderColor:
                               (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
                                 ? (inputPrompt === option ? 'transparent' : alpha(theme.palette.divider, 0.5))
                                 : (selectedItems.includes(option) ? 'transparent' : alpha(theme.palette.divider, 0.5)),
-                            backgroundColor: 
+                            backgroundColor:
                               (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
                                 ? (inputPrompt === option ? theme.palette.primary.main : 'transparent')
                                 : (selectedItems.includes(option) ? theme.palette.primary.main : 'transparent'),
-                            color: 
+                            color:
                               (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
                                 ? (inputPrompt === option ? 'white' : theme.palette.text.primary)
                                 : (selectedItems.includes(option) ? 'white' : theme.palette.text.primary),
                             '&:hover': {
                               borderColor: theme.palette.primary.main,
-                              backgroundColor: 
+                              backgroundColor:
                                 (currentConfig.type === 'prompts' || currentConfig.type === 'edit-image')
                                   ? (inputPrompt === option ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.04))
                                   : (selectedItems.includes(option) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.04)),
@@ -2975,14 +3016,14 @@ export default function AIImageEditor() {
                           />
                         )}
                         <IconButton
-                                                  onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
-                          selectedModel === 'text-removal' ? generateTextRemovalImage :
-                            selectedModel === 'home-designer' ? generateHomeDesignerImage :
-                              selectedModel === 'background-removal' ? generateBackgroundRemovalImage :
-                                selectedModel === 'remove-object' ? generateRemoveObjectImage :
-                                  selectedModel === 'combine-image' ? generateCombineImages :
-                                    selectedModel === 'edit-image' ? generateEditImage :
-                                      generateFluxImages}
+                          onClick={selectedModel === 'hair-style' ? generateHairStyleImages :
+                            selectedModel === 'text-removal' ? generateTextRemovalImage :
+                              selectedModel === 'home-designer' ? generateHomeDesignerImage :
+                                selectedModel === 'background-removal' ? generateBackgroundRemovalImage :
+                                  selectedModel === 'remove-object' ? generateRemoveObjectImage :
+                                    selectedModel === 'combine-image' ? generateCombineImages :
+                                      selectedModel === 'edit-image' ? generateEditImage :
+                                        generateFluxImages}
                           disabled={isLoading ||
                             (selectedModel === 'text-removal' ? !textRemovalImageUrl :
                               selectedModel === 'home-designer' ? (!homeDesignerImageUrl || !inputPrompt.trim()) :

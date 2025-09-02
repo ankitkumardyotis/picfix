@@ -630,7 +630,7 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
     } else if (config.edit_image) {
-
+      console.log("Nano Banana");
       const input = {
         prompt: config.prompt,
         image_input: [config.input_image]
@@ -684,7 +684,122 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
 
-    } else {
+    } else if (config.qwen_image) {
+
+      console.log("Qwen Image");
+
+      const input = {
+        image: config.input_image,
+        prompt: config.prompt,
+        output_quality: 100,
+        output_format: "png"
+      };
+
+
+      const output = await replicate.run("qwen/qwen-image-edit", { input });
+
+
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store edit image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          modelParams: config,
+          aspectRatio: null, // Edit image preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing remove object image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.flux_context_pro) {
+      console.log("Flux Context Pro");
+      const input = {
+        prompt: config.prompt,
+        input_image: config.input_image,
+        output_format: "png",
+      };
+
+      const output = await replicate.run("black-forest-labs/flux-kontext-pro", { input });
+
+
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store edit image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          modelParams: config,
+          aspectRatio: null, // Edit image preserves original aspect ratio
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing remove object image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+
+    }
+    else {
       res.status(400).json("Invalid request");
     }
   } catch (err) {

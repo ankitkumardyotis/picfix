@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<!-- logo -->
+  <url>
+    <loc>https://www.picfix.ai/assets/logo.jpg</loc>
+  </url>
   <url>
     <loc>https://www.picfix.ai/</loc>
   </url>
@@ -66,6 +70,42 @@
   </url>
   <url>
     <loc>https://www.picfix.ai/term</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/backgroundRemoval</loc>
+  </url>
+  <url> 
+    <loc>https://www.picfix.ai/imageColorization</loc>
+  </url>
+  <url> 
+    <loc>https://www.picfix.ai/imageColorization/runModel</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/restorePhoto</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/restorePhoto/runModel</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/backgroundRemoval/runModel</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/removeObject</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/removeObject/runModel</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/aiHomeMakeover</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/aiHomeMakeover/runModel</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/pricing</loc>
+  </url>
+  <url>
+    <loc>https://www.picfix.ai/price</loc>
   </url>
   <!-- Dynamic blog slugs and other dynamic routes can be added here as needed -->
 </urlset>

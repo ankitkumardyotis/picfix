@@ -134,7 +134,7 @@ export default function Home({ open, setOpen }) {
               "operatingSystem": "Web Browser",
               "description": "AI-powered online photo editor with 14+ AI models for photo restoration, background removal, image generation, professional headshots, and more.",
               "url": "https://www.picfix.ai",
-              "screenshot": "https://www.picfix.ai/assets/PicFixAILogo.jpg",
+              "screenshot": "https://www.picfix.ai/assets/logo.jpg",
               "softwareVersion": "2.0",
               "datePublished": "2024-01-01",
               "author": {
@@ -230,15 +230,10 @@ export default function Home({ open, setOpen }) {
       />
 
       <main   >
-        {/* <LandingPage open={open} setOpen={setOpen} /> */}
-        {/* <Footer /> */}
         <PhotoAIHero/>
         <ModelCards/>
-        {/* <AIImageEditingSection/> */}
         <Gallery/>
         <MiniBlog/>
-        {/* <CTA/> */}
-        
       </main>
 
   

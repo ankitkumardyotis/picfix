@@ -42,6 +42,56 @@ const nextConfig = {
         destination: '/ai-image-editor?model=gfp-restore',
         permanent: true,
       },
+      {
+        source: '/price',
+        destination: '/pricing',
+        permanent: true,
+      },
+      {
+        source: '/backgroundRemoval/runModel',
+        destination: '/ai-image-editor?model=background-removal',
+        permanent: true,
+      },
+      {
+        source: '/adding-stunning-colors-to-black-and-white-photos-using-ai',
+        destination: '/blog',
+        permanent: true,
+      },
+      {
+        source: '/aiHomeMakeover/runModel',
+        destination: '/ai-image-editor?model=home-designer',
+        permanent: true,
+      },
+      {
+        source: '/removeObject',
+        destination: '/ai-image-editor?model=remove-object',
+        permanent: true,
+      },
+      {
+        source: '/restorePhoto',
+        destination: '/ai-image-editor?model=restore-image',
+        permanent: true,
+      },
+      {
+        source: '/imageColorization',
+        destination: '/ai-image-editor',
+        permanent: true,
+      },
+      {
+        source: '/backgroundRemoval',
+        destination: '/ai-image-editor?model=background-removal',
+        permanent: true,
+      },
+      {
+        source: '/imageColorization/runModel',
+        destination: '/ai-image-editor?model=image-colorization',
+        permanent: true,
+      },
+      {
+        source: '/object-removal',
+        destination: '/ai-image-editor?model=object-removal',
+        permanent: true,
+      },
     ]
   },
 };
