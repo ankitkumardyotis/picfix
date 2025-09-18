@@ -41,66 +41,85 @@ function ImageComponent(props) {
 
 
 
-    //  DownLoad Images with Zip if multiple images available 
+    //  DownLoad Images with Zip if multiple images available
 
-    const handleDownloadFile = () => {
+    const handleDownloadFile = async () => {
         // Define an array of image URLs
         let imageUrls = [props.restoredPhoto, props.imageColorization, props.imageColorizationOne, props.imageColorizationTwo, props.imageColorizationThree, props.imageColorizationFour, props.restoreImageURLForVarient];
-        // Create a new instance of JSZip
-        const zip = new JSZip();
 
         // Filter out undefined values from the imageUrls array
         const filteredUrls = imageUrls.filter(url => url !== undefined);
 
         // Check if there are multiple images
         if (filteredUrls.length > 1) {
-            // Create an array of promises to download each image
-            const downloadPromises = filteredUrls.map((imageUrl, index) => {
-                return axios.get(imageUrl, { responseType: 'blob' })
-                    .then(response => {
-                        // Add the downloaded image to the zip folder
-                        zip.file(`image${index}.jpg`, response.data);
-                    })
-                    .catch(error => {
-                        console.error(`Error downloading image ${index}:`, error);
-                    });
+            // Create an array of promises to download each image through our API
+            const downloadPromises = filteredUrls.map(async (imageUrl, index) => {
+                try {
+                    const filename = `image${index + 1}.jpg`;
+                    const response = await fetch(`/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to download image ${index + 1}`);
+                    }
+                    return await response.blob();
+                } catch (error) {
+                    console.error(`Error downloading image ${index + 1}:`, error);
+                    return null;
+                }
             });
 
-            // Wait for all the download promises to resolve
-            Promise.all(downloadPromises)
-                .then(() => {
-                    // Generate the zip folder
-                    return zip.generateAsync({ type: 'blob' });
-                })
-                .then(content => {
-                    // Create a link element to trigger the download
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(content);
-                    link.download = 'images.zip';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                })
-                .catch(error => {
-                    console.error('Error creating zip folder:', error);
-                });
-        } else if (filteredUrls.length === 1) {
-            // Download the single image directly
-            const imageUrl = filteredUrls[0];
+            try {
+                // Wait for all the download promises to resolve
+                const blobs = await Promise.all(downloadPromises);
+                const validBlobs = blobs.filter(blob => blob !== null);
 
-            axios.get(imageUrl, { responseType: 'blob' })
-                .then(response => {
-                    // Create a link element to trigger the download
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(response.data);
-                    link.download = 'image.jpg';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                })
-                .catch(error => {
-                    console.error('Error downloading image:', error);
+                if (validBlobs.length === 0) {
+                    console.error('No images could be downloaded.');
+                    return;
+                }
+
+                // Create a new instance of JSZip
+                const zip = new JSZip();
+
+                // Add images to zip
+                validBlobs.forEach((blob, index) => {
+                    zip.file(`image${index + 1}.jpg`, blob);
                 });
+
+                // Generate the zip folder
+                const content = await zip.generateAsync({ type: 'blob' });
+
+                // Create a link element to trigger the download
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'images.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('Error creating zip folder:', error);
+            }
+        } else if (filteredUrls.length === 1) {
+            // Download the single image through our API
+            const imageUrl = filteredUrls[0];
+            const filename = 'image.jpg';
+
+            try {
+                const response = await fetch(`/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`);
+                if (!response.ok) {
+                    throw new Error('Failed to download image');
+                }
+
+                // Create a link element to trigger the download
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('Error downloading image:', error);
+            }
         } else {
             console.error('No valid image URLs found.');
         }

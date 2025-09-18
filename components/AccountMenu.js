@@ -103,9 +103,14 @@ export default function AccountMenu() {
                 border: "2px solid white",
               }}
             >
-              <p style={{ color: "white", fontSize: ".7em" }}>
+              <p style={{ color: "white", fontSize: ".6em", margin: 0, textAlign: "center" }}>
                 {context.creditPoints}
               </p>
+              {context.dailyUsage && (
+                <p style={{ color: "white", fontSize: ".5em", margin: 0, textAlign: "center" }}>
+                  {context.dailyUsage.remainingCredits}/{context.dailyUsage.dailyLimit}
+                </p>
+              )}
             </div>
             <img
               style={{

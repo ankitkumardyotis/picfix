@@ -3,11 +3,13 @@ import { Search as SearchIcon } from '@mui/icons-material';
 
 const UsersTable = () => {
     const [users, setUsers] = useState([]);
+    const [availablePlans, setAvailablePlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedPlan, setSelectedPlan] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchLoading, setSearchLoading] = useState(false);
     const [pagination, setPagination] = useState({
@@ -21,7 +23,7 @@ const UsersTable = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [currentPage]);
+    }, [currentPage, selectedPlan]);
 
     // Debounced search effect
     useEffect(() => {
@@ -40,13 +42,23 @@ const UsersTable = () => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    // Reset to first page when plan filter changes
+    useEffect(() => {
+        if (selectedPlan !== '') {
+            setCurrentPage(1);
+            setSearchLoading(true);
+            fetchUsers();
+        }
+    }, [selectedPlan]);
+
     const fetchUsers = async () => {
         try {
             setLoading(true);
             const params = new URLSearchParams({
                 page: currentPage.toString(),
                 limit: pagination.limit.toString(),
-                search: searchTerm
+                search: searchTerm,
+                plan: selectedPlan
             });
             const response = await fetch(`/api/admin/users?${params}`);
             if (!response.ok) {
@@ -55,6 +67,7 @@ const UsersTable = () => {
             const data = await response.json();
             setUsers(data.users || []);
             setPagination(data.pagination || pagination);
+            setAvailablePlans(data.availablePlans || []);
         } catch (error) {
             console.error('Error fetching users:', error);
             setError(error.message);
@@ -117,6 +130,15 @@ const UsersTable = () => {
 
     const handleSearch = (value) => {
         setSearchTerm(value);
+    };
+
+    const handlePlanFilter = (plan) => {
+        setSelectedPlan(plan);
+    };
+
+    // Use available plans from API response
+    const getUniquePlans = () => {
+        return availablePlans;
     };
 
     const handlePageChange = (page) => {
@@ -215,54 +237,93 @@ const UsersTable = () => {
                     </div>
                 </div>
 
-                {/* Search Bar */}
-                <div style={{ position: 'relative' }}>
-                    <input
-                        type="text"
-                        placeholder="Search users by name, email, or plan..."
-                        value={searchTerm}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem 1rem 0.75rem 2.5rem',
-                            border: '1px solid rgba(58, 28, 113, 0.2)',
-                            borderRadius: '8px',
-                            fontSize: '0.875rem',
-                            fontFamily: 'Roboto, sans-serif',
-                            outline: 'none',
-                            transition: 'border-color 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = '#3a1c71';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = 'rgba(58, 28, 113, 0.2)';
-                        }}
-                    />
-                    <div style={{
-                        position: 'absolute',
-                        left: '0.75rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: '#6b7280',
-                        fontSize: '1rem'
-                    }}>
-                        {/* {searchLoading ? '⏳' : '🔍'} */}
-                        <SearchIcon />
-                    </div>
-                    {searchLoading && (
+                {/* Search and Filter Controls */}
+                <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'center'
+                }}>
+                    {/* Search Bar */}
+                    <div style={{ position: 'relative', flex: 1 }}>
+                        <input
+                            type="text"
+                            placeholder="Search users by name, email, or plan..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem 0.75rem 2.5rem',
+                                border: '1px solid rgba(58, 28, 113, 0.2)',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                fontFamily: 'Roboto, sans-serif',
+                                outline: 'none',
+                                transition: 'border-color 0.2s ease'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#3a1c71';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = 'rgba(58, 28, 113, 0.2)';
+                            }}
+                        />
                         <div style={{
                             position: 'absolute',
-                            right: '0.75rem',
+                            left: '0.75rem',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            color: '#3a1c71',
-                            fontSize: '0.75rem',
-                            fontFamily: 'Roboto, sans-serif'
+                            color: '#6b7280',
+                            fontSize: '1rem'
                         }}>
-                            Searching...
+                            <SearchIcon />
                         </div>
-                    )}
+                        {searchLoading && (
+                            <div style={{
+                                position: 'absolute',
+                                right: '0.75rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: '#3a1c71',
+                                fontSize: '0.75rem',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                Searching...
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Plan Filter Dropdown */}
+                    <div style={{ minWidth: '200px' }}>
+                        <select
+                            value={selectedPlan}
+                            onChange={(e) => handlePlanFilter(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                border: '1px solid rgba(58, 28, 113, 0.2)',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                fontFamily: 'Roboto, sans-serif',
+                                outline: 'none',
+                                background: 'white',
+                                cursor: 'pointer',
+                                transition: 'border-color 0.2s ease'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#3a1c71';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = 'rgba(58, 28, 113, 0.2)';
+                            }}
+                        >
+                            <option value="">All Plans</option>
+                            {getUniquePlans().map((planName) => (
+                                <option key={planName} value={planName}>
+                                    {planName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -424,7 +485,7 @@ const UsersTable = () => {
                                         color: '#6b7280',
                                         fontFamily: 'Roboto, sans-serif'
                                     }}>
-                                        Last: {new Date(user.lastActive).toLocaleDateString()}
+                                        Last Image: {user.lastImageGeneration ? new Date(user.lastImageGeneration).toLocaleDateString() : 'Never'}
                                     </div>
                                 </td>
                           

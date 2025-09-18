@@ -44,53 +44,73 @@ export default function MuiTable({ userHistory }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  // Sort userHistory by createdAt in descending order
-  const sortedUserHistory = [...userHistory].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  // Process userHistory data
+  const processUserHistory = (historyData) => {
+    if (!historyData || !Array.isArray(historyData)) return [];
 
-  const newDataAfterDateFormat = sortedUserHistory.map((item, idx) => {
-    const diffrenceInTime = diffrenceTime(item.createdAt);
-    let model;
-    if (item.model === "tencentarc/gfpgan") {
-      model = "Restore Photos";
-    } else if (item.model === "allenhooo/lama") {
-      model = "Remove Objects";
-    } else if (item.model === "home-designer") {
-      model = "Home Designer";
-    } else if (item.model === "cjwbw/rembg") {
-      model = "Background Removal";
-    } else if (item.model === "hair-style") {
-      model = "Hair Style";
-    }else if (item.model === "generate-image") {
-      model = "Generate Image";
-    } else if (item.model === "combine-image") {
-      model = "Combine Image";
-    } else if (item.model === "text-removal") {
-      model = "Remove Text";
-    } else if (item.model === "headshot") {
-      model = "Headshot";
-    } else if (item.model === "restore-image") {
-      model = "Restore Image";
-    } else if (item.model === "gfp-restore") {
-      model = "Restore Image (Free)";
-    } else if (item.model === "edit-image") {
-      model = "Edit Image";
-    }
-    else {
-      model = item.model;
-    }
-    return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1, cost: item.cost || 0 };
-  });
+    // Sort userHistory by createdAt in descending order
+    const sortedUserHistory = [...historyData].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const [rows, setRows] = React.useState(newDataAfterDateFormat);
+    return sortedUserHistory.map((item, idx) => {
+      const diffrenceInTime = diffrenceTime(item.createdAt);
+      let model;
+      if (item.model === "tencentarc/gfpgan") {
+        model = "Restore Photos";
+      } else if (item.model === "allenhooo/lama") {
+        model = "Remove Objects";
+      } else if (item.model === "home-designer") {
+        model = "Home Designer";
+      } else if (item.model === "cjwbw/rembg") {
+        model = "Background Removal";
+      } else if (item.model === "hair-style") {
+        model = "Hair Style";
+      } else if (item.model === "generate-image") {
+        model = "Generate Image";
+      } else if (item.model === "combine-image") {
+        model = "Combine Image";
+      } else if (item.model === "text-removal") {
+        model = "Remove Text";
+      } else if (item.model === "headshot") {
+        model = "Headshot";
+      } else if (item.model === "restore-image") {
+        model = "Restore Image";
+      } else if (item.model === "gfp-restore") {
+        model = "Restore Image (Free)";
+      } else if (item.model === "edit-image") {
+        model = "Edit Image";
+      } else if (item.model === "edit-image-nano") {
+        model = "Nano Banana Edit";
+      }
+      else {
+        model = item.model;
+      }
+      return { ...item, createdAt: diffrenceInTime, model: model, id: idx + 1, cost: item.cost || 0 };
+    });
+  };
 
-  const handleChangePage = ( newPage) => {
-    setPage(newPage);
+  const [rows, setRows] = React.useState(() => processUserHistory(userHistory));
+
+  // Update rows when userHistory changes
+  React.useEffect(() => {
+    setRows(processUserHistory(userHistory));
+    // Reset to first page when data changes
+    setPage(0);
+  }, [userHistory]);
+
+  const handleChangePage = (event, newPage) => {
+    const maxPage = Math.max(0, Math.ceil(totalRows / rowsPerPage) - 1);
+    setPage(Math.min(newPage, maxPage));
   };
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  // Calculate pagination values safely
+  const totalRows = rows.length;
+  const startIndex = page * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 'none' }}>
@@ -121,7 +141,7 @@ export default function MuiTable({ userHistory }) {
                         <TableCell key={column.id} align={column.align}>
                           {column.format && typeof value === 'number'
                             ? column.format(value)
-                            : column.format 
+                            : column.format
                               ? column.format(value)
                               : value}
                         </TableCell>
@@ -136,11 +156,18 @@ export default function MuiTable({ userHistory }) {
       <TablePagination
         rowsPerPageOptions={[5, 15, 25]}
         component="div"
-        count={rows.length}
+        count={totalRows}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        labelDisplayedRows={({ from, to, count }) => {
+          // Handle edge cases to prevent NaN display
+          const safeFrom = isNaN(from) ? 0 : from;
+          const safeTo = isNaN(to) ? 0 : to;
+          const safeCount = isNaN(count) ? 0 : count;
+          return `${safeFrom}-${safeTo} of ${safeCount}`;
+        }}
       />
     </Paper>
   );

@@ -11,6 +11,7 @@ async function handler(req, res) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || '';
+        const planFilter = req.query.plan || '';
         
         // Calculate offset for pagination
         const offset = (page - 1) * limit;
@@ -23,14 +24,55 @@ async function handler(req, res) {
             ]
         } : {};
 
+        // Get all unique plans for the filter dropdown
+        const allPlans = await prisma.plan.findMany({
+            select: {
+                planName: true
+            },
+            distinct: ['planName']
+        });
+        const uniquePlans = allPlans.map(plan => plan.planName).sort();
+
+        // Build plan filter conditions
+        let planFilterConditions = {};
+        if (planFilter) {
+            // First get user IDs that have the specified plan
+            const usersWithPlan = await prisma.plan.findMany({
+                where: {
+                    planName: planFilter
+                },
+                select: {
+                    userId: true
+                }
+            });
+            const userIdsWithPlan = usersWithPlan.map(p => p.userId);
+            
+            if (userIdsWithPlan.length > 0) {
+                planFilterConditions = {
+                    id: { in: userIdsWithPlan }
+                };
+            } else {
+                // If no users found with this plan, return empty result
+                planFilterConditions = {
+                    id: { in: [] }
+                };
+            }
+        }
+
+        // Combine search and plan filter conditions
+        const whereConditions = {
+            ...searchConditions,
+            ...planFilterConditions
+        };
+
         // Get total count for pagination
         const totalUsers = await prisma.user.count({
-            where: searchConditions
+            where: whereConditions
         });
 
         // Fetch users with their plan data and statistics
         const users = await prisma.user.findMany({
-            where: searchConditions,
+            where: whereConditions,
             select: {
                 id: true,
                 name: true,
@@ -73,7 +115,7 @@ async function handler(req, res) {
         const payments = await prisma.paymentHistory.findMany({
             where: {
                 userId: { in: userIds },
-                paymentStatus: 'completed'
+                paymentStatus: 'captured'
             },
             select: {
                 userId: true,
@@ -89,6 +131,11 @@ async function handler(req, res) {
             const totalSpent = userPayments.reduce((sum, payment) => sum + payment.amount, 0);
             const completedImages = user.history.filter(h => h.status === 'completed').length;
             
+            // Find the last completed image generation
+            const completedHistory = user.history.filter(h => h.status === 'completed');
+            const lastImageGeneration = completedHistory.length > 0 ? 
+                completedHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0].createdAt : null;
+            
             // Determine user status based on recent activity
             const recentActivity = user.history.length > 0 ? 
                 new Date() - new Date(user.history[0].createdAt) < 30 * 24 * 60 * 60 * 1000 : false;
@@ -100,6 +147,7 @@ async function handler(req, res) {
                 image: user.image,
                 joinDate: user.createdAt,
                 lastActive: user.history.length > 0 ? user.history[0].createdAt : user.createdAt,
+                lastImageGeneration: lastImageGeneration,
                 status: recentActivity ? 'Active' : 'Inactive',
                 // Plan information
                 plan: userPlan ? {
@@ -138,7 +186,8 @@ async function handler(req, res) {
                 limit: limit,
                 hasNextPage: hasNextPage,
                 hasPrevPage: hasPrevPage
-            }
+            },
+            availablePlans: uniquePlans
         });
     } catch (error) {
         console.error('Error fetching users:', error);

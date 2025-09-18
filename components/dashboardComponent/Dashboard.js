@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import MuiTable from './MuiTable'
 import TabNavigation from '../mobileTabNavigation/TabNavigation'
 import Image from 'next/image'
@@ -6,8 +6,10 @@ import Link from 'next/link'
 import { Button, Chip } from '@mui/material'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import { isAdmin, isSuperAdmin } from '@/lib/adminAuth'
+import AppContext from '../AppContext'
 
 function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches }) {
+    const context = useContext(AppContext);
     if (matches) return (
         <div className="dashboard-desktop" style={{
             flex: 1,
@@ -164,6 +166,82 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                     </p>}
                 </div>
 
+                {/* Daily Usage Section */}
+                {/* Only show daily usage for users without plans */}
+                {context?.dailyUsage && (!userPlan || userPlan.length === 0) && (
+                    <div className="credits-card" style={{
+                        flex: 1,
+                        background: 'white',
+                        padding: '2rem',
+                        borderRadius: '20px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        border: '1px solid rgba(58, 28, 113, 0.1)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ff6b6b 100%)'
+                        }}></div>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '600',
+                            color: '#000',
+                            marginBottom: '1rem',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            Daily Usage
+                        </h3>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'baseline',
+                            gap: '0.5rem',
+                            marginBottom: '1rem'
+                        }}>
+                            <span style={{
+                                fontSize: '3.5rem',
+                                fontWeight: '600',
+                                color: context.dailyUsage.canUseService ? '#3a1c71' : '#ef4444',
+                                lineHeight: '1',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                {context.dailyUsage.usageCount}
+                            </span>
+                            <span style={{
+                                fontSize: '1.5rem',
+                                color: '#000',
+                                fontWeight: '400',
+                                fontFamily: 'Roboto, sans-serif'
+                            }}>
+                                / {context.dailyUsage.dailyLimit} credits used
+                            </span>
+                        </div>
+                        <p style={{
+                            fontSize: '0.875rem',
+                            color: '#000',
+                            fontWeight: '400',
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            Resets at: <span style={{ fontWeight: '600', color: '#000' }}>{context.dailyUsage.resetTimeFormatted}</span>
+                        </p>
+                        {!context.dailyUsage.canUseService && (
+                            <p style={{
+                                fontSize: '0.875rem',
+                                color: '#ef4444',
+                                fontWeight: '500',
+                                fontFamily: 'Roboto, sans-serif',
+                                marginTop: '0.5rem'
+                            }}>
+                                Daily limit reached. Please upgrade your plan!
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 <div className="stats-card" style={{
                     flex: 1.5,
                     background: 'white',
@@ -231,7 +309,7 @@ function Dashboard({ session, userPlan, createdAt, userHistory, renewAt, matches
                                 fontWeight: '400',
                                 fontFamily: 'Roboto, sans-serif'
                             }}>
-                               { userPlan?.remainingPoints && "Total Credits Used"}
+                                {userPlan?.remainingPoints && "Total Credits Used"}
                             </div>
                         </div>
                     </div>

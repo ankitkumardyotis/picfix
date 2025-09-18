@@ -21,6 +21,7 @@ export default function App({
   const [removeImageFromTransformerJs, setRemoveImageFromTransformerJs] = useState('');
   const [timerForRunModel, setTimerForRunModel] = useState(0)
   const [creditPoints, setCreditPoints] = useState(0)
+  const [dailyUsage, setDailyUsage] = useState(null)
 
   const router = useRouter()
 
@@ -92,7 +93,7 @@ export default function App({
           autoHideDuration={3000}
         >
           <ThemeProvider theme={theme}>
-            <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints }}>
+            <AppContext.Provider value={{ fileUrl, setFileUrl, path, setPath, removeImageFromTransformerJs, timerForRunModel, setTimerForRunModel, setRemoveImageFromTransformerJs, creditPoints, setCreditPoints, dailyUsage, setDailyUsage }}>
               {router.pathname != '/ai-image-editor' && router.pathname != '/admin-dashboard' && router.pathname != '/dashboard' && < NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />
               }
               {isMobile && <NavBar open={open} setOpen={setOpen} creditPoints={creditPoints} setCreditPoints={setCreditPoints} />}

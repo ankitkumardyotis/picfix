@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import Head from 'next/head'
 import LandingPage from '@/components/LandingPage';
 import Script from 'next/script';
-// import PicFixHero from "@/components/updated_landing_page/Hero_section";
 import PhotoAIHero from "@/components/updated_landing_page/Hero_section";
 import ModelCards from "@/components/updated_landing_page/ModelCards";
 import AIImageEditingSection from "@/components/updated_landing_page/AIImageEditingSection";
@@ -70,6 +69,7 @@ export default function Home({ open, setOpen }) {
         
         {/* Favicon and Icons */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="/favicon.ico" sizes="16x16" />
         <link rel="apple-touch-icon" href="/assets/logo.jpg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         

@@ -2,11 +2,26 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "../auth/[...nextauth]"
 import { getUserPlan } from "@/lib/userData";
 import { storeGeneratedImage, getModelType, getInputImagesFromConfig } from "@/lib/unifiedImageStorage";
+import { canUseService, incrementUsage } from "@/lib/dailyUsage";
 import Replicate from "replicate";
 import prisma from "@/lib/prisma";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
+
+/**
+ * Helper function to increment daily usage and handle errors gracefully
+ * @param {string} email - User email
+ * @param {number} creditsUsed - Number of credits used
+ */
+async function incrementDailyUsage(email, creditsUsed = 1) {
+  try {
+    await incrementUsage(email, creditsUsed);
+  } catch (usageError) {
+    console.error('Error incrementing daily usage:', usageError);
+    // Don't fail the request if usage tracking fails
+  }
+}
 
 async function streamToBuffer(stream) {
   const chunks = [];
@@ -35,19 +50,39 @@ export default async function handler(req, res) {
   const isFreeModel = config.gfp_restore || config.background_removal || config.home_designer;
 
   const planData = await getUserPlan(session.user.id)
-  const isFreePlan = planData.length === 0 || planData.some(item => item.name === "free") || planData.remainingPoints <= 0;
-
+  const hasPlan = planData && planData.length > 0 && planData[0];
+  const hasPlanCredits = hasPlan && planData[0].remainingPoints > 0;
+  const isFreePlan = hasPlan && planData.some(item => item.name === "free");
 
   if (!isFreeModel) {
-    if (planData[0]?.remainingPoints === 0 || planData[0]?.remainingPoints < 1 || !planData[0]) {
+    // For paid models, check different conditions based on whether user has a plan
+    if (!hasPlan) {
+      // User has no plan - check daily limits (daily credit system only applies to users without plans)
+      const dailyCheck = await canUseService(session.user.email, 1); // Most operations cost 1 credit
+      if (!dailyCheck.canUse) {
+        res.status(429).json({
+          error: "Daily limit exceeded",
+          message: dailyCheck.message,
+          usage: {
+            used: dailyCheck.usage?.usageCount || 0,
+            limit: dailyCheck.usage?.dailyLimit || 5,
+            remaining: (dailyCheck.usage?.dailyLimit || 5) - (dailyCheck.usage?.usageCount || 0),
+            resetAt: dailyCheck.usage?.resetAt
+          }
+        });
+        return;
+      }
+    } else if (!hasPlanCredits && !isFreePlan) {
+      // User has a plan but no credits remaining - don't check daily limits
       res.status(402).json("Please Subscribe to a plan to use this feature.");
       return;
     }
+    // User has plan with credits - no daily limit checks needed, only plan credits apply
   }
 
   try {
     // POST request to Replicate to start the image restoration generation process
-
+    console.log("Generating Flux Images");
     if (config.generate_flux_images) {
       const input = {
         prompt: config.prompt,
@@ -80,9 +115,6 @@ export default async function handler(req, res) {
 
 
       const finalOutput = processedOutput.slice(0, config.num_outputs);
-
-
-      // Store images in history
       try {
         const storedImages = [];
         for (const imageData of finalOutput) {
@@ -103,6 +135,12 @@ export default async function handler(req, res) {
             historyId: storedImage.historyId
           });
         }
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
         res.status(200).json(storedImages);
       } catch (error) {
         console.error('Error storing images in history:', error);
@@ -156,6 +194,11 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -213,6 +256,11 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
           historyId: storedImage.historyId
@@ -267,6 +315,11 @@ export default async function handler(req, res) {
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -325,6 +378,11 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
           historyId: storedImage.historyId
@@ -379,6 +437,10 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -435,6 +497,11 @@ export default async function handler(req, res) {
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -497,6 +564,12 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
           historyId: storedImage.historyId
@@ -540,6 +613,8 @@ export default async function handler(req, res) {
       }
 
       // If user doesn't have plan then dont store the image in db and dont show history as well
+      // Increment daily usage after successful generation
+      await incrementDailyUsage(session.user.email, 1);
 
       if (isFreePlan) {
         res.status(200).json({
@@ -595,7 +670,7 @@ export default async function handler(req, res) {
       } else if (typeof output === 'string') {
         processedOutput = output;
       } else if (Array.isArray(output) && output.length > 0) {
-        // If it returns an array, take the first item
+        // If it returns an array, take the first iatem
         const firstItem = output[0];
         if (firstItem instanceof ReadableStream) {
           const buffer = await streamToBuffer(firstItem);
@@ -619,7 +694,10 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
-
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
           historyId: storedImage.historyId
@@ -672,7 +750,10 @@ export default async function handler(req, res) {
           aspectRatio: null, // Edit image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
         });
-
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -732,6 +813,10 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
 
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -787,7 +872,10 @@ export default async function handler(req, res) {
           inputImages: getInputImagesFromConfig(config)
         });
 
-
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
           historyId: storedImage.historyId
@@ -796,6 +884,190 @@ export default async function handler(req, res) {
         console.error('Error storing remove object image in history:', error);
         // Fallback to original behavior if storage fails
         res.status(200).json(processedOutput);
+      }
+
+    } else if (config.qwen_image_generate) {
+
+      console.log("Qwen Image Generate");
+
+      const input = {
+        prompt: config.prompt,
+        output_quality: 100,
+        output_format: "png"
+      };
+
+      const output = await replicate.run("qwen/qwen-image", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImages = []
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          numOutputs: config.num_outputs,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
+        storedImages.push({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+        console.log("Stored images:", storedImages);
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing generate image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.gemini_flash_image) {
+
+      console.log("Gemini Flash Image");
+
+      const input = {
+        prompt: config.prompt,
+        output_format: "png",
+      };
+
+      const output = await replicate.run("google/gemini-2.5-flash-image", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImages = []
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          numOutputs: config.num_outputs,
+          inputImages: getInputImagesFromConfig(config)
+        });
+        storedImages.push({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing generate image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.flux_schnell_generate) {
+
+      console.log("Flux Schnell Generate");
+
+      const input = {
+        prompt: config.prompt,
+        go_fast: true,
+        megapixels: "1",
+        num_outputs: config.num_outputs,
+        aspect_ratio: config.aspect_ratio,
+        output_format: "jpg",
+        output_quality: 100,
+        num_inference_steps: 4
+      };
+
+      const output = await replicate.run("black-forest-labs/flux-schnell", { input });
+
+      const processedOutput = [];
+      for (const item of output) {
+        if (item instanceof ReadableStream) {
+          const buffer = await streamToBuffer(item);
+          const base64 = buffer.toString('base64');
+          const dataUrl = `data:image/jpeg;base64,${base64}`;
+          processedOutput.push(dataUrl);
+        } else if (typeof item === 'string') {
+          processedOutput.push(item);
+        }
+      }
+
+      const finalOutput = processedOutput.slice(0, config.num_outputs);
+
+      try {
+        const storedImages = [];
+        for (const imageData of finalOutput) {
+          const storedImage = await storeGeneratedImage({
+            imageData,
+            userId: session.user.id,
+            model: getModelType(config),
+            prompt: config.prompt,
+            cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            modelParams: config,
+            aspectRatio: config.aspect_ratio,
+            numOutputs: config.num_outputs,
+            inputImages: getInputImagesFromConfig(config)
+          });
+
+          storedImages.push({
+            imageUrl: storedImage.publicUrl,
+            historyId: storedImage.historyId
+          });
+        }
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, config.num_outputs || 1);
+        }
+
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing generate images in history:', error);
+        res.status(200).json(finalOutput);
       }
 
     }

@@ -26,6 +26,16 @@ export default async function handler(req, res) {
       // Handle both old and new model names for re-imagine
       if (model === 're-imagine') {
         whereClause.model = { in: ['re-imagine', 'reimagine'] };
+      } else if (model === 'generate-image') {
+        // Handle all generate-image model variants
+        whereClause.model = { 
+          in: ['generate-image', 'generate-image-qwen', 'generate-image-gemini', 'generate-image-flux'] 
+        };
+      } else if (model === 'edit-image') {
+        // Handle all edit-image model variants
+        whereClause.model = { 
+          in: ['edit-image-qwen', 'edit-image-flux', 'edit-image-nano'] 
+        };
       } else {
         whereClause.model = model;
       }

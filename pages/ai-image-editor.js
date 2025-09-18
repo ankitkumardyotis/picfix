@@ -257,7 +257,7 @@ export default function AIImageEditor() {
 
 
   // Switch model states
-  const switchModels = [
+  const editImageModels = [
     {
       name: 'Qwen Image',
       description: 'qwen/qwen-image-edit',
@@ -273,11 +273,29 @@ export default function AIImageEditor() {
       description: 'black-forest-labs/flux-kontext-pro',
       model: 'flux-kontext-pro',
     }
+  ];
+
+  const generateImageModels = [
+    {
+      name: 'Qwen Image',
+      description: 'qwen/qwen-image',
+      model: 'qwen-image',
+    },
+    {
+      name: 'Gemini 2.5 Flash Image',
+      description: 'google/gemini-2.5-flash-image',
+      model: 'gemini-2.5-flash-image',
+    },
+    {
+      name: 'Flux Schnell',
+      description: 'black-forest-labs/flux-schnell',
+      model: 'flux-schnell',
+    }
   ]
 
 
 
-  const [switchedModel, setSwitchedModel] = useState('nano-banana'); // Default to nano-banana
+  const [switchedModel, setSwitchedModel] = useState('flux-schnell'); // Default to flux-schnell for generate-image
 
 
   // Combine image modal state
@@ -302,14 +320,15 @@ export default function AIImageEditor() {
 
   // Authentication and state management
   const { data: session, status } = useSession();
+  const isMountedRef = useRef(true);
 
-  // Fetch user's credit points when component mounts
+  // Fetch user's credit points and daily usage when component mounts
   useEffect(() => {
     const fetchUserCredits = async () => {
       if (session?.user?.id) {
         try {
           const response = await fetch(`/api/getPlan?userId=${session.user.id}`);
-          if (response.ok) {
+          if (response.ok && isMountedRef.current) {
             const { plan } = await response.json();
             if (plan && plan.remainingPoints !== undefined) {
               context.setCreditPoints(plan.remainingPoints);
@@ -321,8 +340,28 @@ export default function AIImageEditor() {
       }
     };
 
+    const fetchDailyUsage = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/user/daily-usage');
+          if (response.ok && isMountedRef.current) {
+            const dailyData = await response.json();
+            context.setDailyUsage(dailyData);
+          }
+        } catch (error) {
+          console.error("Error fetching daily usage:", error);
+        }
+      }
+    };
+
     fetchUserCredits();
-  }, [session, context]);
+    fetchDailyUsage();
+
+    // Cleanup function to set mounted ref to false on unmount
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [session?.user?.id, session?.user?.email]); // Only depend on session user properties, not context
 
   // Periodic credit refresh every 5 minutes
   useEffect(() => {
@@ -335,12 +374,15 @@ export default function AIImageEditor() {
     }
   }, [session]);
 
-  // Function to refresh user credits
+  // Function to refresh user credits and daily usage
   const refreshUserCredits = async () => {
+    // Check if component is still mounted and session is valid
+    if (!isMountedRef.current || (!session?.user?.id && !session?.user?.email)) return;
+
     if (session?.user?.id) {
       try {
         const response = await fetch(`/api/getPlan?userId=${session.user.id}`);
-        if (response.ok) {
+        if (response.ok && isMountedRef.current) {
           const { plan } = await response.json();
           if (plan && plan.remainingPoints !== undefined) {
             context.setCreditPoints(plan.remainingPoints);
@@ -348,6 +390,18 @@ export default function AIImageEditor() {
         }
       } catch (error) {
         console.error("Error refreshing user credits:", error);
+      }
+    }
+
+    if (session?.user?.email) {
+      try {
+        const response = await fetch('/api/user/daily-usage');
+        if (response.ok && isMountedRef.current) {
+          const dailyData = await response.json();
+          context.setDailyUsage(dailyData);
+        }
+      } catch (error) {
+        console.error("Error refreshing daily usage:", error);
       }
     }
   };
@@ -697,6 +751,13 @@ export default function AIImageEditor() {
       setUploadedImageUrl(null);
       setUploadingEditImage(false);
     }
+
+    // Set appropriate default switched model based on the main model
+    if (newModel === 'generate-image') {
+      setSwitchedModel('flux-schnell'); // Default for generate-image
+    } else if (newModel === 'edit-image') {
+      setSwitchedModel('nano-banana'); // Default for edit-image
+    }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
       setTextRemovalImage(null);
@@ -821,7 +882,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || errorData.error || 'Upload failed');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.details) {
+          throw new Error(errorData.details);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Upload failed');
+        }
       }
 
       const result = await response.json();
@@ -852,14 +922,25 @@ export default function AIImageEditor() {
     scrollToImageGeneration();
 
     try {
+      // Determine which model config to use based on switched model for generate-image
+      const modelConfig = {};
+      if (switchedModel === 'qwen-image') {
+        modelConfig.qwen_image_generate = true;
+      } else if (switchedModel === 'gemini-2.5-flash-image') {
+        modelConfig.gemini_flash_image = true;
+      } else if (switchedModel === 'flux-schnell') {
+        modelConfig.generate_flux_images = true;
+      } else {
+        modelConfig.generate_flux_images = true;
+      }
 
       const config = {
-        generate_flux_images: true,
+        ...modelConfig,
         prompt: inputPrompt,
         aspect_ratio: aspectRatio,
-        num_outputs: numOutputs
+        num_outputs: numOutputs,
+        switched_model: switchedModel // Pass the switched model for reference
       };
-
 
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
@@ -871,7 +952,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to generate images');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to generate images');
+        }
       }
 
       const data = await response.json();
@@ -942,7 +1032,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to change hair style');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to change hair style');
+        }
       }
 
       const data = await response.json();
@@ -1252,7 +1351,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to generate headshot');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to generate headshot');
+        }
       }
 
       const data = await response.json();
@@ -1329,7 +1437,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to restore image');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to restore image');
+        }
       }
 
       const data = await response.json();
@@ -1404,7 +1521,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to restore image with  ');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to restore image with GFP');
+        }
       }
 
       const data = await response.json();
@@ -1486,7 +1612,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to generate home design');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to generate home design');
+        }
       }
 
       const data = await response.json();
@@ -1714,7 +1849,16 @@ export default function AIImageEditor() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to generate impossible scenario');
+        // Handle different error response formats
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        } else if (errorData?.message) {
+          throw new Error(errorData.message);
+        } else if (errorData?.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Failed to generate impossible scenario');
+        }
       }
 
       const data = await response.json();
@@ -2280,6 +2424,10 @@ export default function AIImageEditor() {
     if (selectedModel === 're-imagine' && reimagineImage && generatedImages[0]) {
       return true;
     }
+    // For edit-image model, check if we have uploaded image and generated result
+    if (selectedModel === 'edit-image' && editImage && generatedImages[0]) {
+      return true;
+    }
     // For generate-image model, check if we have at least 2 generated images
     if (selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2) {
       return true;
@@ -2308,6 +2456,8 @@ export default function AIImageEditor() {
       return { before: 'Original', after: 'Reimagined' };
     } else if (selectedModel === 'combine-image') {
       return { before: 'Input Image', after: 'Combined Result' };
+    } else if (selectedModel === 'edit-image') {
+      return { before: 'Original', after: 'Edited' };
     } else if (selectedModel === 'generate-image') {
       return { before: 'Generated Image 1', after: 'Generated Image 2' };
     }
@@ -2656,7 +2806,7 @@ export default function AIImageEditor() {
         <meta property="og:title" content={currentSEO.ogTitle} />
         <meta property="og:description" content={currentSEO.ogDescription} />
         <meta property="og:url" content={`https://www.picfix.ai/ai-image-editor?model=${selectedModel}`} />
-        <meta property="og:image" content="https://www.picfix.ai/assets/logo.jpg" />
+        <meta property="og:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
         <meta property="og:image:alt" content="PicFix.AI - AI Image Editor" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -2668,7 +2818,7 @@ export default function AIImageEditor() {
         <meta name="twitter:creator" content="@PicFixAI" />
         <meta name="twitter:title" content={currentSEO.ogTitle} />
         <meta name="twitter:description" content={currentSEO.ogDescription} />
-        <meta name="twitter:image" content="https://www.picfix.ai/assets/logo.jpg" />
+        <meta name="twitter:image" content="https://www.picfix.ai/assets/PicFixAILogo.jpg" />
         <meta name="twitter:image:alt" content="PicFix.AI - AI Image Editor" />
 
         {/* Additional SEO Meta Tags */}
@@ -2685,7 +2835,7 @@ export default function AIImageEditor() {
 
         {/* Favicon and Icons */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="apple-touch-icon" href="/assets/logo.jpg" />
+        <link rel="apple-touch-icon" href="/assets/PicFixAILogo.jpg" />
         <link rel="shortcut icon" href="/favicon.ico" />
 
         {/* Preconnect for Performance */}
@@ -2757,8 +2907,63 @@ export default function AIImageEditor() {
             />
           )} */}
 
-                    {!isMobile && <SidePanel switchModels={switchModels} handleSwitchModel={handleSwitchModel} switchedModel={switchedModel} setSwitchedModel={setSwitchedModel} aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
-}
+          {!isMobile && <SidePanel
+            editImageModels={editImageModels || []}
+            generateImageModels={generateImageModels || []}
+            handleSwitchModel={handleSwitchModel}
+            switchedModel={switchedModel}
+            setSwitchedModel={setSwitchedModel}
+            aspectRatio={aspectRatio}
+            setAspectRatio={setAspectRatio}
+            handleModelChange={handleModelChange}
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
+            selectedHairColor={selectedHairColor}
+            setSelectedHairColor={setSelectedHairColor}
+            selectedGender={selectedGender}
+            setSelectedGender={setSelectedGender}
+            selectedHeadshotGender={selectedHeadshotGender}
+            setSelectedHeadshotGender={setSelectedHeadshotGender}
+            selectedHeadshotBackground={selectedHeadshotBackground}
+            setSelectedHeadshotBackground={setSelectedHeadshotBackground}
+            selectedReimagineGender={selectedReimagineGender}
+            setSelectedReimagineGender={setSelectedReimagineGender}
+            selectedScenario={selectedScenario}
+            setSelectedScenario={setSelectedScenario}
+            numOutputs={numOutputs}
+            setNumOutputs={setNumOutputs}
+            generatedImages={generatedImages}
+            setGeneratedImages={setGeneratedImages}
+            isLoading={isLoading}
+            context={context}
+            generateHairStyleImages={generateHairStyleImages}
+            generateTextRemovalImage={generateTextRemovalImage}
+            generateHeadshotImage={generateHeadshotImage}
+            generateRestoreImage={generateRestoreImage}
+            generateGfpRestoreImage={generateGfpRestoreImage}
+            generateHomeDesignerImage={generateHomeDesignerImage}
+            generateBackgroundRemovalImage={generateBackgroundRemovalImage}
+            generateRemoveObjectImage={generateRemoveObjectImage}
+            generateReimagineImage={generateReimagineImage}
+            generateCombineImages={generateCombineImages}
+            generateFluxImages={generateFluxImages}
+            uploadedImageUrl={uploadedImageUrl}
+            textRemovalImageUrl={textRemovalImageUrl}
+            cartoonifyImageUrl={cartoonifyImageUrl}
+            headshotImageUrl={headshotImageUrl}
+            restoreImageUrl={restoreImageUrl}
+            gfpRestoreImageUrl={gfpRestoreImageUrl}
+            homeDesignerImageUrl={homeDesignerImageUrl}
+            backgroundRemovalImage={backgroundRemovalImage}
+            backgroundRemovalStatus={backgroundRemovalStatus}
+            removeObjectImageUrl={removeObjectImageUrl}
+            reimagineImageUrl={reimagineImageUrl}
+            combineImage1Url={combineImage1Url}
+            combineImage2Url={combineImage2Url}
+            inputPrompt={inputPrompt}
+            hasMaskDrawn={hasMaskDrawn}
+          />
+          }
 
           {/* Main Editor Area */}
           <MainEditor>
@@ -2807,7 +3012,62 @@ export default function AIImageEditor() {
 
             {/* Hair Style Scrollable Strip for Hair Style Model */}
             {isMobile && <Box sx={{}}>
-              <SidePanel switchModels={switchModels} handleSwitchModel={handleSwitchModel} switchedModel={switchedModel} setSwitchedModel={setSwitchedModel} aspectRatio={aspectRatio} setAspectRatio={setAspectRatio} handleModelChange={handleModelChange} selectedModel={selectedModel} setSelectedModel={setSelectedModel} selectedHairColor={selectedHairColor} setSelectedHairColor={setSelectedHairColor} selectedGender={selectedGender} setSelectedGender={setSelectedGender} selectedHeadshotGender={selectedHeadshotGender} setSelectedHeadshotGender={setSelectedHeadshotGender} selectedHeadshotBackground={selectedHeadshotBackground} setSelectedHeadshotBackground={setSelectedHeadshotBackground} selectedReimagineGender={selectedReimagineGender} setSelectedReimagineGender={setSelectedReimagineGender} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} numOutputs={numOutputs} setNumOutputs={setNumOutputs} generatedImages={generatedImages} setGeneratedImages={setGeneratedImages} isLoading={isLoading} context={context} generateHairStyleImages={generateHairStyleImages} generateTextRemovalImage={generateTextRemovalImage} generateHeadshotImage={generateHeadshotImage} generateRestoreImage={generateRestoreImage} generateGfpRestoreImage={generateGfpRestoreImage} generateHomeDesignerImage={generateHomeDesignerImage} generateBackgroundRemovalImage={generateBackgroundRemovalImage} generateRemoveObjectImage={generateRemoveObjectImage} generateReimagineImage={generateReimagineImage} generateCombineImages={generateCombineImages} generateFluxImages={generateFluxImages} uploadedImageUrl={uploadedImageUrl} textRemovalImageUrl={textRemovalImageUrl} cartoonifyImageUrl={cartoonifyImageUrl} headshotImageUrl={headshotImageUrl} restoreImageUrl={restoreImageUrl} gfpRestoreImageUrl={gfpRestoreImageUrl} homeDesignerImageUrl={homeDesignerImageUrl} backgroundRemovalImage={backgroundRemovalImage} backgroundRemovalStatus={backgroundRemovalStatus} removeObjectImageUrl={removeObjectImageUrl} reimagineImageUrl={reimagineImageUrl} combineImage1Url={combineImage1Url} combineImage2Url={combineImage2Url} inputPrompt={inputPrompt} hasMaskDrawn={hasMaskDrawn} />
+              <SidePanel
+                editImageModels={editImageModels || []}
+                generateImageModels={generateImageModels || []}
+                handleSwitchModel={handleSwitchModel}
+                switchedModel={switchedModel}
+                setSwitchedModel={setSwitchedModel}
+                aspectRatio={aspectRatio}
+                setAspectRatio={setAspectRatio}
+                handleModelChange={handleModelChange}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                selectedHairColor={selectedHairColor}
+                setSelectedHairColor={setSelectedHairColor}
+                selectedGender={selectedGender}
+                setSelectedGender={setSelectedGender}
+                selectedHeadshotGender={selectedHeadshotGender}
+                setSelectedHeadshotGender={setSelectedHeadshotGender}
+                selectedHeadshotBackground={selectedHeadshotBackground}
+                setSelectedHeadshotBackground={setSelectedHeadshotBackground}
+                selectedReimagineGender={selectedReimagineGender}
+                setSelectedReimagineGender={setSelectedReimagineGender}
+                selectedScenario={selectedScenario}
+                setSelectedScenario={setSelectedScenario}
+                numOutputs={numOutputs}
+                setNumOutputs={setNumOutputs}
+                generatedImages={generatedImages}
+                setGeneratedImages={setGeneratedImages}
+                isLoading={isLoading}
+                context={context}
+                generateHairStyleImages={generateHairStyleImages}
+                generateTextRemovalImage={generateTextRemovalImage}
+                generateHeadshotImage={generateHeadshotImage}
+                generateRestoreImage={generateRestoreImage}
+                generateGfpRestoreImage={generateGfpRestoreImage}
+                generateHomeDesignerImage={generateHomeDesignerImage}
+                generateBackgroundRemovalImage={generateBackgroundRemovalImage}
+                generateRemoveObjectImage={generateRemoveObjectImage}
+                generateReimagineImage={generateReimagineImage}
+                generateCombineImages={generateCombineImages}
+                generateFluxImages={generateFluxImages}
+                uploadedImageUrl={uploadedImageUrl}
+                textRemovalImageUrl={textRemovalImageUrl}
+                cartoonifyImageUrl={cartoonifyImageUrl}
+                headshotImageUrl={headshotImageUrl}
+                restoreImageUrl={restoreImageUrl}
+                gfpRestoreImageUrl={gfpRestoreImageUrl}
+                homeDesignerImageUrl={homeDesignerImageUrl}
+                backgroundRemovalImage={backgroundRemovalImage}
+                backgroundRemovalStatus={backgroundRemovalStatus}
+                removeObjectImageUrl={removeObjectImageUrl}
+                reimagineImageUrl={reimagineImageUrl}
+                combineImage1Url={combineImage1Url}
+                combineImage2Url={combineImage2Url}
+                inputPrompt={inputPrompt}
+                hasMaskDrawn={hasMaskDrawn}
+              />
             </Box>
             }
             {selectedModel === 'hair-style' ? (
@@ -4001,11 +4261,12 @@ export default function AIImageEditor() {
                       selectedModel === 'gfp-restore' ? gfpRestoreImage :
                         selectedModel === 'home-designer' ? homeDesignerImage :
                           selectedModel === 'background-removal' ? backgroundRemovalImage :
-                            selectedModel === 'remove-object' ? removeObjectImage :
+                              selectedModel === 'remove-object' ? removeObjectImage :
                               selectedModel === 're-imagine' ? reimagineImage :
                                 selectedModel === 'combine-image' ? combineImage1 :
-                                  selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
-                                    ? generatedImages.filter(img => img !== null)[0] : null
+                                  selectedModel === 'edit-image' ? editImage :
+                                    selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                                      ? generatedImages.filter(img => img !== null)[0] : null
           }
           afterImage={
             previewType === 'example' ? exampleAfterImage :
@@ -4019,8 +4280,9 @@ export default function AIImageEditor() {
                             selectedModel === 'remove-object' ? generatedImages[0] :
                               selectedModel === 're-imagine' ? generatedImages[0] :
                                 selectedModel === 'combine-image' ? generatedImages[0] :
-                                  selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
-                                    ? generatedImages.filter(img => img !== null)[1] : null
+                                  selectedModel === 'edit-image' ? generatedImages[0] :
+                                    selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                                      ? generatedImages.filter(img => img !== null)[1] : null
           }
           beforeLabel={previewType === 'example' ? exampleBeforeLabel : getComparisonLabels().before}
           afterLabel={previewType === 'example' ? exampleAfterLabel : getComparisonLabels().after}

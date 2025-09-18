@@ -689,7 +689,7 @@ const ImagePreviewModal = ({
                 </Box>
               )}
 
-              {info.prompt && modelConfigurations[info.model]?.type === 'prompts' && (
+              {info.prompt && (
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
                     Prompt Used
@@ -708,27 +708,27 @@ const ImagePreviewModal = ({
               )}
 
               {/* Show model configuration when there's no prompt */}
-              {!info.prompt && (info.modelConfig || info.modelParams) && (
+              {/* {!info.prompt && (info.modelConfig || info.modelParams) && (
                 <Box>
-                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Configuration Used
-                  </Typography>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 400,
-                    fontStyle: 'italic',
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                    padding: 1,
-                    borderRadius: 1,
-                    fontSize: '0.8rem',
-                    whiteSpace: 'pre-line'
-                  }}>
-                    {info.modelParams
-                      ? generateDetailedConfigDisplay(info.model, info.modelParams)
-                      : info.modelConfig
-                    }
-                  </Typography>
+                  {info.modelParams && (<>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
+                      Configuration Used
+                    </Typography>
+                    <Typography variant="body2" sx={{
+                      fontWeight: 400,
+                      fontStyle: 'italic',
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                      padding: 1,
+                      borderRadius: 1,
+                      fontSize: '0.8rem',
+                      whiteSpace: 'pre-line'
+                    }}>
+                      {info.modelConfig}
+                    </Typography>
+                  </>
+                  )}
                 </Box>
-              )}
+              )} */}
             </Stack>
           </Box>
 

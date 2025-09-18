@@ -20,7 +20,7 @@ async function handler(req, res) {
         ] = await Promise.all([
             prisma.user.count(),
             prisma.paymentHistory.aggregate({
-                where: { paymentStatus: 'completed' },
+                where: { paymentStatus: 'captured' },
                 _sum: { amount: true }
             }),
             prisma.history.count({
@@ -84,7 +84,7 @@ async function handler(req, res) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const activeUsers = await prisma.user.count({
+        const activeUsers = await prisma.user.findMany({
             where: {
                 history: {
                     some: {
@@ -93,6 +93,7 @@ async function handler(req, res) {
                 }
             }
         });
+        console.log("activeUsers", activeUsers);
 
         // 4. Feature usage statistics
         const featureUsage = await prisma.history.groupBy({
@@ -122,14 +123,14 @@ async function handler(req, res) {
         // 6. Revenue by plan
         const revenueByPlan = await prisma.paymentHistory.groupBy({
             by: ['planName'],
-            where: { paymentStatus: 'captured' || 'payment_success' },
+            where: { paymentStatus: { in: ['captured', 'payment_success'] } },
             _sum: { amount: true },
             _count: { planName: true }
         });
 
         const recentPayments = await prisma.paymentHistory.findMany({
             where: {
-                paymentStatus: 'captured' || 'payment_success',
+                paymentStatus: { in: ['captured', 'payment_success'] },
                 createdAt: { gte: sixMonthsAgo }
             },
             select: {
@@ -174,7 +175,7 @@ async function handler(req, res) {
             }),
             prisma.paymentHistory.aggregate({
                 where: {
-                    paymentStatus: 'captured' || 'payment_success',
+                    paymentStatus: { in: ['captured', 'payment_success'] },
                     createdAt: { gte: today, lt: tomorrow }
                 },
                 _sum: { amount: true }
@@ -187,7 +188,7 @@ async function handler(req, res) {
 
         // Calculate conversion rate (users with at least one payment) - MongoDB compatible
         const distinctPayingUsers = await prisma.paymentHistory.findMany({
-            where: { paymentStatus: 'captured' || 'payment_success' },
+            where: { paymentStatus: { in: ['captured', 'payment_success'] } },
             select: { userId: true },
             distinct: ['userId']
         });

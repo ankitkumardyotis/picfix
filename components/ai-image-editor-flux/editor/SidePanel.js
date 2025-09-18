@@ -7,7 +7,7 @@ import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-materi
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SplitButton from '../SplitButton';
 
-function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, switchModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
+function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
 
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
@@ -159,17 +159,20 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             </FormControl >
 
             {
-                selectedModel === 'edit-image' && (
+                (selectedModel === 'edit-image' || selectedModel === 'generate-image') && (
                     < FormControl fullWidth variant="outlined" >
-                        <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>Select Model</InputLabel>
+                        <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>
+                            {selectedModel === 'edit-image' ? 'Edit Image Model' : 'Generate Image Model'}
+                        </InputLabel>
                         <Select
-                            value={switchedModel || 'nano-banana'}
+                            value={switchedModel || (selectedModel === 'edit-image' ? 'nano-banana' : 'flux-schnell')}
                             onChange={(e) => setSwitchedModel(e.target.value)}
-                            label="Select Model"
+                            label={selectedModel === 'edit-image' ? 'Edit Image Model' : 'Generate Image Model'}
                             sx={{
                                 borderRadius: 2,
                                 '& .MuiSelect-select': {
-                                    padding: '.5rem',
+                                    // paddingLeft: '1.5rem',
+                                    padding: ".5rem 1.5rem .5rem 1.5rem",
                                     fontSize: '12px',
                                     fontWeight: 400,
                                 },
@@ -177,8 +180,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
                             }}
                         >
-                            {switchModels.map((config, index) => (
-                                //
+                            {(selectedModel === 'edit-image' ? editImageModels : generateImageModels).map((config, index) => (
                                 <MenuItem
                                     key={config.model}
                                     value={config.model}
@@ -268,7 +270,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     </Box>
 
                     {/* Number of Outputs - Side by side with Aspect Ratio on mobile */}
-                    {selectedModel !== 'edit-image' && selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
+                    {/* {selectedModel !== 'edit-image' && selectedModel !== 'hair-style' && selectedModel !== 'combine-image' && selectedModel !== 'home-designer' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 're-imagine' && (
                         <Box sx={{ flex: isMobile ? 1 : 'auto' }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
                                 Number of Outputs
@@ -340,7 +342,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                                 </IconButton>
                             </Box>
                         </Box>
-                    )}
+                    )} */}
                 </Box>
             )}
 
@@ -545,9 +547,34 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     </Typography>
                 </Box>
 
-                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2, textAlign: 'center' }}>
-                    Credits remaining: {context.creditPoints}
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center' }}>
+                        Credits remaining: {context.creditPoints}
+                    </Typography>
+
+                    {/* Only show daily usage for users without plans (when creditPoints is 0) */}
+                    {context.dailyUsage && context.creditPoints === 0 && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    display: 'block',
+                                    textAlign: 'center',
+                                    color: context.dailyUsage.canUseService ? 'success.main' : 'error.main',
+                                    fontWeight: 500
+                                }}
+                            >
+
+                                Daily: {context.dailyUsage.remainingCredits}
+                            </Typography>
+                            {context.dailyUsage.resetTimeFormatted && (
+                                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center', fontSize: '0.7rem' }}>
+                                    Resets: {context.dailyUsage.resetTimeFormatted}
+                                </Typography>
+                            )}
+                        </Box>
+                    )}
+                </Box>
 
 
                 {/* <Button

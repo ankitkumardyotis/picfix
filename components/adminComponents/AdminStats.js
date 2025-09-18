@@ -92,7 +92,7 @@ const AdminStats = () => {
         },
         {
             title: "Total Revenue",
-            value: `₹${stats.totalRevenue.value.toLocaleString()}`,
+            value: `$${stats.totalRevenue.value.toLocaleString()}`,
             change: `${stats.totalRevenue.change}%`,
             changeType: stats.totalRevenue.changeType,
             icon: <FaMoneyBill />,

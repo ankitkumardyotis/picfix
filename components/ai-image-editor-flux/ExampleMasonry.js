@@ -34,6 +34,37 @@ import Image from 'next/image';
 // Cache for images to avoid repeated API calls
 const imageCache = new Map();
 
+// Helper function to get user-friendly model display names and colors
+const getModelDisplayInfo = (modelName) => {
+  const modelMap = {
+    // Generate Image Models
+    'generate-image': { name: 'Flux Schnell', color: '#6366f1', bgColor: 'rgba(99, 102, 241, 0.9)' },
+    'generate-image-qwen': { name: 'Qwen', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.9)' },
+    'generate-image-gemini': { name: 'Gemini Flash', color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.9)' },
+    'generate-image-flux': { name: 'Flux Schnell', color: '#6366f1', bgColor: 'rgba(99, 102, 241, 0.9)' },
+    
+    // Edit Image Models
+    'edit-image-qwen': { name: 'Qwen Edit', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.9)' },
+    'edit-image-flux': { name: 'Flux Pro', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' },
+    'edit-image-nano': { name: 'Nano Banana', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.9)' },
+    
+    // Other Models
+    'hair-style': { name: 'Hair Style', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.9)' },
+    'combine-image': { name: 'Image Combine', color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.9)' },
+    'text-removal': { name: 'Text Removal', color: '#84cc16', bgColor: 'rgba(132, 204, 22, 0.9)' },
+    'headshot': { name: 'Headshot', color: '#f97316', bgColor: 'rgba(249, 115, 22, 0.9)' },
+    'restore-image': { name: 'Image Restore', color: '#14b8a6', bgColor: 'rgba(20, 184, 166, 0.9)' },
+    'gfp-restore': { name: 'GFP Restore', color: '#a855f7', bgColor: 'rgba(168, 85, 247, 0.9)' },
+    'home-designer': { name: 'Home Design', color: '#6366f1', bgColor: 'rgba(99, 102, 241, 0.9)' },
+    'background-removal': { name: 'BG Remove', color: '#22c55e', bgColor: 'rgba(34, 197, 94, 0.9)' },
+    'remove-object': { name: 'Object Remove', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.9)' },
+    're-imagine': { name: 'Re-imagine', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' },
+    'reimagine': { name: 'Re-imagine', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' }
+  };
+
+  return modelMap[modelName] || { name: modelName, color: '#6b7280', bgColor: 'rgba(107, 114, 128, 0.9)' };
+};
+
 const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick, onPromptUse }, ref) => {
   const theme = useTheme();
   const [s3Images, setS3Images] = useState([]);
@@ -271,6 +302,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
             aspectRatio: record.aspectRatio,
             createdAt: record.createdAt,
             historyId: record.id, // Store original history ID for publishing
+            actualModel: record.model, // Store the actual model name from database
             // Add combine-image specific properties
             inputImage1: record.inputImage1 || null,
             inputImage2: record.inputImage2 || null,
@@ -502,6 +534,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           prompt: image.prompt || null,
           modelConfig: modelConfigText,
           model: selectedModel,
+          actualModel: image.actualModel || null, // Add actual model name
+          modelDisplayName: image.actualModel ? getModelDisplayInfo(image.actualModel).name : null,
           modelParams: image.modelParams || null,
           createdAt: image.createdAt || null,
           resolution: 'High Quality',
@@ -947,8 +981,18 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
           {/* Render grouped history images */}
           {activeTab === 'history' && historyImages && typeof historyImages === 'object' ? (
-            Object.entries(historyImages).map(([period, images]) => {
+            Object.entries(historyImages).map(([period, images], periodIndex) => {
               if (!Array.isArray(images) || images.length === 0) return null;
+
+              // Calculate the starting global index for this period
+              let globalIndexOffset = 0;
+              const periods = Object.entries(historyImages);
+              for (let i = 0; i < periodIndex; i++) {
+                const [, prevImages] = periods[i];
+                if (Array.isArray(prevImages)) {
+                  globalIndexOffset += prevImages.length;
+                }
+              }
 
               return (
                 <Box key={period} sx={{ mb: 4 }}>
@@ -975,7 +1019,9 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                       transition: 'opacity 0.3s ease',
                     }}
                   >
-                    {images.map((image, index) => (
+                    {images.map((image, index) => {
+                      const globalIndex = globalIndexOffset + index;
+                      return (
                       <Card
                         key={image.id}
                         sx={{
@@ -993,7 +1039,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                             },
                           },
                         }}
-                        onClick={() => handleImagePreview(image, index)}
+                        onClick={() => handleImagePreview(image, globalIndex)}
                       >
                         <Box sx={{ position: 'relative' }}>
                           {imageLoadingStates[image.id] && (
@@ -1048,6 +1094,26 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                             </Box>
                           )}
 
+                          {/* Model Tag - Show for history images */}
+                          {image.isHistory && image.actualModel && (
+                            <Box sx={{ position: 'absolute', bottom: 8, right: 8, zIndex: 2 }}>
+                              <Chip
+                                label={getModelDisplayInfo(image.actualModel).name}
+                                size="small"
+                                sx={{
+                                  backgroundColor: getModelDisplayInfo(image.actualModel).bgColor,
+                                  color: 'white',
+                                  fontSize: '9px',
+                                  height: 18,
+                                  fontWeight: 600,
+                                  '& .MuiChip-label': {
+                                    px: 1
+                                  }
+                                }}
+                              />
+                            </Box>
+                          )}
+
                           <CardMedia
                             component="img"
                             image={selectedModel === 'combine-image' ? image.outputImage : image.url}
@@ -1057,7 +1123,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                             referrerPolicy="no-referrer"
                             sx={{
                               width: '100%',
-                              height: image.height || 250, // Default height if not specified
+                              height: image.height || 250,
                               objectFit: 'cover',
                               transition: 'opacity 0.3s ease',
                               opacity: imageLoadingStates[image.id] ? 0 : 1,
@@ -1095,7 +1161,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleImagePreview(image, index);
+                                    handleImagePreview(image, globalIndex);
                                   }}
                                 >
                                   <VisibilityIcon fontSize="small" />
@@ -1116,7 +1182,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                                     }}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleComparisonOpen(image, index);
+                                      handleComparisonOpen(image, globalIndex);
                                     }}
                                   >
                                     <CompareIcon fontSize="small" />
@@ -1248,7 +1314,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                           </Box>
                         </Box>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </Masonry>
                 </Box>
               );
@@ -1332,6 +1399,26 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                             color: 'white',
                             fontSize: '10px',
                             height: 20
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    {/* Model Tag - Show for history images */}
+                    {image.isHistory && image.actualModel && (
+                      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+                        <Chip
+                          label={getModelDisplayInfo(image.actualModel).name}
+                          size="small"
+                          sx={{
+                            backgroundColor: getModelDisplayInfo(image.actualModel).bgColor,
+                            color: 'white',
+                            fontSize: '9px',
+                            height: 18,
+                            fontWeight: 600,
+                            '& .MuiChip-label': {
+                              px: 1
+                            }
                           }}
                         />
                       </Box>

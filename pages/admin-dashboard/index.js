@@ -195,7 +195,6 @@ const AdminDashboard = () => {
                 background: '#f8fafc',
                 fontFamily: 'Roboto, sans-serif'
             }}>
-                {/* Sidebar */}
                 <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} session={session} />
 
                 {/* Main Content */}

@@ -102,6 +102,8 @@ function CreditPlanCard() {
 
     if (item.name === "free") {
       features.push("Free access of 3 models");
+      features.push("History not accessible");
+      features.push("Daily limit of 5 credits");
       features.push("No Storage");
     } else {
       features.push(`Storage: ${item.storage}`);

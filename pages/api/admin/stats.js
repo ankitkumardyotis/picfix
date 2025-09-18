@@ -15,15 +15,12 @@ async function handler(req, res) {
         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-        // Execute all queries in parallel for better performance
         const [
             // Basic counts
             totalUsers,
             totalImages,
             totalRevenue,
             totalPayments,
-            
-            // Active users (with activity in last 30 days)
             activeUsersCount,
             
             // Today's stats
@@ -49,10 +46,10 @@ async function handler(req, res) {
             prisma.user.count(),
             prisma.history.count({ where: { status: 'completed' } }),
             prisma.paymentHistory.aggregate({
-                where: { paymentStatus: 'completed' },
+                where: { paymentStatus: { in: ['captured', 'payment_success'] } },
                 _sum: { amount: true }
             }),
-            prisma.paymentHistory.count({ where: { paymentStatus: 'completed' } }),
+            prisma.paymentHistory.count({ where: { paymentStatus: { in: ['captured', 'payment_success'] } } }),
             
             // Active users
             prisma.user.count({
@@ -77,7 +74,7 @@ async function handler(req, res) {
             }),
             prisma.paymentHistory.aggregate({
                 where: { 
-                    paymentStatus: 'completed',
+                    paymentStatus: { in: ['captured', 'payment_success'] },
                     createdAt: { gte: startOfToday }
                 },
                 _sum: { amount: true }
@@ -95,7 +92,7 @@ async function handler(req, res) {
             }),
             prisma.paymentHistory.aggregate({
                 where: { 
-                    paymentStatus: 'completed',
+                    paymentStatus: { in: ['captured', 'payment_success'] },
                     createdAt: { gte: startOfMonth }
                 },
                 _sum: { amount: true }
@@ -121,7 +118,7 @@ async function handler(req, res) {
             }),
             prisma.paymentHistory.aggregate({
                 where: { 
-                    paymentStatus: 'completed',
+                    paymentStatus: { in: ['captured', 'payment_success'] },
                     createdAt: { 
                         gte: startOfLastMonth,
                         lt: endOfLastMonth
@@ -143,7 +140,7 @@ async function handler(req, res) {
 
         // Calculate conversion rate
         const usersWithPayments = await prisma.paymentHistory.findMany({
-            where: { paymentStatus: 'completed' },
+            where: { paymentStatus: 'captured' },
             select: { userId: true },
             distinct: ['userId']
         });
@@ -159,6 +156,30 @@ async function handler(req, res) {
         const todayRevenueAmount = todayRevenue._sum.amount || 0;
         const monthlyRevenueAmount = monthlyRevenue._sum.amount || 0;
         const lastMonthRevenueAmount = lastMonthRevenue._sum.amount || 0;
+
+        // Debug logging - check all payment records
+        const allPayments = await prisma.paymentHistory.findMany({
+            select: {
+                paymentStatus: true,
+                amount: true,
+                createdAt: true
+            }
+        });
+        
+        const allPaymentStatuses = await prisma.paymentHistory.groupBy({
+            by: ['paymentStatus'],
+            _count: { paymentStatus: true }
+        });
+
+        console.log('Payment Stats Debug:');
+        console.log('Total Payment Records:', allPayments.length);
+        console.log('Payment Status Distribution:', allPaymentStatuses);
+        console.log('All Payments:', allPayments.slice(0, 5)); // Show first 5 records
+        console.log('Total Payments Count (captured):', totalPayments);
+        console.log('Total Revenue Object:', totalRevenue);
+        console.log('Total Revenue Amount:', totalRevenueAmount);
+        console.log('Failed Payments:', failedPayments);
+        console.log('Pending Payments:', pendingPayments);
 
         // Calculate growth rates
         const userGrowth = calculateGrowth(monthlyUsers, lastMonthUsers);
@@ -216,7 +237,7 @@ async function handler(req, res) {
                 revenue: todayRevenueAmount,
                 payments: await prisma.paymentHistory.count({
                     where: { 
-                        paymentStatus: 'completed',
+                        paymentStatus: { in: ['captured', 'payment_success'] },
                         createdAt: { gte: startOfToday }
                     }
                 })
@@ -227,7 +248,7 @@ async function handler(req, res) {
                 revenue: monthlyRevenueAmount,
                 payments: await prisma.paymentHistory.count({
                     where: { 
-                        paymentStatus: 'completed',
+                        paymentStatus: { in: ['captured', 'payment_success'] },
                         createdAt: { gte: startOfMonth }
                     }
                 })

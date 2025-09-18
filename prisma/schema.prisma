@@ -82,6 +82,7 @@ model User {
   publishedImages PublishedImage[]
   imageLikes      ImageLike[]
   history         History[]
+  dailyUsage      DailyUsage[]
 
   @@map("users")
 }
@@ -228,7 +229,25 @@ model ExampleImageStats {
   views          Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  
+
   @@index([model])
   @@index([likes])
+}
+
+model DailyUsage {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @db.ObjectId
+  email           String
+  usageCount      Int       @default(0)
+  dailyLimit      Int       @default(5) // Default 5 credits per day
+  resetAt         DateTime  // Next reset time (midnight UTC)
+  lastUsed        DateTime? // Last usage timestamp
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resetAt])
+  @@index([userId])
+  @@index([resetAt])
 }

@@ -362,5 +362,21 @@ export const getUseCaseImageUrl = [
             },
 
         ]
+    },
+    {
+        id: 13,
+        model: 'edit-image',
+        useCaseImages: [
+            {
+                id: 1,
+                "imagePath": "portrait of boy with backpack.jpg",
+                "outputImage": "boy sketting in front of burj khalifa.jpg"
+            },
+            {
+                id: 2,
+                "imagePath": "portrait of a boy.jpg",
+                "outputImage": "person should stand in front of the black G-Wagon  and image capture from front of the black car.jpg"
+            }
+        ]
     }
 ]

@@ -301,8 +301,6 @@ const CombineImageModal = ({
       if (isDragging && zoom > 1) {
         const newPanX = e.clientX - dragStart.x;
         const newPanY = e.clientY - dragStart.y;
-
-        // Limit pan to reasonable bounds
         const maxPan = 200 * zoom;
         setPanX(Math.max(-maxPan, Math.min(maxPan, newPanX)));
         setPanY(Math.max(-maxPan, Math.min(maxPan, newPanY)));

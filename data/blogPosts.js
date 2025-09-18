@@ -2097,16 +2097,16 @@ export const blogPosts = [
     `
   },
   {
-    title: "Nano Banana (Gemini Nano): The Next-Gen AI Image Editor for Instant Upscale & Edits",
-    description: "Learn how Nano Banana (Gemini Nano / Gemini Flash 2.5) brings fast, high-quality AI image editing, upscaling, and multi-image composition to PicFix.AI.",
-    image: "https://picfixcdn.com/nano-banana-image-generate-before-after.png",
+    title: "Nano Banana: The Next-Gen AI Image Editor for Instant Upscale & Edits",
+    description: "Learn how Nano Banana (Gemini Flash 2.5) brings fast, high-quality AI image editing, upscaling, and multi-image composition to PicFix.AI.",
+    image: "https://picfixcdn.com/picfix-usecase-image/person%20should%20stand%20in%20front%20of%20the%20black%20G-Wagon%20and%20image%20capture%20from%20front%20of%20the%20black%20car.png",
     slug: "nano-banana-gemini-ai-image-editor-upscale-edit",
     date: "2025-08-29",
     category: "AI Technology",
     content: `
-      <p><strong>Nano Banana</strong> (also reported as <strong>Gemini Nano</strong> or <strong>Gemini Flash 2.5</strong>) is a next-generation <strong>AI image editor</strong> focused on lightning-fast, high-fidelity image edits and intelligent upscaling. At <a href="https://www.picfix.ai" target="_blank" rel="noopener noreferrer">PicFix.AI</a> we've integrated Nano Banana so you can <strong>edit images with AI</strong>, perform professional <strong>image upscale</strong>, and combine multiple photos into one cohesive scene — all with natural-language commands.</p>
+      <p><strong>Nano Banana</strong> (also reported as <strong>Gemini Flash 2.5</strong>) is a next-generation <strong>AI image editor</strong> focused on lightning-fast, high-fidelity image edits and intelligent upscaling. At <a href="https://www.picfix.ai" target="_blank" rel="noopener noreferrer">PicFix.AI</a> we've integrated Nano Banana so you can <strong>edit images with AI</strong>, perform professional <strong>image upscale</strong>, and combine multiple photos into one cohesive scene — all with natural-language commands.</p>
 
-      <h2>What Nano Banana (Gemini) Can Do</h2>
+      <h2>What Nano Banana (Gemini Flash 2.5) Can Do</h2>
       <ul>
         <li><strong>Prompt-driven image edits:</strong> Describe edits in plain language (e.g., "remove background and replace with a studio backdrop") and get accurate results.</li>
         <li><strong>Image upscale:</strong> Increase resolution while preserving and enhancing detail for print and large-format use.</li>
@@ -2130,7 +2130,7 @@ export const blogPosts = [
         <p style="color: rgba(255,255,255,0.8); margin-top: 15px; font-size: 14px;">No signup required • Process unlimited images • Professional results in seconds</p>
       </div>
 
-      <p><strong>Keywords:</strong> Nano Banana, Gemini, AI image editor, image upscale, edit image with AI, Gemini Nano, Gemini Flash 2.5.</p>
+      <p><strong>Keywords:</strong> Nano Banana, Gemini, AI image editor, image upscale, edit image with AI, Gemini Flash 2.5.</p>
     `
   }
 ];

@@ -132,7 +132,6 @@ export default async function handler(req, res) {
     });
 
 
-    // 6. Calculate deletion stats
     const successfulDeletions = deletionResults.filter(
       result => result.status === 'fulfilled' && result.value.success
     ).length;

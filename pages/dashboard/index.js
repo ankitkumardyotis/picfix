@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import HomeIcon from '@mui/icons-material/Home';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import PanoramaIcon from '@mui/icons-material/Panorama';
@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { styled } from '@mui/material/styles';
 import { isAdmin } from '@/lib/adminAuth';
 import UserSplitButton from '@/components/UserSplitButton';
+import AppContext from '@/components/AppContext';
 // import CountUp from 'react-countup';
 
 
@@ -27,6 +28,7 @@ function Home() {
 
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.up('md'));
+    const context = useContext(AppContext);
 
 
     const { data: session, status } = useSession()
@@ -72,8 +74,21 @@ function Home() {
                     console.error('Error fetching plan data:', error);
                 }
             };
+
+            const fetchDailyUsage = async () => {
+                try {
+                    const response = await fetch('/api/user/daily-usage');
+                    if (response.ok) {
+                        const data = await response.json();
+                        context.setDailyUsage(data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching daily usage:', error);
+                }
+            };
             fetchUserPlan()
             fetchUserHistory()
+            fetchDailyUsage()
             setLoadindSession(false);
         }
     }, [session, status, router]);
@@ -160,29 +175,22 @@ function Home() {
                                     <Box 
                                         onClick={() => router.push('/admin-dashboard')} 
                                         sx={{ 
-                                            backgroundColor: '#e3f2fd', 
-                                            border: '2px solid #1976d2',
+                                            backgroundColor: '#fff', 
                                             padding: '12px', 
                                             borderRadius: '10px', 
                                             display: 'flex', 
                                             alignItems: 'center', 
                                             cursor: 'pointer', 
                                             marginTop: '8px',
-                                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
-                                            "&:hover": { 
-                                                backgroundColor: '#bbdefb', 
-                                                transform: 'translateY(-1px)',
-                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                                                transition: '.2s ease-in-out' 
-                                            } 
+                                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)'
                                         }}
                                     >
-                                        <span style={{ flex: 1, color: '#1976d2' }}>
+                                        <span style={{ flex: 1 }}>
                                             <AdminPanelSettingsIcon />
                                         </span>
                                         <h4 style={{ 
                                             flex: 3, 
-                                            color: '#1976d2', 
+                                            // color: '#1976d2', 
                                             margin: 0,
                                             fontWeight: '600',
                                             fontSize: '0.9rem'
@@ -198,7 +206,6 @@ function Home() {
                         </div>
                     )}
 
-                    {/* Scrollable Main Content */}
                     <div style={{
                         flex: 1,
                         marginLeft: matches ? '15vw' : '0',
@@ -209,9 +216,6 @@ function Home() {
                         {selectComponent === 'dashboard' && <Dashboard matches={matches} session={session} renewAt={renewAt} userPlan={userPlan} userHistory={userHistory} createdAt={createdAt} />}
                         {selectComponent === 'transactions' && < TransactionsHistory />}
                         {selectComponent === 'ai-studio' && <div style={{ padding: '1rem' }}><AiStudio /></div>}
-                        {/* {selectComponent === 'models' && <div style={{ padding: '1rem' }}><AllModelsContainer /></div>} */}
-                        
-                        {/* Mobile Admin Panel Access - Show floating button on mobile for admin users */}
                         {!matches && isAdmin(session) && (
                             <div style={{
                                 position: 'fixed',
