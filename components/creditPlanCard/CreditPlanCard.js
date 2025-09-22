@@ -25,7 +25,7 @@ function CreditPlanCard() {
         router.push("/login");
         return;
       }
-      if(price === 0){
+      if (price === 0) {
         router.push("/ai-image-editor");
         return;
       }
@@ -97,13 +97,14 @@ function CreditPlanCard() {
 
     // Add extra credits if applicable
     if (item.extraCreditPoints != 0) {
+     
       features.push(`+${item.extraCreditPoints} Credits Extra`);
     }
-
     if (item.name === "free") {
       features.push("Free access of 3 models");
       features.push("History not accessible");
       features.push("Daily limit of 5 credits");
+      features.push("Watermark on all images");
       features.push("No Storage");
     } else {
       features.push(`Storage: ${item.storage}`);
@@ -113,6 +114,7 @@ function CreditPlanCard() {
     // Only add expiry info for non-free plans
     if (item.name !== "free") {
       features.push(`Credits will expire in ${process.env.NEXT_PUBLIC_CREDIT_EXPIRY} days`);
+      features.push("No watermark on images");
     }
 
     return features;

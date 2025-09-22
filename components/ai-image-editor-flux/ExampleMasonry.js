@@ -30,6 +30,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getUseCaseImageUrl } from '@/constant/getUseCaseImageUrl';
 import modelConfigurations from '@/constant/ModelConfigurations';
 import ImagePreviewModal from './ImagePreviewModal';
+import DownloadModal from './DownloadModal';
+import { useDownloadHandler } from './useDownloadHandler';
 import Image from 'next/image';
 // Cache for images to avoid repeated API calls
 const imageCache = new Map();
@@ -91,6 +93,9 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Download handler
+  const downloadHandler = useDownloadHandler();
 
   // Create cache key for current model and gender
   const cacheKey = useMemo(() => {
@@ -777,21 +782,11 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
       filename = filename.replace('.jpg', '-result.jpg');
     }
 
-    // Use API endpoint to download with proper headers
-    const downloadUrl = `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`;
-
-    // Create link and trigger download
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filename;
-
-    // Add to DOM temporarily, click, then remove
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Use the new download handler that checks user plan
+    downloadHandler.handleDownload(imageUrl, filename);
   };
 
-  // Use appropriate images based on active tab
+  
   const displayImages = activeTab === 'community' ? communityImages :
     activeTab === 'history' ? historyImages :
       (s3Images.length > 0 ? s3Images : []);
@@ -1693,6 +1688,9 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Download Modal */}
+      <DownloadModal {...downloadHandler.modalProps} />
     </Box>
   );
 });

@@ -29,6 +29,8 @@ import CompareIcon from '@mui/icons-material/Compare';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import modelConfigurations from '@/constant/ModelConfigurations';
 import ImageComparisonSlider from './ImageComparisonSlider';
+import DownloadModal from './DownloadModal';
+import { useDownloadHandler } from './useDownloadHandler';
 
 const ImagePreviewModal = ({
   open,
@@ -51,6 +53,9 @@ const ImagePreviewModal = ({
   const [zoom, setZoom] = useState(1);
   const [showInfo, setShowInfo] = useState(false);
   const [comparisonMode, setComparisonMode] = useState(false);
+
+  // Download handler
+  const downloadHandler = useDownloadHandler();
 
   // Reset zoom and comparison mode when image changes or modal opens
   useEffect(() => {
@@ -150,6 +155,7 @@ const ImagePreviewModal = ({
       // Generate intelligent filename
       const filename = generatePreviewFileName(selectedModel, imageInfo, currentImageData.originalIndex);
 
+      // For base64 images, download directly (no watermark needed for base64)
       if (currentImage.startsWith('data:')) {
         const link = document.createElement('a');
         link.href = currentImage;
@@ -158,14 +164,8 @@ const ImagePreviewModal = ({
         link.click();
         document.body.removeChild(link);
       } else {
-        // Use the download API to avoid CORS issues
-        const downloadUrl = `/api/download-image?url=${encodeURIComponent(currentImage)}&filename=${encodeURIComponent(filename)}`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // For regular URLs, use the new download handler that checks user plan
+        downloadHandler.handleDownload(currentImage, filename);
       }
     }
   };
@@ -754,6 +754,9 @@ const ImagePreviewModal = ({
           </Box>
         </Paper>
       </DialogContent>
+
+      {/* Download Modal */}
+      <DownloadModal {...downloadHandler.modalProps} />
     </Dialog>
   );
 };

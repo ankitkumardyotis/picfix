@@ -46,6 +46,8 @@ import BackgroundRemovalProcessor from '../components/ai-image-editor-flux/Backg
 import ObjectRemovalMaskEditor from '../components/ai-image-editor-flux/ObjectRemovalMaskEditor';
 import CombineImageDisplay from '../components/ai-image-editor-flux/CombineImageDisplay';
 import CombineImageModal from '../components/ai-image-editor-flux/CombineImageModal';
+import DownloadModal from '../components/ai-image-editor-flux/DownloadModal';
+import { useDownloadHandler } from '../components/ai-image-editor-flux/useDownloadHandler';
 import modelConfigurations from '../constant/ModelConfigurations';
 import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 import Image from 'next/image';
@@ -321,6 +323,9 @@ export default function AIImageEditor() {
   // Authentication and state management
   const { data: session, status } = useSession();
   const isMountedRef = useRef(true);
+
+  // Download handler
+  const downloadHandler = useDownloadHandler();
 
   // Fetch user's credit points and daily usage when component mounts
   useEffect(() => {
@@ -2059,7 +2064,7 @@ export default function AIImageEditor() {
     // Generate intelligent filename
     const filename = generateFileName(selectedModel, inputPrompt, index);
 
-    // For base64 images
+    // For base64 images, download directly (no watermark needed for base64)
     if (imageUrl.startsWith('data:')) {
       const link = document.createElement('a');
       link.href = imageUrl;
@@ -2068,14 +2073,8 @@ export default function AIImageEditor() {
       link.click();
       document.body.removeChild(link);
     } else {
-      // For regular URLs, use the download API to avoid CORS issues
-      const downloadUrl = `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`;
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // For regular URLs, use the new download handler that checks user plan
+      downloadHandler.handleDownload(imageUrl, filename);
     }
   };
 
@@ -4299,6 +4298,9 @@ export default function AIImageEditor() {
           onDownload={handleDownload}
           isLoading={!(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) && isLoading}
         />
+
+        {/* Download Modal */}
+        <DownloadModal {...downloadHandler.modalProps} />
       </StyledPaper>
     </>
   );

@@ -76,7 +76,7 @@ function ExplorePageContainer(props) {
     return (
         // Outer Box
         <Container maxWidth='xl' ref={ref} sx={{ marginTop: matches ? '6em' : '5em', height: '100vh', paddingBottom: '10em', display: 'flex', alignItems: 'center' }}>
-            {/* Inner Box ⬇️*/}
+          
             {
                 entry && <Fade direction='up' triggerOnce={true}>
 
