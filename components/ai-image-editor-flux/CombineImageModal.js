@@ -278,9 +278,11 @@ const CombineImageModal = ({
   onClose,
   inputImage1,
   inputImage2,
+  inputImages = [], // New prop for multiple images
   outputImage,
   onDownload,
-  isLoading = false
+  isLoading = false,
+  switchedModel = 'flux-kontext-pro' // New prop to determine display mode
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -326,13 +328,34 @@ const CombineImageModal = ({
     };
   }, [isDragging, dragStart, zoom]);
 
+  // Determine if we're in multi-image mode
+  const isMultiImageMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4';
+  
   // Placeholder images from Unsplash
-  const placeholderImage1 = 'https://images.unsplash.com/photo-1494790108755-2616c6d1a1b6?w=400&h=300&fit=crop&crop=face';
-  const placeholderImage2 = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop';
+  const placeholderImages = [
+    'https://images.unsplash.com/photo-1494790108755-2616c6d1a1b6?w=400&h=300&fit=crop&crop=face',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&h=300&fit=crop'
+  ];
   const placeholderOutput = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop';
 
-  const displayImage1 = inputImage1 || placeholderImage1;
-  const displayImage2 = inputImage2 || placeholderImage2;
+  // Prepare display images based on mode
+  let displayImages;
+  if (isMultiImageMode) {
+    // Use inputImages array for multi-image models
+    displayImages = inputImages.length > 0 
+      ? inputImages.map((img, index) => img || placeholderImages[index % placeholderImages.length])
+      : [placeholderImages[0], placeholderImages[1]]; // Default to 2 placeholders
+  } else {
+    // Legacy mode for flux-kontext-pro
+    displayImages = [
+      inputImage1 || placeholderImages[0],
+      inputImage2 || placeholderImages[1]
+    ];
+  }
+  
   const displayOutput = outputImage || placeholderOutput;
 
   // Preview handlers
@@ -452,142 +475,130 @@ const CombineImageModal = ({
 
         <StyledDialogContent>
           <Grid container spacing={{ xs: 2, md: 4 }} alignItems="center">
-            {/* First Input Image */}
-            <Grid item xs={12} md={3}>
-              <ImageCard variant="input">
-                <ImageLabel variant="input">Input 1</ImageLabel>
-                <CardMedia
-                  component="img"
-                  height={isMobile ? "200" : "300"}
-                  image={displayImage1}
-                  referrerPolicy='no-referrer'
-                  alt="First input image"
-                  sx={{
-                    objectFit: 'contain',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.3s ease',
-                    [theme.breakpoints.down('md')]: {
-                      height: '200px',
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                      height: '150px',
-                    },
-                  }}
-                />
-                <ImageOverlay className="image-overlay">
-                  <Tooltip title="Preview Image">
-                    <ActionButton onClick={() => handlePreviewOpen(displayImage1, 'Input Image 1')}>
-                      <VisibilityIcon />
-                    </ActionButton>
-                  </Tooltip>
-                  {inputImage1 && (
-                    <Tooltip title="Download Image">
-                      <ActionButton onClick={() => onDownload && onDownload(displayImage1, 0)}>
-                        <DownloadIcon />
-                      </ActionButton>
-                    </Tooltip>
-                  )}
-                </ImageOverlay>
-              </ImageCard>
-            </Grid>
+            {/* Dynamic Input Images */}
+            {isMultiImageMode ? (
+              // Multi-image layout for Nano Banana and See Dreams
+              <>
+                {/* Input Images Section - Clean Grid Layout */}
+                <Grid item xs={12} md={8}>
+                  <Typography variant="h6" sx={{ mb: 2, color: theme.palette.text.primary, textAlign: 'center' }}>
+                    Input Images ({displayImages.length})
+                  </Typography>
+                  <Grid container spacing={0} justifyContent="center">
+                    {displayImages.map((image, index) => (
+                      <Grid item xs={6} sm={4} md={displayImages.length <= 4 ? 3 : 2.4} key={index} sx={{ padding: '0 !important' }}>
+                        <ImageCard variant="input" sx={{ 
+                          height: isMobile ? '120px' : '160px',
+                          borderRadius: 0,
+                          overflow: 'hidden',
+                          margin: 0,
+                          padding: 0,
+                          border: 'none',
+                          boxShadow: 'none',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                          }
+                        }}>
+                          <ImageLabel variant="input" sx={{ 
+                            fontSize: '0.75rem',
+                            margin: 0,
+                            padding: '4px 8px',
+                            borderRadius: 0
+                          }}>
+                            {index + 1}
+                          </ImageLabel>
+                          <CardMedia
+                            component="img"
+                            height={isMobile ? "120" : "160"}
+                            image={image}
+                            referrerPolicy='no-referrer'
+                            alt={`Input image ${index + 1}`}
+                            sx={{
+                              objectFit: 'cover',
+                              backgroundColor: '#f8fafc',
+                              transition: 'all 0.3s ease',
+                              margin: 0,
+                              padding: 0,
+                              display: 'block'
+                            }}
+                          />
+                          <ImageOverlay className="image-overlay">
+                            <Tooltip title="Preview Image">
+                              <ActionButton onClick={() => handlePreviewOpen(image, `Input Image ${index + 1}`)}>
+                                <VisibilityIcon />
+                              </ActionButton>
+                            </Tooltip>
+                            {inputImages[index] && (
+                              <Tooltip title="Download Image">
+                                <ActionButton onClick={() => onDownload && onDownload(image, index)}>
+                                  <DownloadIcon />
+                                </ActionButton>
+                              </Tooltip>
+                            )}
+                          </ImageOverlay>
+                          {!inputImages[index] && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                bottom: 4,
+                                left: 4,
+                                right: 4,
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                color: 'white',
+                                padding: 0.3,
+                                borderRadius: 1,
+                                fontSize: '0.65rem',
+                                textAlign: 'center',
+                              }}
+                            >
+                              Sample
+                            </Box>
+                          )}
+                        </ImageCard>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Grid>
 
-            {/* Plus Icon */}
-            <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
-              <ArrowContainer>
-                <PlusIcon />
-              </ArrowContainer>
-            </Grid>
-
-            {/* Second Input Image */}
-            <Grid item xs={12} md={3}>
-              <ImageCard variant="input">
-                <ImageLabel variant="input">Input 2</ImageLabel>
-                <CardMedia
-                  component="img"
-                  height={isMobile ? "200" : "300"}
-                  image={displayImage2}
-                  referrerPolicy='no-referrer'
-                  alt="Second input image"
-                  sx={{
-                    objectFit: 'contain',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.3s ease',
-                    [theme.breakpoints.down('md')]: {
-                      height: '200px',
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                      height: '150px',
-                    },
-                  }}
-                />
-                <ImageOverlay className="image-overlay">
-                  <Tooltip title="Preview Image">
-                    <ActionButton onClick={() => handlePreviewOpen(displayImage2, 'Input Image 2')}>
-                      <VisibilityIcon />
-                    </ActionButton>
-                  </Tooltip>
-                  {inputImage2 && (
-                    <Tooltip title="Download Image">
-                      <ActionButton onClick={() => onDownload && onDownload(displayImage2, 1)}>
-                        <DownloadIcon />
-                      </ActionButton>
-                    </Tooltip>
-                  )}
-                </ImageOverlay>
-                {!inputImage2 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: 12,
-                      left: 12,
-                      right: 12,
-                      backgroundColor: 'rgba(0,0,0,0.7)',
-                      color: 'white',
-                      padding: 1.5,
-                      borderRadius: 1,
-                      fontSize: '0.875rem',
-                      textAlign: 'center',
-                      [theme.breakpoints.down('sm')]: {
-                        fontSize: '0.75rem',
-                        padding: 1,
-                        bottom: 8,
-                        left: 8,
-                        right: 8,
-                      },
-                    }}
-                  >
-                    Sample Image - Upload your own
+                {/* Equals Icon */}
+                <Grid item xs={12} md={1} sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  minHeight: '200px'
+                }}>
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    backgroundColor: theme.palette.primary.main,
+                    color: 'white',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  }}>
+                    =
                   </Box>
-                )}
-              </ImageCard>
-            </Grid>
-
-            {/* Equals Icon */}
-            <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
-              <ArrowContainer>
-                <EqualsIcon />
-              </ArrowContainer>
-            </Grid>
-
-            {/* Output Image */}
-            <Grid item xs={12} md={4}>
-              {isLoading ? (
-                <PlaceholderCard>
-                  <EnhancedLoader
-                    selectedModel="combine-image"
-                    size="large"
-                  />
-                </PlaceholderCard>
-              ) : (
-                <Fade in={!!outputImage} timeout={800}>
-                  <ImageCard variant="output">
-                    <ImageLabel variant="output">Combined Result</ImageLabel>
+                </Grid>
+              </>
+            ) : (
+              // Legacy two-image layout for Flux Kontext Pro
+              <>
+                {/* First Input Image */}
+                <Grid item xs={12} md={3}>
+                  <ImageCard variant="input">
+                    <ImageLabel variant="input">Input 1</ImageLabel>
                     <CardMedia
                       component="img"
                       height={isMobile ? "200" : "300"}
-                      image={displayOutput}
+                      image={displayImages[0]}
                       referrerPolicy='no-referrer'
-                      alt="Combined output image"
+                      alt="First input image"
                       sx={{
                         objectFit: 'contain',
                         backgroundColor: '#f8fafc',
@@ -598,6 +609,154 @@ const CombineImageModal = ({
                         [theme.breakpoints.down('sm')]: {
                           height: '150px',
                         },
+                      }}
+                    />
+                    <ImageOverlay className="image-overlay">
+                      <Tooltip title="Preview Image">
+                        <ActionButton onClick={() => handlePreviewOpen(displayImages[0], 'Input Image 1')}>
+                          <VisibilityIcon />
+                        </ActionButton>
+                      </Tooltip>
+                      {inputImage1 && (
+                        <Tooltip title="Download Image">
+                          <ActionButton onClick={() => onDownload && onDownload(displayImages[0], 0)}>
+                            <DownloadIcon />
+                          </ActionButton>
+                        </Tooltip>
+                      )}
+                    </ImageOverlay>
+                  </ImageCard>
+                </Grid>
+
+                {/* Plus Icon */}
+                <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
+                  <ArrowContainer>
+                    <AddIcon />
+                  </ArrowContainer>
+                </Grid>
+
+                {/* Second Input Image */}
+                <Grid item xs={12} md={3}>
+                  <ImageCard variant="input">
+                    <ImageLabel variant="input">Input 2</ImageLabel>
+                    <CardMedia
+                      component="img"
+                      height={isMobile ? "200" : "300"}
+                      image={displayImages[1]}
+                      referrerPolicy='no-referrer'
+                      alt="Second input image"
+                      sx={{
+                        objectFit: 'contain',
+                        backgroundColor: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        [theme.breakpoints.down('md')]: {
+                          height: '200px',
+                        },
+                        [theme.breakpoints.down('sm')]: {
+                          height: '150px',
+                        },
+                      }}
+                    />
+                    <ImageOverlay className="image-overlay">
+                      <Tooltip title="Preview Image">
+                        <ActionButton onClick={() => handlePreviewOpen(displayImages[1], 'Input Image 2')}>
+                          <VisibilityIcon />
+                        </ActionButton>
+                      </Tooltip>
+                      {inputImage2 && (
+                        <Tooltip title="Download Image">
+                          <ActionButton onClick={() => onDownload && onDownload(displayImages[1], 1)}>
+                            <DownloadIcon />
+                          </ActionButton>
+                        </Tooltip>
+                      )}
+                    </ImageOverlay>
+                    {!inputImage2 && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 12,
+                          left: 12,
+                          right: 12,
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          padding: 1.5,
+                          borderRadius: 1,
+                          fontSize: '0.875rem',
+                          textAlign: 'center',
+                          [theme.breakpoints.down('sm')]: {
+                            fontSize: '0.75rem',
+                            padding: 1,
+                            bottom: 8,
+                            left: 8,
+                            right: 8,
+                          },
+                        }}
+                      >
+                        Sample Image - Upload your own
+                      </Box>
+                    )}
+                  </ImageCard>
+                </Grid>
+
+                {/* Equals Icon */}
+                <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
+                  <ArrowContainer>
+                    <EqualsIcon />
+                  </ArrowContainer>
+                </Grid>
+              </>
+            )}
+
+            {/* Output Image */}
+            <Grid item xs={12} md={isMultiImageMode ? 3 : 4}>
+              {isLoading ? (
+                <PlaceholderCard sx={{ 
+                  height: isMultiImageMode ? (isMobile ? '200px' : '300px') : (isMobile ? '200px' : '300px'),
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <EnhancedLoader
+                    selectedModel="combine-image"
+                    size="large"
+                  />
+                </PlaceholderCard>
+              ) : (
+                <Fade in={!!outputImage} timeout={800}>
+                  <ImageCard variant="output" sx={{
+                    height: isMultiImageMode ? (isMobile ? '200px' : '300px') : (isMobile ? '200px' : '300px'),
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    border: `3px solid ${theme.palette.primary.main}`,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                    }
+                  }}>
+                    <ImageLabel variant="output" sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      padding: '8px 16px',
+                      borderRadius: '0 0 12px 12px'
+                    }}>
+                      Combined Result
+                    </ImageLabel>
+                    <CardMedia
+                      component="img"
+                      height={isMultiImageMode ? (isMobile ? "200" : "300") : (isMobile ? "200" : "300")}
+                      image={displayOutput}
+                      referrerPolicy='no-referrer'
+                      alt="Combined output image"
+                      sx={{
+                        objectFit: 'cover',
+                        backgroundColor: '#f8fafc',
+                        transition: 'all 0.3s ease',
                       }}
                     />
                     <ImageOverlay className="image-overlay">

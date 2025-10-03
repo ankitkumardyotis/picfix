@@ -46,6 +46,7 @@ import BackgroundRemovalProcessor from '../components/ai-image-editor-flux/Backg
 import ObjectRemovalMaskEditor from '../components/ai-image-editor-flux/ObjectRemovalMaskEditor';
 import CombineImageDisplay from '../components/ai-image-editor-flux/CombineImageDisplay';
 import CombineImageModal from '../components/ai-image-editor-flux/CombineImageModal';
+import DynamicCombineImageUploader from '../components/ai-image-editor-flux/DynamicCombineImageUploader';
 import DownloadModal from '../components/ai-image-editor-flux/DownloadModal';
 import { useDownloadHandler } from '../components/ai-image-editor-flux/useDownloadHandler';
 import modelConfigurations from '../constant/ModelConfigurations';
@@ -232,7 +233,12 @@ export default function AIImageEditor() {
   const [selectedReimagineGender, setSelectedReimagineGender] = useState('None');
   const [selectedScenario, setSelectedScenario] = useState('Random');
 
-  // Combine image specific states
+  // Combine image specific states - Dynamic array for multiple images
+  const [combineImages, setCombineImages] = useState([null, null]); // Start with 2 slots
+  const [combineImageUrls, setCombineImageUrls] = useState([null, null]);
+  const [uploadingCombineImages, setUploadingCombineImages] = useState([false, false]);
+  
+  // Legacy states for backward compatibility with flux-kontext-pro
   const [combineImage1, setCombineImage1] = useState(null);
   const [combineImage2, setCombineImage2] = useState(null);
   const [combineImage1Url, setCombineImage1Url] = useState(null);
@@ -274,8 +280,32 @@ export default function AIImageEditor() {
       name: 'Flux Kontext Pro',
       description: 'black-forest-labs/flux-kontext-pro',
       model: 'flux-kontext-pro',
+    },
+    {
+      name: 'See Dream',
+      description: 'bytedance/seedream-4',
+      model: 'seedream-4',
     }
   ];
+
+  const combineImageModels = [
+    {
+      name: 'Flux Kontext Pro',
+      description: 'flux-kontext-apps/multi-image-kontext-pro',
+      model: 'flux-kontext-pro',
+    },
+    {
+      name: 'Nano Banana',
+      description: 'google/nano-banana',
+      model: 'nano-banana',
+    },
+    {
+      name: 'See Dreams',
+      description: 'bytedance/seedream-4',
+      model: 'seedream-4',
+    }
+
+  ]
 
   const generateImageModels = [
     {
@@ -292,12 +322,70 @@ export default function AIImageEditor() {
       name: 'Flux Schnell',
       description: 'black-forest-labs/flux-schnell',
       model: 'flux-schnell',
+    },
+    {
+      name: 'See Dreams',
+      description: 'bytedance/seedream-3',
+      model: 'seedream-3',
     }
   ]
 
 
 
   const [switchedModel, setSwitchedModel] = useState('flux-schnell'); // Default to flux-schnell for generate-image
+
+  // Helper functions for dynamic combine image management
+  const addCombineImageSlot = () => {
+    if (combineImages.length < 10) {
+      setCombineImages(prev => [...prev, null]);
+      setCombineImageUrls(prev => [...prev, null]);
+      setUploadingCombineImages(prev => [...prev, false]);
+    }
+  };
+
+  const removeCombineImageSlot = (index) => {
+    if (combineImages.length > 2) { // Minimum 2 images
+      setCombineImages(prev => prev.filter((_, i) => i !== index));
+      setCombineImageUrls(prev => prev.filter((_, i) => i !== index));
+      setUploadingCombineImages(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateCombineImage = (index, imageData) => {
+    setCombineImages(prev => {
+      const newImages = [...prev];
+      newImages[index] = imageData;
+      return newImages;
+    });
+  };
+
+  const updateCombineImageUrl = (index, url) => {
+    setCombineImageUrls(prev => {
+      const newUrls = [...prev];
+      newUrls[index] = url;
+      return newUrls;
+    });
+  };
+
+  const updateUploadingCombineImage = (index, uploading) => {
+    setUploadingCombineImages(prev => {
+      const newUploading = [...prev];
+      newUploading[index] = uploading;
+      return newUploading;
+    });
+  };
+
+  // Sync legacy states with dynamic arrays for backward compatibility
+  useEffect(() => {
+    if (combineImages.length >= 2) {
+      setCombineImage1(combineImages[0]);
+      setCombineImage2(combineImages[1]);
+      setCombineImage1Url(combineImageUrls[0]);
+      setCombineImage2Url(combineImageUrls[1]);
+      setUploadingCombine1(uploadingCombineImages[0]);
+      setUploadingCombine2(uploadingCombineImages[1]);
+    }
+  }, [combineImages, combineImageUrls, uploadingCombineImages]);
 
 
   // Combine image modal state
@@ -762,6 +850,8 @@ export default function AIImageEditor() {
       setSwitchedModel('flux-schnell'); // Default for generate-image
     } else if (newModel === 'edit-image') {
       setSwitchedModel('nano-banana'); // Default for edit-image
+    } else if (newModel === 'combine-image') {
+      setSwitchedModel('flux-kontext-pro'); // Default for combine-image
     }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
@@ -934,7 +1024,9 @@ export default function AIImageEditor() {
       } else if (switchedModel === 'gemini-2.5-flash-image') {
         modelConfig.gemini_flash_image = true;
       } else if (switchedModel === 'flux-schnell') {
-        modelConfig.generate_flux_images = true;
+        modelConfig.flux_schnell_generate = true;
+      } else if (switchedModel === 'seedream-3') {
+        modelConfig.see_dreams_3_generate = true;
       } else {
         modelConfig.generate_flux_images = true;
       }
@@ -1109,6 +1201,8 @@ export default function AIImageEditor() {
         modelConfig.edit_image = true;
       } else if (switchedModel === 'flux-kontext-pro') {
         modelConfig.flux_context_pro = true;
+      } else if (switchedModel === 'seedream-4') {
+        modelConfig.see_dreams_4_edit = true;
       } else {
         // Default to nano-banana if no model is selected
         modelConfig.edit_image = true;
@@ -1137,11 +1231,17 @@ export default function AIImageEditor() {
       const data = await response.json();
 
       // Handle new response format with historyId
-      if (data && data.imageUrl) {
+      if (data && Array.isArray(data) && data.length > 0 && data[0].imageUrl) {
+        // New format: [{ imageUrl, historyId }]
+        setGeneratedImages(data.map(item => item.imageUrl));
+      } else if (data && data.imageUrl) {
         // New format: { imageUrl, historyId }
         setGeneratedImages([data.imageUrl]);
+      } else if (Array.isArray(data)) {
+        // Fallback to old array format
+        setGeneratedImages(data.filter(img => img !== null && img !== undefined));
       } else {
-        // Fallback to old format
+        // Fallback to old single item format
         setGeneratedImages([data]);
       }
 
@@ -1161,9 +1261,20 @@ export default function AIImageEditor() {
   };
 
   const generateCombineImages = async () => {
-    if (!combineImage1Url || !combineImage2Url) {
-      enqueueSnackbar('Please upload both images first', { variant: 'warning' });
-      return;
+    // Validation based on selected model
+    if (switchedModel === 'nano-banana' || switchedModel === 'seedream-4') {
+      const validImages = combineImageUrls.filter(url => url !== null);
+      const modelName = switchedModel === 'nano-banana' ? 'Nano Banana' : 'See Dreams';
+      if (validImages.length < 2) {
+        enqueueSnackbar(`Please upload at least 2 images for ${modelName} model`, { variant: 'warning' });
+        return;
+      }
+    } else {
+      // flux-kontext-pro validation
+      if (!combineImage1Url || !combineImage2Url) {
+        enqueueSnackbar('Please upload both images first', { variant: 'warning' });
+        return;
+      }
     }
 
     if (!inputPrompt.trim()) {
@@ -1186,21 +1297,44 @@ export default function AIImageEditor() {
     try {
       enqueueSnackbar('Combining images...', { variant: 'info' });
 
+      // Prepare config based on selected model
+      let config;
+      if (switchedModel === 'nano-banana') {
+        const validImageUrls = combineImageUrls.filter(url => url !== null);
+        config = {
+          combine_images: true,
+          prompt: inputPrompt,
+          image_input: validImageUrls,
+          switched_model: switchedModel
+        };
+      } else if (switchedModel === 'seedream-4') {
+        const validImageUrls = combineImageUrls.filter(url => url !== null);
+        config = {
+          combine_images: true,
+          prompt: inputPrompt,
+          image_input: validImageUrls,
+          aspect_ratio: aspectRatio,
+          switched_model: switchedModel
+        };
+      } else {
+        // flux-kontext-pro config
+        config = {
+          combine_images: true,
+          prompt: inputPrompt,
+          input_image_1: combineImage1Url,
+          input_image_2: combineImage2Url,
+          aspect_ratio: aspectRatio,
+          switched_model: switchedModel || 'flux-kontext-pro'
+        };
+      }
+
       // Send the stored URLs to Replicate
       const response = await fetch('/api/fluxApp/generateFluxImages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          config: {
-            combine_images: true,
-            prompt: inputPrompt,
-            input_image_1: combineImage1Url,
-            input_image_2: combineImage2Url,
-            aspect_ratio: aspectRatio
-          }
-        }),
+        body: JSON.stringify({ config }),
       });
 
       if (!response.ok) {
@@ -2395,40 +2529,40 @@ export default function AIImageEditor() {
     }
 
     // Check if we have images available for comparison
-    if (selectedModel === 'hair-style' && uploadedImage && generatedImages[0]) {
+    if (selectedModel === 'hair-style' && uploadedImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'text-removal' && textRemovalImage && generatedImages[0]) {
+    if (selectedModel === 'text-removal' && textRemovalImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
 
-    if (selectedModel === 'headshot' && headshotImage && generatedImages[0]) {
+    if (selectedModel === 'headshot' && headshotImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'restore-image' && restoreImage && generatedImages[0]) {
+    if (selectedModel === 'restore-image' && restoreImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'gfp-restore' && gfpRestoreImage && generatedImages[0]) {
+    if (selectedModel === 'gfp-restore' && gfpRestoreImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'home-designer' && homeDesignerImage && generatedImages[0]) {
+    if (selectedModel === 'home-designer' && homeDesignerImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'background-removal' && backgroundRemovalImage && generatedImages[0]) {
+    if (selectedModel === 'background-removal' && backgroundRemovalImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 'remove-object' && removeObjectImage && generatedImages[0]) {
+    if (selectedModel === 'remove-object' && removeObjectImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
-    if (selectedModel === 're-imagine' && reimagineImage && generatedImages[0]) {
+    if (selectedModel === 're-imagine' && reimagineImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
     // For edit-image model, check if we have uploaded image and generated result
-    if (selectedModel === 'edit-image' && editImage && generatedImages[0]) {
+    if (selectedModel === 'edit-image' && editImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
     // For generate-image model, check if we have at least 2 generated images
-    if (selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2) {
+    if (selectedModel === 'generate-image' && Array.isArray(generatedImages) && generatedImages.filter(img => img !== null).length >= 2) {
       return true;
     }
     return false;
@@ -2909,6 +3043,7 @@ export default function AIImageEditor() {
           {!isMobile && <SidePanel
             editImageModels={editImageModels || []}
             generateImageModels={generateImageModels || []}
+            combineImageModels={combineImageModels || []}
             handleSwitchModel={handleSwitchModel}
             switchedModel={switchedModel}
             setSwitchedModel={setSwitchedModel}
@@ -3014,6 +3149,7 @@ export default function AIImageEditor() {
               <SidePanel
                 editImageModels={editImageModels || []}
                 generateImageModels={generateImageModels || []}
+                combineImageModels={combineImageModels || []}
                 handleSwitchModel={handleSwitchModel}
                 switchedModel={switchedModel}
                 setSwitchedModel={setSwitchedModel}
@@ -3288,7 +3424,11 @@ export default function AIImageEditor() {
                               selectedModel === 'home-designer' ? (!homeDesignerImageUrl || !inputPrompt.trim()) :
                                 selectedModel === 'background-removal' ? (!backgroundRemovalImage || backgroundRemovalStatus !== 'Ready') :
                                   selectedModel === 'remove-object' ? (!removeObjectImageUrl || !hasMaskDrawn) :
-                                    selectedModel === 'combine-image' ? (!combineImage1Url || !combineImage2Url || !inputPrompt.trim()) :
+                                    selectedModel === 'combine-image' ? (
+                                      (switchedModel === 'nano-banana' || switchedModel === 'seedream-4') ? 
+                                        (combineImageUrls.filter(url => url !== null).length < 2 || !inputPrompt.trim()) :
+                                        (!combineImage1Url || !combineImage2Url || !inputPrompt.trim())
+                                    ) :
                                       selectedModel === 'edit-image' ? (!editImageUrl || !inputPrompt.trim()) :
                                         !inputPrompt.trim())}
                           sx={{
@@ -4057,97 +4197,52 @@ export default function AIImageEditor() {
 
             {/* Combine Image Specific Controls */}
             {selectedModel === 'combine-image' && (
-              <>
-                {/* Two Image Upload Section */}
-                <Grid container spacing={2}>
-                  {/* First Image Upload */}
-                  <Grid item xs={12} md={6}>
-                    <ImageUploader
-                      title="Upload First Image"
-                      uploadedImage={combineImage1}
-                      uploadingImage={uploadingCombine1}
-                      placeholderText="Click to upload first image"
-                      height="120px"
-                      onImageUpload={async (e) => {
-                        const file = e.target.files[0];
-                        if (file && file.type.startsWith('image/')) {
-                          const reader = new FileReader();
-                          reader.onload = async (event) => {
-                            const base64Data = event.target.result;
-                            setCombineImage1(base64Data);
-
-                            // Immediately upload to R2
-                            setUploadingCombine1(true);
-                            enqueueSnackbar('Uploading first image...', { variant: 'info' });
-                            const url = await uploadImageToR2(base64Data, 'combine-image-1.jpg');
-                            if (url) {
-                              setCombineImage1Url(url);
-                            } else {
-                              setCombineImage1(null); // Reset if upload failed
-                            }
-                            setUploadingCombine1(false);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      onImageRemove={() => {
-                        setCombineImage1(null);
-                        setCombineImage1Url(null);
-                      }}
-                      isDragging={isDragging}
-                      isLoading={isLoading}
-                      error={error}
-                      handleDragOver={handleDragOver}
-                      handleDragLeave={handleDragLeave}
-                      handleDrop={handleDrop}
-                    />
-                  </Grid>
-
-                  {/* Second Image Upload */}
-                  <Grid item xs={12} md={6}>
-                    <ImageUploader
-                      title="Upload Second Image"
-                      uploadedImage={combineImage2}
-                      uploadingImage={uploadingCombine2}
-                      placeholderText="Click to upload second image"
-                      height="120px"
-                      borderColor="secondary"
-                      onImageUpload={async (e) => {
-                        const file = e.target.files[0];
-                        if (file && file.type.startsWith('image/')) {
-                          const reader = new FileReader();
-                          reader.onload = async (event) => {
-                            const base64Data = event.target.result;
-                            setCombineImage2(base64Data);
-
-                            // Immediately upload to R2
-                            setUploadingCombine2(true);
-                            enqueueSnackbar('Uploading second image...', { variant: 'info' });
-                            const url = await uploadImageToR2(base64Data, 'combine-image-2.jpg');
-                            if (url) {
-                              setCombineImage2Url(url);
-                            } else {
-                              setCombineImage2(null); // Reset if upload failed
-                            }
-                            setUploadingCombine2(false);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      onImageRemove={() => {
-                        setCombineImage2(null);
-                        setCombineImage2Url(null);
-                      }}
-                      isDragging={isDragging}
-                      isLoading={isLoading}
-                      error={error}
-                      handleDragOver={handleDragOver}
-                      handleDragLeave={handleDragLeave}
-                      handleDrop={handleDrop}
-                    />
-                  </Grid>
-                </Grid>
-              </>
+              <DynamicCombineImageUploader
+                images={combineImages}
+                imageUrls={combineImageUrls}
+                uploadingStates={uploadingCombineImages}
+                onImageUpload={async (index, imageData, url) => {
+                  if (imageData && !url) {
+                    // Starting upload
+                    updateCombineImage(index, imageData);
+                    updateUploadingCombineImage(index, true);
+                    
+                    // Upload to R2
+                    const uploadedUrl = await uploadImageToR2(imageData, `combine-image-${index + 1}.jpg`);
+                    if (uploadedUrl) {
+                      updateCombineImageUrl(index, uploadedUrl);
+                      enqueueSnackbar(`Image ${index + 1} uploaded successfully!`, { variant: 'success' });
+                    } else {
+                      updateCombineImage(index, null); // Reset if upload failed
+                      enqueueSnackbar(`Failed to upload image ${index + 1}`, { variant: 'error' });
+                    }
+                    updateUploadingCombineImage(index, false);
+                  } else if (imageData && url) {
+                    // Upload completed with URL
+                    updateCombineImage(index, imageData);
+                    updateCombineImageUrl(index, url);
+                  } else {
+                    // Reset/remove
+                    updateCombineImage(index, null);
+                    updateCombineImageUrl(index, null);
+                  }
+                }}
+                onImageRemove={(index) => {
+                  updateCombineImage(index, null);
+                  updateCombineImageUrl(index, null);
+                }}
+                onAddSlot={addCombineImageSlot}
+                onRemoveSlot={removeCombineImageSlot}
+                uploadImageToR2={uploadImageToR2}
+                enqueueSnackbar={enqueueSnackbar}
+                isDragging={isDragging}
+                isLoading={isLoading}
+                error={error}
+                handleDragOver={handleDragOver}
+                handleDragLeave={handleDragLeave}
+                handleDrop={handleDrop}
+                switchedModel={switchedModel}
+              />
             )}
             {selectedModel === 'edit-image' && (
               <>
@@ -4260,7 +4355,7 @@ export default function AIImageEditor() {
                       selectedModel === 'gfp-restore' ? gfpRestoreImage :
                         selectedModel === 'home-designer' ? homeDesignerImage :
                           selectedModel === 'background-removal' ? backgroundRemovalImage :
-                              selectedModel === 'remove-object' ? removeObjectImage :
+                            selectedModel === 'remove-object' ? removeObjectImage :
                               selectedModel === 're-imagine' ? reimagineImage :
                                 selectedModel === 'combine-image' ? combineImage1 :
                                   selectedModel === 'edit-image' ? editImage :
@@ -4294,9 +4389,11 @@ export default function AIImageEditor() {
           onClose={handleCombineModalClose}
           inputImage1={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.inputImage1 : combineImage1}
           inputImage2={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.inputImage2 : combineImage2}
+          inputImages={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.inputImages || [] : combineImages}
           outputImage={(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) ? combineModalData.outputImage : generatedImages[0]}
           onDownload={handleDownload}
           isLoading={!(combineModalData.isExample || combineModalData.isHistory || combineModalData.isCommunity) && isLoading}
+          switchedModel={switchedModel}
         />
 
         {/* Download Modal */}

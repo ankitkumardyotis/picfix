@@ -7,7 +7,7 @@ import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-materi
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SplitButton from '../SplitButton';
 
-function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
+function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, combineImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn }) {
 
     const theme = useTheme();
     const currentConfig = modelConfigurations[selectedModel] || {};
@@ -159,15 +159,21 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             </FormControl >
 
             {
-                (selectedModel === 'edit-image' || selectedModel === 'generate-image') && (
+                (selectedModel === 'edit-image' || selectedModel === 'generate-image' || selectedModel === 'combine-image') && (
                     < FormControl fullWidth variant="outlined" >
                         <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>
-                            {selectedModel === 'edit-image' ? 'Edit Image Model' : 'Generate Image Model'}
+                            {selectedModel === 'edit-image' ? 'Edit Image Model' : 
+                             selectedModel === 'generate-image' ? 'Generate Image Model' : 
+                             'Combine Image Model'}
                         </InputLabel>
                         <Select
-                            value={switchedModel || (selectedModel === 'edit-image' ? 'nano-banana' : 'flux-schnell')}
+                            value={switchedModel || (selectedModel === 'edit-image' ? 'nano-banana' : 
+                                                   selectedModel === 'generate-image' ? 'flux-schnell' : 
+                                                   'flux-kontext-pro')}
                             onChange={(e) => setSwitchedModel(e.target.value)}
-                            label={selectedModel === 'edit-image' ? 'Edit Image Model' : 'Generate Image Model'}
+                            label={selectedModel === 'edit-image' ? 'Edit Image Model' : 
+                                   selectedModel === 'generate-image' ? 'Generate Image Model' : 
+                                   'Combine Image Model'}
                             sx={{
                                 borderRadius: 2,
                                 '& .MuiSelect-select': {
@@ -180,7 +186,9 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
                             }}
                         >
-                            {(selectedModel === 'edit-image' ? editImageModels : generateImageModels).map((config, index) => (
+                            {(selectedModel === 'edit-image' ? editImageModels : 
+                              selectedModel === 'generate-image' ? generateImageModels : 
+                              combineImageModels).map((config, index) => (
                                 <MenuItem
                                     key={config.model}
                                     value={config.model}

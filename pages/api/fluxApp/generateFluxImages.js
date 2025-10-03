@@ -82,7 +82,6 @@ export default async function handler(req, res) {
 
   try {
     // POST request to Replicate to start the image restoration generation process
-    console.log("Generating Flux Images");
     if (config.generate_flux_images) {
       const input = {
         prompt: config.prompt,
@@ -210,18 +209,38 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
     } else if (config.combine_images) {
+      let modelEndpoint;
+      let input;
 
-      const input = {
-        prompt: config.prompt,
-        aspect_ratio: config.aspect_ratio,
-        input_image_1: config.input_image_1,
-        input_image_2: config.input_image_2,
-        output_format: "png",
-        safety_tolerance: 2
-      };
+      // Determine which model to use based on switched_model
+      if (config.switched_model === 'nano-banana') {
+        modelEndpoint = "google/nano-banana";
+        input = {
+          prompt: config.prompt,
+          image_input: config.image_input || [config.input_image_1, config.input_image_2],
+          output_format: "png"
+        };
+      } else if (config.switched_model === 'seedream-4') {
+        modelEndpoint = "bytedance/seedream-4";
+        input = {
+          prompt: config.prompt,
+          aspect_ratio: config.aspect_ratio || "4:3",
+          image_input: config.image_input || [config.input_image_1, config.input_image_2]
+        };
+      } else {
+        // Default to flux-kontext-pro
+        modelEndpoint = "flux-kontext-apps/multi-image-kontext-pro";
+        input = {
+          prompt: config.prompt,
+          aspect_ratio: config.aspect_ratio,
+          input_image_1: config.input_image_1,
+          input_image_2: config.input_image_2,
+          output_format: "png",
+          safety_tolerance: 2
+        };
+      }
 
-
-      const output = await replicate.run("flux-kontext-apps/multi-image-kontext-pro", { input });
+      const output = await replicate.run(modelEndpoint, { input });
 
       // Process the output - combine image model returns single image
       let processedOutput;
@@ -1070,6 +1089,140 @@ export default async function handler(req, res) {
         res.status(200).json(finalOutput);
       }
 
+    }
+    else if (config.see_dreams_3_generate) {
+      const input = {
+        prompt: config.prompt,
+      };
+
+      const output = await replicate.run("bytedance/seedream-3", { input });
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // For now, See Dreams 3 returns single image, wrap in array for consistency
+      const finalOutput = [processedOutput];
+
+      try {
+        const storedImages = [];
+        for (const imageData of finalOutput) {
+          const storedImage = await storeGeneratedImage({
+            imageData,
+            userId: session.user.id,
+            model: getModelType(config),
+            prompt: config.prompt,
+            cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            modelParams: config,
+            aspectRatio: config.aspect_ratio,
+            numOutputs: 1, // See Dreams 3 currently generates 1 image
+            inputImages: getInputImagesFromConfig(config)
+          });
+
+          storedImages.push({
+            imageUrl: storedImage.publicUrl,
+            historyId: storedImage.historyId
+          });
+        }
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing See Dreams 3 image in history:', error);
+        res.status(200).json(finalOutput);
+      }
+    }
+    else if (config.see_dreams_4_edit) {
+      const input = {
+        prompt: config.prompt,
+        image_input: [config.input_image],
+      };
+
+      const output = await replicate.run("bytedance/seedream-4", { input });
+      console.log("See Dreams 4 Edit Raw Output:", output);
+      console.log("See Dreams 4 Edit Output Type:", typeof output);
+      if (Array.isArray(output)) {
+        console.log("See Dreams 4 Edit Output is Array, length:", output.length);
+      }
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      } else {
+        // Handle case where output doesn't match any expected format
+        console.error("See Dreams 4 Edit: Unexpected output format:", output);
+        throw new Error("Unexpected output format from See Dreams 4 model");
+      }
+
+      // Validate that we have a valid processed output
+      if (!processedOutput) {
+        console.error("See Dreams 4 Edit: processedOutput is undefined");
+        throw new Error("Failed to process See Dreams 4 output");
+      }
+
+      // For now, See Dreams 4 returns single image, wrap in array for consistency
+      const finalOutput = [processedOutput];
+
+      try {
+        const storedImages = [];
+        for (const imageData of finalOutput) {
+          const storedImage = await storeGeneratedImage({
+            imageData,
+            userId: session.user.id,
+            model: getModelType(config),
+            prompt: config.prompt,
+            cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            modelParams: config,
+            aspectRatio: config.aspect_ratio,
+            numOutputs: 1, // See Dreams 4 currently generates 1 image
+            inputImages: getInputImagesFromConfig(config)
+          });
+
+          storedImages.push({
+            imageUrl: storedImage.publicUrl,
+            historyId: storedImage.historyId
+          });
+        }
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1);
+        }
+
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing See Dreams 4 image in history:', error);
+        res.status(200).json(finalOutput);
+      }
     }
     else {
       res.status(400).json("Invalid request");
