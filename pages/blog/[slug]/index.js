@@ -76,7 +76,7 @@ export default function BlogPostPage({ post }) {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ minHeight: '100vh', py: 8 }}>
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Link href="/blog" passHref>
             <Button startIcon={<ArrowBackIcon />} sx={{ mb: 4 }}>
               Back to Blog

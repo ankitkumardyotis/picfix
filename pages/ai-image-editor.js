@@ -282,7 +282,7 @@ export default function AIImageEditor() {
       model: 'flux-kontext-pro',
     },
     {
-      name: 'See Dream',
+      name: 'Seedream 4.0',
       description: 'bytedance/seedream-4',
       model: 'seedream-4',
     }
@@ -300,7 +300,7 @@ export default function AIImageEditor() {
       model: 'nano-banana',
     },
     {
-      name: 'See Dreams',
+      name: 'Seedream 4.0',
       description: 'bytedance/seedream-4',
       model: 'seedream-4',
     }
@@ -324,9 +324,9 @@ export default function AIImageEditor() {
       model: 'flux-schnell',
     },
     {
-      name: 'See Dreams',
-      description: 'bytedance/seedream-3',
-      model: 'seedream-3',
+      name: 'Seedream 4.0',
+      description: 'bytedance/seedream-4',
+      model: 'seedream-4',
     }
   ]
 
@@ -1025,8 +1025,8 @@ export default function AIImageEditor() {
         modelConfig.gemini_flash_image = true;
       } else if (switchedModel === 'flux-schnell') {
         modelConfig.flux_schnell_generate = true;
-      } else if (switchedModel === 'seedream-3') {
-        modelConfig.see_dreams_3_generate = true;
+      } else if (switchedModel === 'seedream-4') {
+        modelConfig.see_dreams_4_generate = true;
       } else {
         modelConfig.generate_flux_images = true;
       }

@@ -1090,12 +1090,12 @@ export default async function handler(req, res) {
       }
 
     }
-    else if (config.see_dreams_3_generate) {
+    else if (config.see_dreams_4_generate) {
       const input = {
         prompt: config.prompt,
       };
 
-      const output = await replicate.run("bytedance/seedream-3", { input });
+      const output = await replicate.run("bytedance/seedream-4", { input });
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -1145,7 +1145,7 @@ export default async function handler(req, res) {
 
         res.status(200).json(storedImages);
       } catch (error) {
-        console.error('Error storing See Dreams 3 image in history:', error);
+        console.error('Error storing See Dreams 4 image in history:', error);
         res.status(200).json(finalOutput);
       }
     }
