@@ -2,7 +2,7 @@ export const blogPosts = [
   {
     title: "Unlock Stunning Images with Gemini AI Photo Editor & Nano Banana on Picfix",
     description: "Discover the ultimate AI photo editing experience with Gemini AI Photo Editor and Nano Banana on Picfix. Learn pro editing tips, upscale images, remove backgrounds, restore old photos, and create stunning visuals effortlessly.",
-    image: "https://picfixcdn.com/picfix-usecase-image/picfix-ai-image-info-banner.png",
+    image: "https://picfixcdn.com/picfix-usecase-image/picfix-ai-image-info-banner-model.png",
     slug: "edit-images-with-Gemini-AI-Photo-Editor-&-Nano-Banana-on-Picfix",
     date: "2025-11-06",
     category: "AI Technology & Photo Editing",
