@@ -690,6 +690,15 @@ export default function AIImageEditor() {
         setGeneratedImages([null, null]);
       }
 
+      // Set the appropriate switchedModel based on the model type
+      if (model === 'combine-image') {
+        setSwitchedModel('seedream-4');
+      } else if (model === 'edit-image') {
+        setSwitchedModel('seedream-4');
+      } else if (model === 'generate-image') {
+        setSwitchedModel('flux-schnell');
+      }
+
       // Reset model-specific states
       if (model !== 'hair-style') {
         setSelectedHairStyle('No change');
