@@ -107,5 +107,45 @@
   <url>
     <loc>https://www.picfix.ai/price</loc>
   </url>
+
   <!-- Dynamic blog slugs and other dynamic routes can be added here as needed -->
+  <url>
+    <loc>https://picfix.ai/blog/edit-images-with-Gemini-AI-Photo-Editor-&-Nano-Banana-on-Picfix</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/seedream-4-ai-image-merging-editing-guide</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/how-to-edit-photos-with-ai-best-ai-photo-editing-tools-2025</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/nano-banana-gemini-ai-image-editor-upscale-edit</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/ai-image-editor-transform-photos-intelligent-editing-2024</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/enhance-photo-quality-online-with-ai</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/pixlr-alternative-ai-editors</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/top-free-photoshop-alternatives</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/best-free-ai-photo-editors-2025</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/ai-photo-editing-vs-traditional-editing</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/how-ai-is-changing-photography</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/fix-dark-photos-online-ai</loc>
+  </url>
+  <url>
+  <loc>https://picfix.ai/blog/how-to-fix-blurry-photos-online-free-ai-guide</loc>
+  </url>
 </urlset>
