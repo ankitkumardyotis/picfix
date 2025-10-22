@@ -3026,12 +3026,12 @@ export default function AIImageEditor() {
         />
       </Head>
 
-      <StyledPaper elevation={0} sx={{ paddingTop: isMobile ? '.1rem' : '0px' }}>
+      <StyledPaper elevation={0} sx={{ paddingTop: isMobile ? '70px' : '0px' }}>
         {/* <MenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
         </MenuButton> */}
 
-        <Box sx={{ display: 'flex', height: '100%', width: '100%', position: 'relative', mt: isMobile ? '4rem' : '0px' }}>
+        <Box sx={{ display: 'flex', height: '100%', width: '100%', position: 'relative', mt: isMobile ? '0px' : '0px' }}>
           {/* Overlay for mobile */}
           {/* {mobileMenuOpen && (
             <Box
