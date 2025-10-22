@@ -94,15 +94,26 @@ function NavBar({ open, setOpen }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const openDropdown = Boolean(anchorEl);
 
+    // Check if we're on a page that should always have solid navbar
+    const shouldAlwaysBeScrolled = router.pathname === '/ai-image-editor' || 
+                                   router.pathname === '/admin-dashboard' || 
+                                   router.pathname === '/dashboard' ||
+                                   router.pathname === '/gallery' ||
+                                   router.pathname === '/pricing' ||
+                                   router.pathname.startsWith('/blog');
+
     useEffect(() => {
         const handleScroll = () => {
             const scrollPosition = window.scrollY;
-            setIsScrolled(scrollPosition > 0);
+            setIsScrolled(scrollPosition > 0 || shouldAlwaysBeScrolled);
         };
+
+        // Set initial state
+        setIsScrolled(shouldAlwaysBeScrolled);
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [shouldAlwaysBeScrolled]);
 
     const handleDropdownOpen = (event) => {
         setAnchorEl(event.currentTarget);

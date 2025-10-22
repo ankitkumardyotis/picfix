@@ -317,13 +317,14 @@ const ImagePreviewModal = ({
       onClose={onClose}
       maxWidth={false}
       fullWidth
+      fullScreen={isMobile}
       sx={{
         '& .MuiDialog-paper': {
           backgroundColor: 'transparent',
           boxShadow: 'none',
           overflow: 'hidden',
-          margin: isMobile ? 1 : 2,
-          maxHeight: isMobile ? 'calc(100vh - 16px)' : 'calc(100vh - 32px)',
+          margin: isMobile ? 0 : 2,
+          maxHeight: isMobile ? '100vh' : 'calc(100vh - 32px)',
         },
       }}
     >
@@ -334,9 +335,10 @@ const ImagePreviewModal = ({
           flexDirection: isMobile ? 'column' : 'row',
           backgroundColor: 'rgba(0, 0, 0, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderRadius: 3,
+          borderRadius: isMobile ? 0 : 3,
           overflow: 'hidden',
           position: 'relative',
+          height: isMobile ? '100vh' : 'auto',
         }}
       >
         {/* Navigation Arrows */}
@@ -371,7 +373,7 @@ const ImagePreviewModal = ({
               disabled={currentIndex === totalImages - 1}
               sx={{
                 position: 'absolute',
-                right: isMobile ? 16 : 320,
+                right: 16,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 zIndex: 1000,
@@ -422,8 +424,9 @@ const ImagePreviewModal = ({
             justifyContent: 'center',
             position: 'relative',
             overflow: 'hidden',
-            minHeight: isMobile ? '60vh' : '80vh',
+            minHeight: isMobile ? '100vh' : '80vh',
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            width: isMobile ? '100%' : 'auto',
           }}
         >
 
@@ -484,13 +487,31 @@ const ImagePreviewModal = ({
                 sx={{
                   position: 'absolute',
                   top: 16,
-                  right: 16,
+                  right: isMobile ? 60 : 16,
                   display: 'flex',
                   gap: 1,
                   zIndex: 1000,
                 }}
               >
-                {/* Comparison Mode Toggle - First */}
+                {/* Download Button - First */}
+                <Tooltip title="Download Image">
+                  <IconButton
+                    onClick={handleDownload}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.success.main, 0.9),
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: theme.palette.success.dark,
+                        transform: 'scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <DownloadIcon />
+                  </IconButton>
+                </Tooltip>
+
+                {/* Comparison Mode Toggle */}
                 {canCompare && beforeImage && afterImage && (
                   <Tooltip title={comparisonMode ? "Switch to Normal View" : "Switch to Comparison View"}>
                     <IconButton
@@ -598,7 +619,7 @@ const ImagePreviewModal = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 2,
+                  padding: isMobile ? 1 : 2,
                 }}
               >
                 <img
@@ -606,8 +627,8 @@ const ImagePreviewModal = ({
                   alt="Preview"
                   referrerPolicy="no-referrer"
                   style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
+                    maxWidth: isMobile ? '95%' : '100%',
+                    maxHeight: isMobile ? '95%' : '100%',
                     width: 'auto',
                     height: 'auto',
                     objectFit: 'contain',
@@ -622,20 +643,19 @@ const ImagePreviewModal = ({
           )}
         </Box>
 
-        {/* Info Panel */}
-        <Paper
-          elevation={0}
-          sx={{
-            width: isMobile ? '100%' : 300,
-            backgroundColor: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: 0,
-            maxHeight: isMobile ? '100%' : 'none',
-            overflow: isMobile ? 'auto' : 'visible',
-          }}
-        >
+        {/* Info Panel - Hidden on Mobile */}
+        {!isMobile && (
+          <Paper
+            elevation={0}
+            sx={{
+              width: 300,
+              backgroundColor: alpha(theme.palette.background.paper, 0.95),
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: 0,
+            }}
+          >
           {/* Header */}
           <Box sx={{ p: 3, pb: 2 }}>
             {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
@@ -753,6 +773,7 @@ const ImagePreviewModal = ({
             </Stack>
           </Box>
         </Paper>
+        )}
       </DialogContent>
 
       {/* Download Modal */}

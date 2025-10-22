@@ -314,7 +314,7 @@ export default function AIImageEditor() {
       model: 'qwen-image',
     },
     {
-      name: 'Gemini 2.5 Flash Image',
+      name: 'Nano Banana',
       description: 'google/gemini-2.5-flash-image',
       model: 'gemini-2.5-flash-image',
     },

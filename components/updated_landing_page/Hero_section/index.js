@@ -294,9 +294,28 @@ const PhotoAIHero = () => {
                                             AI Processing
                                         </Typography>
                                     </Box>
-                                    <Typography variant="body2" sx={{ color: '#666', cursor: 'pointer' }} onClick={() => router.push('/ai-image-editor')}>
+                                    <Button 
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{
+                                            color: theme => theme.palette.mode === 'dark' ? '#fff' : '#4caf50',
+                                            borderColor: theme => theme.palette.mode === 'dark' ? '#fff' : '#4caf50',
+                                            fontWeight: 600,
+                                            textTransform: "none",
+                                            borderRadius: "12px",
+                                            px: 2,
+                                            py: 0.5,
+                                            minWidth: "90px",
+                                            fontSize: "0.94rem",
+                                            ml: 1,
+                                            '&:hover': {
+                                                borderColor: theme => theme.palette.mode === 'dark' ? '#8bc34a' : '#388e3c'
+                                            }
+                                        }}
+                                        onClick={() => router.push('/ai-image-editor')}
+                                    >
                                         Free to try
-                                    </Typography>
+                                    </Button>
                                 </Box>
                             </InputBox>
                             {!isMobile &&
