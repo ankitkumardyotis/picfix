@@ -7,7 +7,7 @@ import { authOptions } from '../api/auth/[...nextauth]';
 import { isAdmin, isSuperAdmin } from '../../lib/adminAuth';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
 import AdminStats from '../../components/adminComponents/AdminStats';
-import UsersTable from '../../components/adminComponents/UsersTable';
+import UsersManagement from '../../components/adminComponents/UsersManagement';
 import PaymentHistory from '../../components/adminComponents/PaymentHistory';
 import UserAnalytics from '../../components/adminComponents/UserAnalytics';
 import AdminManagement from '../../components/adminComponents/AdminManagement';
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
                     </div>
                 );
             case 'users':
-                return <UsersTable />;
+                return <UsersManagement />;
             case 'payments':
                 return <PaymentHistory />;
             case 'analytics':

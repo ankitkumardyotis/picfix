@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { FaGlobe, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaGlobe, FaMapMarkerAlt, FaCalendarAlt, FaFilter } from 'react-icons/fa';
 
 const LocationAnalytics = () => {
     const [locationData, setLocationData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedMonths, setSelectedMonths] = useState(6); // Default to 6 months
+    const [dateRange, setDateRange] = useState('6months');
 
     useEffect(() => {
         fetchLocationAnalytics();
-    }, []);
+    }, [dateRange]);
 
     const fetchLocationAnalytics = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/admin/analytics');
+            const response = await fetch(`/api/admin/analytics?dateRange=${dateRange}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch location analytics');
             }
@@ -24,6 +26,48 @@ const LocationAnalytics = () => {
             setError(error.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDateRangeChange = (newRange) => {
+        setLoading(true); // Show loading state immediately
+        setDateRange(newRange);
+        // Update selectedMonths for display purposes
+        switch (newRange) {
+            case '1month':
+                setSelectedMonths(1);
+                break;
+            case '3months':
+                setSelectedMonths(3);
+                break;
+            case '6months':
+                setSelectedMonths(6);
+                break;
+            case '12months':
+                setSelectedMonths(12);
+                break;
+            case 'all':
+                setSelectedMonths('All time');
+                break;
+            default:
+                setSelectedMonths(6);
+        }
+    };
+
+    const getDateRangeLabel = () => {
+        switch (dateRange) {
+            case '1month':
+                return 'Last 1 month';
+            case '3months':
+                return 'Last 3 months';
+            case '6months':
+                return 'Last 6 months';
+            case '12months':
+                return 'Last 12 months';
+            case 'all':
+                return 'All time';
+            default:
+                return 'Last 6 months';
         }
     };
 
@@ -83,37 +127,74 @@ const LocationAnalytics = () => {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'space-between',
                 marginBottom: '1.5rem'
             }}>
-                <div style={{
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    marginRight: '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <FaGlobe style={{ color: 'white', fontSize: '1.25rem' }} />
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                        borderRadius: '12px',
+                        padding: '0.75rem',
+                        marginRight: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <FaGlobe style={{ color: 'white', fontSize: '1.25rem' }} />
+                    </div>
+                    <div>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: 'bold',
+                            color: '#1f2937',
+                            margin: 0,
+                            fontFamily: 'Roboto, sans-serif'
+                        }}>
+                            User Locations
+                        </h3>
+                     
+                    </div>
                 </div>
-                <div>
-                    <h3 style={{
-                        fontSize: '1.25rem',
-                        fontWeight: 'bold',
-                        color: '#1f2937',
-                        margin: 0,
-                        fontFamily: 'Roboto, sans-serif'
+
+                {/* Date Range Filter */}
+                <div style={{ position: 'relative' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        background: loading ? '#f3f4f6' : '#f9fafb',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        padding: '0.5rem',
+                        opacity: loading ? 0.7 : 1,
+                        transition: 'all 0.2s ease'
                     }}>
-                        User Locations
-                    </h3>
-                    <p style={{
-                        fontSize: '0.875rem',
-                        color: '#6b7280',
-                        margin: 0,
-                        fontFamily: 'Roboto, sans-serif'
-                    }}>
-                        Image generations by country (Last 6 months)
-                    </p>
+                        <FaCalendarAlt style={{
+                            color: '#6b7280',
+                            fontSize: '0.875rem',
+                            marginRight: '0.5rem'
+                        }} />
+                        <select
+                            value={dateRange}
+                            onChange={(e) => handleDateRangeChange(e.target.value)}
+                            disabled={loading}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                outline: 'none',
+                                fontSize: '0.875rem',
+                                color: loading ? '#9ca3af' : '#374151',
+                                fontFamily: 'Roboto, sans-serif',
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                minWidth: '120px'
+                            }}
+                        >
+                            <option value="1month">Last 1 Month</option>
+                            <option value="3months">Last 3 Months</option>
+                            <option value="6months">Last 6 Months</option>
+                            <option value="12months">Last 12 Months</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -259,9 +340,9 @@ const LocationAnalytics = () => {
                     fontFamily: 'Roboto, sans-serif'
                 }}>
                     <FaGlobe style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
-                    <div>No location data available yet</div>
+                    <div>No location data available for {getDateRangeLabel().toLowerCase()}</div>
                     <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                        Location data will appear as users generate images
+                        Try selecting a different time period or wait for users to generate images
                     </div>
                 </div>
             )}

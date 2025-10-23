@@ -7,7 +7,41 @@ async function handler(req, res) {
     }
 
     try {
-        // Get date range for analytics (last 6 months)
+        // Get date range parameter from query
+        const { dateRange = '6months' } = req.query;
+        
+        // Calculate date range based on parameter
+        const getDateFromRange = (range) => {
+            const now = new Date();
+            switch (range) {
+                case '1month':
+                    const oneMonthAgo = new Date(now);
+                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                    return oneMonthAgo;
+                case '3months':
+                    const threeMonthsAgo = new Date(now);
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    return threeMonthsAgo;
+                case '6months':
+                    const sixMonthsAgo = new Date(now);
+                    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                    return sixMonthsAgo;
+                case '12months':
+                    const twelveMonthsAgo = new Date(now);
+                    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                    return twelveMonthsAgo;
+                case 'all':
+                    return new Date('2020-01-01'); // Far back date for all time
+                default:
+                    const defaultSixMonthsAgo = new Date(now);
+                    defaultSixMonthsAgo.setMonth(defaultSixMonthsAgo.getMonth() - 6);
+                    return defaultSixMonthsAgo;
+            }
+        };
+
+        const startDate = getDateFromRange(dateRange);
+        
+        // Keep sixMonthsAgo for backward compatibility with existing queries
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -100,7 +134,7 @@ async function handler(req, res) {
             by: ['model'],
             where: {
                 status: 'completed',
-                createdAt: { gte: sixMonthsAgo }
+                createdAt: { gte: startDate }
             },
             _count: {
                 model: true
@@ -119,7 +153,7 @@ async function handler(req, res) {
             where: {
                 status: 'completed',
                 country: { not: null },
-                createdAt: { gte: sixMonthsAgo }
+                createdAt: { gte: startDate }
             },
             orderBy: {
                 _count: {
