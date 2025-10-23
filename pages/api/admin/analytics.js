@@ -112,6 +112,23 @@ async function handler(req, res) {
             }
         });
 
+        // 4.1. Location analytics - Top countries by image generation
+        const locationAnalytics = await prisma.history.groupBy({
+            by: ['country', 'countryCode'],
+            _count: { country: true },
+            where: {
+                status: 'completed',
+                country: { not: null },
+                createdAt: { gte: sixMonthsAgo }
+            },
+            orderBy: {
+                _count: {
+                    country: 'desc'
+                }
+            },
+            take: 10
+        });
+
         // 5. Plan distribution
         const planDistribution = await prisma.plan.groupBy({
             by: ['planName'],
@@ -228,6 +245,16 @@ async function handler(req, res) {
             color: getColorForPlan(item.planName)
         }));
 
+        // Format location analytics
+        const totalLocationUsage = locationAnalytics.reduce((sum, item) => sum + item._count.country, 0);
+        const formattedLocationAnalytics = locationAnalytics.map((item, index) => ({
+            country: item.country || 'Unknown',
+            countryCode: item.countryCode || 'XX',
+            count: item._count.country,
+            percentage: totalLocationUsage > 0 ? ((item._count.country / totalLocationUsage) * 100).toFixed(1) : 0,
+            color: getColorForLocation(index)
+        }));
+
         res.status(200).json({
             success: true,
             overview: {
@@ -246,6 +273,7 @@ async function handler(req, res) {
             featureUsage: formattedFeatureUsage,
             planDistribution: formattedPlanDistribution,
             revenueByPlan: formattedRevenueByPlan,
+            locationAnalytics: formattedLocationAnalytics,
             monthlyRevenue: monthlyRevenue || []
         });
     } catch (error) {
@@ -279,4 +307,20 @@ function getColorForPlan(plan) {
         'Free': '#9ca3af'
     };
     return colors[plan] || '#6b7280';
+}
+
+function getColorForLocation(index) {
+    const colors = [
+        '#3b82f6', // Blue
+        '#10b981', // Green
+        '#f59e0b', // Amber
+        '#ef4444', // Red
+        '#8b5cf6', // Purple
+        '#06b6d4', // Cyan
+        '#84cc16', // Lime
+        '#f97316', // Orange
+        '#ec4899', // Pink
+        '#6b7280'  // Gray
+    ];
+    return colors[index % colors.length];
 }

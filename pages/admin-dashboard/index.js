@@ -11,6 +11,7 @@ import UsersTable from '../../components/adminComponents/UsersTable';
 import PaymentHistory from '../../components/adminComponents/PaymentHistory';
 import UserAnalytics from '../../components/adminComponents/UserAnalytics';
 import AdminManagement from '../../components/adminComponents/AdminManagement';
+import LocationAnalytics from '../../components/adminComponents/LocationAnalytics';
 import AdminSplitButton from '../../components/adminComponents/AdminSplitButton';
 
 const AdminDashboard = () => {
@@ -144,7 +145,16 @@ const AdminDashboard = () => {
             case 'payments':
                 return <PaymentHistory />;
             case 'analytics':
-                return <UserAnalytics />;
+                return (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                        gap: '2rem'
+                    }}>
+                        <UserAnalytics />
+                        <LocationAnalytics />
+                    </div>
+                );
             case 'manage-admins':
                 return <AdminManagement />;
             case 'settings':

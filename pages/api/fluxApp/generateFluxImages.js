@@ -3,6 +3,7 @@ import { authOptions } from "../auth/[...nextauth]"
 import { getUserPlan } from "@/lib/userData";
 import { storeGeneratedImage, getModelType, getInputImagesFromConfig } from "@/lib/unifiedImageStorage";
 import { canUseService, incrementUsage } from "@/lib/dailyUsage";
+import { getRequestLocation } from "@/lib/locationUtils";
 import Replicate from "replicate";
 import prisma from "@/lib/prisma";
 
@@ -43,6 +44,15 @@ export default async function handler(req, res) {
   if (!session) {
     res.status(401).json("Please login to use this feature.");
     return;
+  }
+
+  // Capture user location data
+  let locationData = null;
+  try {
+    locationData = await getRequestLocation(req);
+  } catch (error) {
+    console.error('Error capturing location data:', error);
+    // Continue without location data if capture fails
   }
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_KEY,
@@ -123,6 +133,7 @@ export default async function handler(req, res) {
             model: getModelType(config),
             prompt: config.prompt,
             cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            locationData,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
             numOutputs: config.num_outputs,
@@ -188,6 +199,7 @@ export default async function handler(req, res) {
           userId: session.user.id,
           model: getModelType(config),
           prompt: null, // Hair style doesn't use prompts
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -270,6 +282,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.COMBINE_IMAGES_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -330,6 +343,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // Text removal doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -392,6 +406,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // Headshot doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -451,6 +466,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // Restore image doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // Restore image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -512,6 +528,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // Reimagine doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -578,6 +595,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // GFP restore doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // GFP restore preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -652,6 +670,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
@@ -708,6 +727,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: null, // Remove object doesn't use prompts
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // Remove object preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -765,6 +785,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // Edit image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -827,6 +848,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // Edit image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -886,6 +908,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: null, // Edit image preserves original aspect ratio
           inputImages: getInputImagesFromConfig(config)
@@ -943,6 +966,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           numOutputs: config.num_outputs,
@@ -1002,6 +1026,7 @@ export default async function handler(req, res) {
           model: getModelType(config),
           prompt: config.prompt,
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
           modelParams: config,
           aspectRatio: config.aspect_ratio,
           numOutputs: config.num_outputs,
@@ -1062,6 +1087,7 @@ export default async function handler(req, res) {
             model: getModelType(config),
             prompt: config.prompt,
             cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            locationData,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
             numOutputs: config.num_outputs,
@@ -1127,6 +1153,7 @@ export default async function handler(req, res) {
             model: getModelType(config),
             prompt: config.prompt,
             cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            locationData,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
             numOutputs: 1, // See Dreams 3 currently generates 1 image
@@ -1202,6 +1229,7 @@ export default async function handler(req, res) {
             model: getModelType(config),
             prompt: config.prompt,
             cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+            locationData,
             modelParams: config,
             aspectRatio: config.aspect_ratio,
             numOutputs: 1, // See Dreams 4 currently generates 1 image

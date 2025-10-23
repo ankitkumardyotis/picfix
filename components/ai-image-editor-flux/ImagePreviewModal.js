@@ -498,10 +498,10 @@ const ImagePreviewModal = ({
                   <IconButton
                     onClick={handleDownload}
                     sx={{
-                      backgroundColor: alpha(theme.palette.success.main, 0.9),
-                      color: 'white',
+                      backgroundColor: 'white',
+                      color: 'black',
                       '&:hover': {
-                        backgroundColor: theme.palette.success.dark,
+                        backgroundColor: 'gray',
                         transform: 'scale(1.1)',
                       },
                       transition: 'all 0.2s ease',

@@ -52,6 +52,16 @@ model History {
   modelParams       Json?
   aspectRatio       String?
   
+  // Location tracking fields
+  userIP            String?   // User's IP address
+  country           String?   // Country name
+  region            String?   // Region/State name
+  city              String?   // City name
+  timezone          String?   // Timezone
+  latitude          Float?    // Latitude coordinate
+  longitude         Float?    // Longitude coordinate
+  countryCode       String?   // ISO country code
+  
   // Status tracking
   isPublished       Boolean   @default(false)
   publishedImageId  String?   @db.ObjectId // Reference to PublishedImage if published
