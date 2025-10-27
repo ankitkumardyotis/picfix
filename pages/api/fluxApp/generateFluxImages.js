@@ -6,6 +6,7 @@ import { canUseService, incrementUsage } from "@/lib/dailyUsage";
 import { getRequestLocation } from "@/lib/locationUtils";
 import Replicate from "replicate";
 import prisma from "@/lib/prisma";
+import modelConfigurations from "@/constant/ModelConfigurations";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -59,16 +60,34 @@ export default async function handler(req, res) {
   });
   const isFreeModel = config.gfp_restore || config.background_removal || config.home_designer;
 
+  // Get the correct model cost for daily usage check
+  const modelType = getModelType(config);
+  const getModelCost = (modelName) => {
+    if (modelName.startsWith("generate-image")) {
+      return modelConfigurations['generate-image']?.creditCost || 2;
+    }
+    if (modelName.startsWith("edit-image")) {
+      return modelConfigurations['edit-image']?.creditCost || 2;
+    }
+    if (modelName === "combine-image") {
+      return modelConfigurations['combine-image']?.creditCost || 3;
+    }
+    const config = modelConfigurations[modelName];
+    return config?.creditCost || 1;
+  };
+  const modelCost = getModelCost(modelType);
+
   const planData = await getUserPlan(session.user.id)
   const hasPlan = planData && planData.length > 0 && planData[0];
   const hasPlanCredits = hasPlan && planData[0].remainingPoints > 0;
   const isFreePlan = hasPlan && planData.some(item => item.name === "free");
 
   if (!isFreeModel) {
+
     // For paid models, check different conditions based on whether user has a plan
     if (!hasPlan) {
       // User has no plan - check daily limits (daily credit system only applies to users without plans)
-      const dailyCheck = await canUseService(session.user.email, 1); // Most operations cost 1 credit
+      const dailyCheck = await canUseService(session.user.email, modelCost);
       if (!dailyCheck.canUse) {
         res.status(429).json({
           error: "Daily limit exceeded",
@@ -148,7 +167,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json(storedImages);
@@ -208,7 +227,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -290,7 +309,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -351,7 +370,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -414,7 +433,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -474,7 +493,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -536,7 +555,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -604,7 +623,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -651,7 +670,7 @@ export default async function handler(req, res) {
 
       // If user doesn't have plan then dont store the image in db and dont show history as well
       // Increment daily usage after successful generation
-      await incrementDailyUsage(session.user.email, 1);
+      await incrementDailyUsage(session.user.email, modelCost);
 
       if (isFreePlan) {
         res.status(200).json({
@@ -735,7 +754,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -792,7 +811,7 @@ export default async function handler(req, res) {
         });
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -856,7 +875,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -916,7 +935,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
         res.status(200).json({
           imageUrl: storedImage.publicUrl,
@@ -975,7 +994,7 @@ export default async function handler(req, res) {
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         storedImages.push({
@@ -1038,7 +1057,7 @@ export default async function handler(req, res) {
         });
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json(storedImages);
@@ -1101,12 +1120,12 @@ export default async function handler(req, res) {
         }
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, config.num_outputs || 1);
+          await incrementDailyUsage(session.user.email, modelCost * (config.num_outputs || 1));
         }
 
         res.status(200).json(storedImages);
@@ -1167,7 +1186,7 @@ export default async function handler(req, res) {
         }
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json(storedImages);
@@ -1243,7 +1262,7 @@ export default async function handler(req, res) {
         }
         // Increment daily usage after successful generation (only for users without plans)
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1);
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json(storedImages);
