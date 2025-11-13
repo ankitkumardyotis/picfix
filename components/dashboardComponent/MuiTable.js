@@ -80,6 +80,14 @@ export default function MuiTable({ userHistory }) {
         model = "Edit Image";
       } else if (item.model === "edit-image-nano") {
         model = "Nano Banana Edit";
+      } else if (item.model === "upscale-image-crystal") {
+        model = "Crystal Upscaler";
+      } else if (item.model === "upscale-image-topaz") {
+        model = "Topaz Labs Upscaler";
+      } else if (item.model === "upscale-image-google") {
+        model = "Google Upscaler";
+      } else if (item.model === "upscale-image-seedvr2") {
+        model = "SeedVR2 Upscaler";
       }
       else {
         model = item.model;

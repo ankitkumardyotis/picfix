@@ -154,6 +154,27 @@ const AppStyleLabel = styled(Typography)(({ theme }) => ({
   whiteSpace: 'nowrap',
 }));
 
+// Helper function to extract error message from API response
+const extractErrorMessage = async (response, defaultMessage = 'An error occurred') => {
+  let errorMessage = defaultMessage;
+  try {
+    const errorData = await response.json();
+    if (typeof errorData === 'string') {
+      errorMessage = errorData;
+    } else if (errorData?.message) {
+      errorMessage = errorData.message;
+    } else if (errorData?.error) {
+      errorMessage = errorData.error;
+    } else if (errorData?.detail) {
+      errorMessage = errorData.detail;
+    }
+  } catch (parseError) {
+    // If JSON parsing fails, use status text or default message
+    errorMessage = response.statusText || defaultMessage;
+  }
+  return errorMessage;
+};
+
 export default function AIImageEditor() {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -251,6 +272,11 @@ export default function AIImageEditor() {
   const [editImageUrl, setEditImageUrl] = useState(null);
   const [uploadingEditImage, setUploadingEditImage] = useState(false);
 
+  // Upscale image specific states
+  const [upscaleImage, setUpscaleImage] = useState(null);
+  const [upscaleImageUrl, setUpscaleImageUrl] = useState(null);
+  const [uploadingUpscaleImage, setUploadingUpscaleImage] = useState(false);
+
 
 
   // Preview modal states
@@ -327,6 +353,41 @@ export default function AIImageEditor() {
       name: 'Seedream 4.0',
       description: 'bytedance/seedream-4',
       model: 'seedream-4',
+    }
+  ]
+
+  const upscaleImageModels = [
+    {
+      name: 'Crystal Upscaler',
+      description: 'philz1337x/crystal-upscaler',
+      model: 'crystal-upscaler',
+      creditCost: 1,
+      maxScale: 6,
+      specialty: 'High quality crystal clear upscaling'
+    },
+    {
+      name: 'Topaz Labs',
+      description: 'topazlabs/image-upscale',
+      model: 'topaz-labs',
+      creditCost: 2,
+      maxScale: '4x',
+      specialty: 'Professional photo enhancement'
+    },
+    {
+      name: 'Google Upscaler',
+      description: 'google/upscaler',
+      model: 'google-upscaler',
+      creditCost: 1,
+      maxScale: 'x4',
+      specialty: 'Fast and reliable upscaling'
+    },
+    {
+      name: 'SeedVR2',
+      description: 'zsxkib/seedvr2',
+      model: 'seedvr2',
+      creditCost: 1,
+      maxScale: 2,
+      specialty: 'AI-powered image restoration'
     }
   ]
 
@@ -676,7 +737,7 @@ export default function AIImageEditor() {
         setAspectRatio('match_input_image');
         setNumOutputs(1);
         setGeneratedImages([null]);
-      } else if (model === 'restore-image' || model === 'gfp-restore' || model === 'background-removal' || model === 'remove-object') {
+      } else if (model === 'restore-image' || model === 'gfp-restore' || model === 'background-removal' || model === 'remove-object' || model === 'upscale-image') {
         setAspectRatio('');
         setNumOutputs(1);
         setGeneratedImages([null]);
@@ -1057,17 +1118,22 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to generate images');
+        let errorMessage = 'Failed to generate images';
+        try {
+          const errorData = await response.json();
+          // Handle different error response formats
+          if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (errorData?.message) {
+            errorMessage = errorData.message;
+          } else if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || errorMessage;
         }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1137,17 +1203,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to change hair style');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to change hair style');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1233,8 +1290,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to edit image');
+        const errorMessage = await extractErrorMessage(response, 'Failed to edit image');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1347,8 +1404,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to combine images');
+        const errorMessage = await extractErrorMessage(response, 'Failed to combine images');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1372,6 +1429,88 @@ export default function AIImageEditor() {
     } catch (err) {
       enqueueSnackbar(err.message || 'Error combining images', { variant: 'error' });
       console.error('Error combining images:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateUpscaleImage = async () => {
+    if (!upscaleImageUrl) {
+      enqueueSnackbar('Please upload an image to upscale first', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setGeneratedImages([null]); // Upscale model returns only 1 image
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
+    try {
+      enqueueSnackbar('Upscaling image...', { variant: 'info' });
+
+      // Determine which model config to use based on switched model
+      const modelConfig = {};
+      if (switchedModel === 'crystal-upscaler') {
+        modelConfig.crystal_upscaler = true;
+      } else if (switchedModel === 'topaz-labs') {
+        modelConfig.topaz_labs_upscale = true;
+      } else if (switchedModel === 'google-upscaler') {
+        modelConfig.google_upscaler = true;
+      } else if (switchedModel === 'seedvr2') {
+        modelConfig.seedvr2_upscale = true;
+      } else {
+        // Default to crystal-upscaler if no model is selected
+        modelConfig.crystal_upscaler = true;
+      }
+
+      // Prepare config based on selected model
+      const config = {
+        ...modelConfig,
+        input_image: upscaleImageUrl,
+        switched_model: switchedModel
+      };
+
+      const response = await fetch('/api/fluxApp/generateFluxImages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ config }),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await extractErrorMessage(response, 'Failed to upscale image');
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+
+      // Handle new response format with historyId
+      if (data && data.imageUrl) {
+        // New format: { imageUrl, historyId }
+        setGeneratedImages([data.imageUrl]);
+      } else {
+        // Fallback to old format
+        setGeneratedImages([data]);
+      }
+
+      enqueueSnackbar('Image upscaled successfully!', { variant: 'success' });
+
+      // Refresh history to show the new image
+      refreshHistoryAfterGeneration();
+
+      // Refresh user credits to show updated balance
+      refreshUserCredits();
+    } catch (err) {
+      enqueueSnackbar(err.message || 'Error upscaling image', { variant: 'error' });
+      console.error('Error upscaling image:', err);
     } finally {
       setIsLoading(false);
     }
@@ -1417,8 +1556,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to remove text from image');
+        const errorMessage = await extractErrorMessage(response, 'Failed to remove text from image');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1498,17 +1637,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to generate headshot');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to generate headshot');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1584,17 +1714,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to restore image');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to restore image');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1668,17 +1789,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to restore image with GFP');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to restore image with GFP');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1759,17 +1871,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to generate home design');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to generate home design');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1911,8 +2014,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || errorData || 'Failed to remove objects');
+        const errorMessage = await extractErrorMessage(response, 'Failed to remove objects');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1996,17 +2099,8 @@ export default function AIImageEditor() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        // Handle different error response formats
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
-        } else if (errorData?.message) {
-          throw new Error(errorData.message);
-        } else if (errorData?.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('Failed to generate impossible scenario');
-        }
+        const errorMessage = await extractErrorMessage(response, 'Failed to generate impossible scenario');
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -2570,6 +2664,10 @@ export default function AIImageEditor() {
     if (selectedModel === 'edit-image' && editImage && Array.isArray(generatedImages) && generatedImages[0]) {
       return true;
     }
+    // For upscale-image model, check if we have uploaded image and generated result
+    if (selectedModel === 'upscale-image' && upscaleImage && Array.isArray(generatedImages) && generatedImages[0]) {
+      return true;
+    }
     // For generate-image model, check if we have at least 2 generated images
     if (selectedModel === 'generate-image' && Array.isArray(generatedImages) && generatedImages.filter(img => img !== null).length >= 2) {
       return true;
@@ -2602,6 +2700,8 @@ export default function AIImageEditor() {
       return { before: 'Original', after: 'Edited' };
     } else if (selectedModel === 'generate-image') {
       return { before: 'Generated Image 1', after: 'Generated Image 2' };
+    } else if (selectedModel === 'upscale-image') {
+      return { before: 'Original', after: 'Upscaled' };
     }
     return { before: 'Before', after: 'After' };
   };
@@ -2910,6 +3010,20 @@ export default function AIImageEditor() {
           "applicationCategory": "MultimediaApplication",
           "description": "AI-powered tool for interior design and home makeover visualization"
         }
+      },
+      'upscale-image': {
+        title: 'AI Image Upscaler - Enhance Images with AI | PicFix.AI',
+        description: 'Enhance images with AI technology. Upscale low-resolution photos to high-quality images. AI image upscaler tool for professional photo editing. Fix photo online with our AI photo editing tool.',
+        keywords: 'AI image upscaler, image enhancement, AI image enhancer, photo upscaler, image upscaler, AI image enhancer tool, photo enhancement, fix photo online, AI photo editing',
+        ogTitle: 'AI Image Upscaler - Enhance Images with AI',
+        ogDescription: 'Enhance images with AI technology. AI image upscaler tool for professional photo editing.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Image Upscaler",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for enhancing images with different styles, colors, and effects"
+        }
       }
     };
 
@@ -3053,6 +3167,7 @@ export default function AIImageEditor() {
             editImageModels={editImageModels || []}
             generateImageModels={generateImageModels || []}
             combineImageModels={combineImageModels || []}
+            upscaleImageModels={upscaleImageModels || []}
             handleSwitchModel={handleSwitchModel}
             switchedModel={switchedModel}
             setSwitchedModel={setSwitchedModel}
@@ -3089,6 +3204,7 @@ export default function AIImageEditor() {
             generateRemoveObjectImage={generateRemoveObjectImage}
             generateReimagineImage={generateReimagineImage}
             generateCombineImages={generateCombineImages}
+            generateUpscaleImage={generateUpscaleImage}
             generateFluxImages={generateFluxImages}
             uploadedImageUrl={uploadedImageUrl}
             textRemovalImageUrl={textRemovalImageUrl}
@@ -3105,6 +3221,7 @@ export default function AIImageEditor() {
             combineImage2Url={combineImage2Url}
             inputPrompt={inputPrompt}
             hasMaskDrawn={hasMaskDrawn}
+            upscaleImageUrl={upscaleImageUrl}
           />
           }
 
@@ -3159,6 +3276,7 @@ export default function AIImageEditor() {
                 editImageModels={editImageModels || []}
                 generateImageModels={generateImageModels || []}
                 combineImageModels={combineImageModels || []}
+                upscaleImageModels={upscaleImageModels || []}
                 handleSwitchModel={handleSwitchModel}
                 switchedModel={switchedModel}
                 setSwitchedModel={setSwitchedModel}
@@ -3195,6 +3313,7 @@ export default function AIImageEditor() {
                 generateRemoveObjectImage={generateRemoveObjectImage}
                 generateReimagineImage={generateReimagineImage}
                 generateCombineImages={generateCombineImages}
+                generateUpscaleImage={generateUpscaleImage}
                 generateFluxImages={generateFluxImages}
                 uploadedImageUrl={uploadedImageUrl}
                 textRemovalImageUrl={textRemovalImageUrl}
@@ -3211,6 +3330,7 @@ export default function AIImageEditor() {
                 combineImage2Url={combineImage2Url}
                 inputPrompt={inputPrompt}
                 hasMaskDrawn={hasMaskDrawn}
+                upscaleImageUrl={upscaleImageUrl}
               />
             </Box>
             }
@@ -3382,7 +3502,7 @@ export default function AIImageEditor() {
             )}
 
             {/* Input Section - Only show for models that need prompts */}
-            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && (
+            {selectedModel !== 'hair-style' && selectedModel !== 'text-removal' && selectedModel !== 'headshot' && selectedModel !== 'restore-image' && selectedModel !== 'gfp-restore' && selectedModel !== 'background-removal' && selectedModel !== 'remove-object' && selectedModel !== 're-imagine' && selectedModel !== 'upscale-image' && (
               <Box ref={inputSectionRef} sx={{ position: 'relative' }}>
                 <StyledTextField
                   fullWidth
@@ -3427,7 +3547,8 @@ export default function AIImageEditor() {
                                   selectedModel === 'remove-object' ? generateRemoveObjectImage :
                                     selectedModel === 'combine-image' ? generateCombineImages :
                                       selectedModel === 'edit-image' ? generateEditImage :
-                                        generateFluxImages}
+                                        selectedModel === 'upscale-image' ? generateUpscaleImage :
+                                          generateFluxImages}
                           disabled={isLoading ||
                             (selectedModel === 'text-removal' ? !textRemovalImageUrl :
                               selectedModel === 'home-designer' ? (!homeDesignerImageUrl || !inputPrompt.trim()) :
@@ -3439,7 +3560,8 @@ export default function AIImageEditor() {
                                         (!combineImage1Url || !combineImage2Url || !inputPrompt.trim())
                                     ) :
                                       selectedModel === 'edit-image' ? (!editImageUrl || !inputPrompt.trim()) :
-                                        !inputPrompt.trim())}
+                                        selectedModel === 'upscale-image' ? !upscaleImageUrl :
+                                          !inputPrompt.trim())}
                           sx={{
                             padding: 0.7,
                             background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -4298,8 +4420,84 @@ export default function AIImageEditor() {
               </>
             )}
 
+            {/* Upscale Image Specific Controls */}
+            {selectedModel === 'upscale-image' && (
+              <>
+                {/* Image Upload Section */}
+                <ImageUploader
+                  title="Upload Image to Upscale"
+                  uploadedImage={upscaleImage}
+                  uploadingImage={uploadingUpscaleImage}
+                  placeholderText="Click to upload an image for upscaling"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const base64Data = event.target.result;
+                        setUpscaleImage(base64Data);
 
+                        // Immediately upload to R2
+                        setUploadingUpscaleImage(true);
+                        enqueueSnackbar('Uploading image for upscaling...', { variant: 'info' });
+                        const url = await uploadImageToR2(base64Data, 'upscale-image-input.jpg');
+                        if (url) {
+                          setUpscaleImageUrl(url);
+                        } else {
+                          setUpscaleImage(null); // Reset if upload failed
+                        }
+                        setUploadingUpscaleImage(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onImageRemove={() => {
+                    setUpscaleImage(null);
+                    setUpscaleImageUrl(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
 
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" color="textSecondary">
+                    Upload an image to enhance its resolution and quality using AI upscaling technology. Choose from different models for optimal results.
+                  </Typography>
+                </Box>
+
+                {/* Generate Button for Upscale */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateUpscaleImage}
+                    disabled={!upscaleImageUrl || isLoading}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Upscaling Image...' : 'Upscale Image'}
+                  </Button>
+                </Box>
+              </>
+            )}
 
             {/* Image Display Area */}
             <Box ref={imageGenerationRef}>
@@ -4366,8 +4564,9 @@ export default function AIImageEditor() {
                           selectedModel === 'background-removal' ? backgroundRemovalImage :
                             selectedModel === 'remove-object' ? removeObjectImage :
                               selectedModel === 're-imagine' ? reimagineImage :
-                                selectedModel === 'combine-image' ? combineImage1 :
-                                  selectedModel === 'edit-image' ? editImage :
+                              selectedModel === 'combine-image' ? combineImage1 :
+                                selectedModel === 'edit-image' ? editImage :
+                                  selectedModel === 'upscale-image' ? upscaleImage :
                                     selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
                                       ? generatedImages.filter(img => img !== null)[0] : null
           }
@@ -4384,8 +4583,9 @@ export default function AIImageEditor() {
                               selectedModel === 're-imagine' ? generatedImages[0] :
                                 selectedModel === 'combine-image' ? generatedImages[0] :
                                   selectedModel === 'edit-image' ? generatedImages[0] :
-                                    selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
-                                      ? generatedImages.filter(img => img !== null)[1] : null
+                                    selectedModel === 'upscale-image' ? generatedImages[0] :
+                                      selectedModel === 'generate-image' && generatedImages.filter(img => img !== null).length >= 2
+                                        ? generatedImages.filter(img => img !== null)[1] : null
           }
           beforeLabel={previewType === 'example' ? exampleBeforeLabel : getComparisonLabels().before}
           afterLabel={previewType === 'example' ? exampleAfterLabel : getComparisonLabels().after}

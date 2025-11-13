@@ -19,6 +19,7 @@ import CombineIcon from '@mui/icons-material/Merge';
 import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
 import HomeIcon from '@mui/icons-material/Home';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 // AI Models configuration
 const aiModels = [
     {
@@ -80,6 +81,12 @@ const aiModels = [
         name: 'Object Removal',
         icon: <RemoveRedEyeIcon sx={{ fontSize: 18 }} />,
         description: 'Remove objects from images'
+    },
+    {
+        key: 'upscale-image',
+        name: 'Image Upscaler',
+        icon: <ZoomInIcon sx={{ fontSize: 18 }} />,
+        description: 'Enhance image resolution with AI'
     }
 
 ];

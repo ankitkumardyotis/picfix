@@ -326,6 +326,8 @@ const CommunityGallery = () => {
             return { before: 'With Background', after: 'Background Removed' };
           case 'remove-object':
             return { before: 'With Object', after: 'Object Removed' };
+          case 'upscale-image':
+            return { before: 'Original', after: 'Upscaled' };
           default:
             return { before: 'Before', after: 'After' };
         }

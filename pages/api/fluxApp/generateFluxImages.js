@@ -43,7 +43,10 @@ export default async function handler(req, res) {
   const config = req.body.config;
 
   if (!session) {
-    res.status(401).json("Please login to use this feature.");
+    res.status(401).json({
+      error: "Authentication required",
+      message: "Please login to use this feature."
+    });
     return;
   }
 
@@ -103,7 +106,10 @@ export default async function handler(req, res) {
       }
     } else if (!hasPlanCredits && !isFreePlan) {
       // User has a plan but no credits remaining - don't check daily limits
-      res.status(402).json("Please Subscribe to a plan to use this feature.");
+      res.status(402).json({
+        error: "Insufficient credits",
+        message: "You have used all your credits. Please upgrade your plan to continue using this feature."
+      });
       return;
     }
     // User has plan with credits - no daily limit checks needed, only plan credits apply
@@ -1271,12 +1277,257 @@ export default async function handler(req, res) {
         res.status(200).json(finalOutput);
       }
     }
+    else if (config.crystal_upscaler) {
+      const input = {
+        image: config.input_image,
+        scale_factor: 6
+      };
+
+      const output = await replicate.run("philz1337x/crystal-upscaler", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: null,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1); // Crystal upscaler costs 1 credit
+        }
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing crystal upscaler image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.topaz_labs_upscale) {
+      const input = {
+        image: config.input_image,
+        enhance_model: "Low Resolution V2",
+        upscale_factor: "4x",
+        face_enhancement: true,
+        subject_detection: "Foreground",
+        face_enhancement_creativity: 0.5
+      };
+
+      const output = await replicate.run("topazlabs/image-upscale", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: null,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 2); // Topaz Labs costs 2 credits
+        }
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing topaz labs upscaler image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.google_upscaler) {
+      const input = {
+        image: config.input_image,
+        upscale_factor: "x4"
+      };
+
+      const output = await replicate.run("google/upscaler", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: null,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1); // Google upscaler costs 1 credit
+        }
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing google upscaler image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    } else if (config.seedvr2_upscale) {
+      const input = {
+        media: config.input_image,
+        apply_color_fix: true
+      };
+
+      const output = await replicate.run("zsxkib/seedvr2:ca98249be9cb623f02a80a7851a2b1a33d5104c251a8f5a1588f251f79bf7c78", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: null,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: null,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, 1); // SeedVR2 costs 1 credit
+        }
+
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing seedvr2 upscaler image in history:', error);
+        res.status(200).json(processedOutput);
+      }
+
+    }
     else {
-      res.status(400).json("Invalid request");
+      res.status(400).json({
+        error: "Invalid request",
+        message: "The request format is invalid or missing required parameters."
+      });
     }
   } catch (err) {
     console.error("Error:", err);
-    res.status(500).json("Server is busy please try again later");
+    
+    // Extract meaningful error messages from different error types
+    let errorMessage = "Server is busy, please try again later.";
+    let errorType = "Server error";
+    
+    if (err.message) {
+      // Handle Replicate-specific errors
+      if (err.message.includes("Content flagged for:")) {
+        errorType = "Content Policy Violation";
+        const flaggedContent = err.message.replace("Prediction failed: Content flagged for: ", "");
+        errorMessage = `Your prompt was flagged for ${flaggedContent} content. Please modify your prompt and try again.`;
+      } else if (err.message.includes("Prediction failed:")) {
+        errorType = "Prediction Error";
+        errorMessage = err.message.replace("Prediction failed: ", "");
+      } else if (err.message.includes("insufficient funds") || err.message.includes("quota")) {
+        errorType = "Service Quota Error";
+        errorMessage = "Service quota exceeded. Please try again later.";
+      } else if (err.message.includes("timeout") || err.message.includes("timed out")) {
+        errorType = "Timeout Error";
+        errorMessage = "Request timed out. Please try again with a simpler prompt.";
+      } else {
+        // Generic error with the actual message
+        errorMessage = err.message;
+      }
+    }
+    
+    res.status(500).json({
+      error: errorType,
+      message: errorMessage
+    });
   }
 
 }

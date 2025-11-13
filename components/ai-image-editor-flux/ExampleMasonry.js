@@ -500,6 +500,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           case 're-imagine':
           case 'reimagine': // Handle both old and new model names
             return { before: 'Original Photo', after: 'Reimagined' };
+          case 'upscale-image':
+            return { before: 'Original', after: 'Upscaled' };
           default:
             return { before: 'Before', after: 'After' };
         }
@@ -678,6 +680,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
           case 're-imagine':
           case 'reimagine': // Handle both old and new model names
             return { before: 'Original Photo', after: 'Reimagined' };
+          case 'upscale-image':
+            return { before: 'Original', after: 'Upscaled' };
           default:
             return { before: 'Before', after: 'After' };
         }

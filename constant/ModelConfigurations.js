@@ -181,6 +181,11 @@ const modelConfigurations = {
       "Standing on top of Mount Everest"
     ]
   },
+  'upscale-image': {
+    name: 'Upscale Image',
+    type: 'upscale-image',
+    creditCost: 1
+  },
 };
 
 export default modelConfigurations; 

@@ -36,6 +36,11 @@ export default async function handler(req, res) {
         whereClause.model = { 
           in: ['edit-image-qwen', 'edit-image-flux', 'edit-image-nano'] 
         };
+      } else if (model === 'upscale-image') {
+        // Handle all upscale-image model variants
+        whereClause.model = { 
+          in: ['upscale-image-crystal', 'upscale-image-topaz', 'upscale-image-google', 'upscale-image-seedvr2'] 
+        };
       } else {
         whereClause.model = model;
       }
