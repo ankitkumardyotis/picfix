@@ -87,8 +87,8 @@ export default function App({
         <SnackbarProvider
           maxSnack={3}
           anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
+            vertical: isMobile ? 'top' : 'bottom',
+            horizontal: isMobile ? 'center' : 'right',
           }}
           autoHideDuration={3000}
         >
