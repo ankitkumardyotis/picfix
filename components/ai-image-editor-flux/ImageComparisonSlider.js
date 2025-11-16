@@ -77,6 +77,9 @@ const Image = styled('img')(({ className }) => ({
   objectFit: className === 'modal-comparison' ? 'contain' : 'cover',
   userSelect: 'none',
   pointerEvents: 'none',
+  WebkitUserDrag: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
 }));
 
 const SliderHandle = styled(Box)(({ theme }) => ({
@@ -232,9 +235,17 @@ const ImageComparisonSlider = ({
         onClick={handleContainerClick}
         onMouseEnter={() => !isActive && setShowHoverPrompt(true)}
         onMouseLeave={() => !isActive && setShowHoverPrompt(false)}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {/* Before Image */}
-        <Image src={beforeImage} alt={beforeLabel} className={className} referrerPolicy="no-referrer" />
+        <Image 
+          src={beforeImage} 
+          alt={beforeLabel} 
+          className={className} 
+          referrerPolicy="no-referrer"
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
+        />
         
         {/* After Image with clip-path */}
         <Box
@@ -248,7 +259,14 @@ const ImageComparisonSlider = ({
             transition: isDragging ? 'none' : 'clip-path 0.3s ease',
           }}
         >
-          <Image src={afterImage} alt={afterLabel} className={className} referrerPolicy="no-referrer" />
+          <Image 
+            src={afterImage} 
+            alt={afterLabel} 
+            className={className} 
+            referrerPolicy="no-referrer"
+            onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
+          />
         </Box>
 
         {/* Slider Handle */}

@@ -10,7 +10,26 @@ import SplitButton from '../SplitButton';
 function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, combineImageModels, upscaleImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateUpscaleImage, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn, upscaleImageUrl }) {
 
     const theme = useTheme();
-    const currentConfig = modelConfigurations[selectedModel] || {};
+    
+    // Get the correct config based on selectedModel and switchedModel
+    const getCurrentConfig = () => {
+        // For upscale-image, get config from the specific upscale model variant
+        if (selectedModel === 'upscale-image' && switchedModel) {
+            // Map switchedModel to the correct configuration key
+            const modelMapping = {
+                'crystal-upscaler': 'upscale-image-crystal',
+                'topaz-labs': 'upscale-image-topaz',
+                'google-upscaler': 'upscale-image-google',
+                'seedvr2': 'upscale-image-seedvr2'
+            };
+            const variantKey = modelMapping[switchedModel];
+            return modelConfigurations[variantKey] || modelConfigurations[selectedModel] || {};
+        }
+        // For other models, use selectedModel directly
+        return modelConfigurations[selectedModel] || {};
+    };
+    
+    const currentConfig = getCurrentConfig();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const SidePanel = styled(Box)(({ theme }) => ({

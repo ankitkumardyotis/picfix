@@ -163,6 +163,11 @@ const DownloadModal = ({
   const [userPlan, setUserPlan] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[DownloadModal] Props changed:', { open, imageUrl, filename });
+  }, [open, imageUrl, filename]);
+
   // Check user plan status
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -227,31 +232,53 @@ const DownloadModal = ({
   };
 
   // If user has premium plan, don't show this modal - download directly
-  if (hasPremiumPlan()) {
+  const isPremium = hasPremiumPlan();
+  console.log('[DownloadModal] Render check:', { 
+    open, 
+    isPremium, 
+    userPlan,
+    willRender: !isPremium 
+  });
+  
+  if (isPremium) {
+    console.log('[DownloadModal] Not rendering - user has premium plan');
     return null;
   }
 
+  console.log('[DownloadModal] Rendering modal...', { open, imageUrl });
+  
+  if (!open) {
+    console.log('[DownloadModal] Modal is closed, returning null');
+    return null;
+  }
+  
   return (
     <StyledDialog
-      open={open}
+      open={true}
       onClose={onClose}
       maxWidth={false}
       fullScreen={isMobile}
+      sx={{ 
+        zIndex: 10001,
+        // '& .MuiBackdrop-root': {
+        //   zIndex: 10000
+        // }
+      }}
     >
       <StyledDialogTitle>
-        <Typography
-          variant="h5"
+        <Box
           sx={{
             fontWeight: 600,
             color: theme.palette.text.primary,
             display: 'flex',
             alignItems: 'center',
             gap: 2,
+            fontSize: '1.5rem',
           }}
         >
           <DownloadIcon  />
           Download Image
-        </Typography>
+        </Box>
         <IconButton
           onClick={onClose}
           sx={{

@@ -22,7 +22,6 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from 'notistack';
 import modelConfigurations from '../constant/ModelConfigurations';
-import ImagePreviewModal from './ai-image-editor-flux/ImagePreviewModal';
 
 const CommunityGallery = () => {
   const theme = useTheme();
@@ -36,13 +35,7 @@ const CommunityGallery = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Preview modal states (same as ExampleMasonry)
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [previewType, setPreviewType] = useState('community');
-  const [exampleImages, setExampleImages] = useState([]);
-  const [exampleImageInfo, setExampleImageInfo] = useState(null);
+  // Image loading states for skeleton loaders
   const [imageLoadingStates, setImageLoadingStates] = useState({});
 
   // Infinite scroll refs
@@ -73,6 +66,7 @@ const CommunityGallery = () => {
         const data = await response.json();
         if (data.success) {
           const newImages = data.images;
+          console.log(data);
 
     
 
@@ -217,162 +211,26 @@ const CommunityGallery = () => {
 
 
 
-  // Image click handler with comparison support (same pattern as ExampleMasonry)
+  // Generate slug from title and ID for URL routing
+  const generateSlug = (title, id) => {
+    const cleanTitle = (title || 'image')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 50);
+    return `${cleanTitle}-${id}`;
+  };
+
+  // Image click handler - Navigate to full-page view
   const handleCommunityImageClick = (imageData) => {
-    // Check if comparison data is available for this image
-    const hasComparison = imageData.hasComparison && imageData.inputUrls && imageData.inputUrls.length > 0;
-
-    // Get comparison labels based on model
-    const getComparisonLabels = (model) => {
-      switch (model) {
-        case 'headshot':
-          return { before: 'Original Photo', after: 'Professional Headshot' };
-        case 'text-removal':
-          return { before: 'With Text', after: 'Text Removed' };
-        case 'restore-image':
-          return { before: 'Original Photo', after: 'Restored Photo' };
-        case 'hair-style':
-          return { before: 'Original Hair', after: 'New Hair Style' };
-        case 're-imagine':
-        case 'reimagine':
-          return { before: 'Original Photo', after: 'Reimagined' };
-        case 'background-removal':
-          return { before: 'With Background', after: 'Background Removed' };
-        case 'remove-object':
-          return { before: 'With Object', after: 'Object Removed' };
-        default:
-          return { before: 'Before', after: 'After' };
-      }
-    };
-
-    const labels = hasComparison ? getComparisonLabels(imageData.model) : null;
-
-    // Get input image URL for comparison
-    const inputImageUrl = hasComparison && imageData.inputUrls.length > 0 ? imageData.inputUrls[0].url : null;
-
-    // Special handling for combine-image model
-    const combineData = imageData.model === 'combine-image' && imageData.inputImage1 && imageData.inputImage2 ? {
-      inputImage1: imageData.inputImage1,
-      inputImage2: imageData.inputImage2,
-      outputImage: imageData.outputImage || imageData.url
-    } : null;
-
-    setPreviewImage(imageData.url);
-    setCurrentImageIndex(imageData.index);
-    setPreviewType('community');
-    setExampleImages(communityImages);
-    setExampleImageInfo({
-      title: imageData.title || 'Community Creation',
-      prompt: imageData.prompt || 'AI Generated Image',
-      model: imageData.model,
-      resolution: 'High Quality',
-      format: 'JPEG',
-      type: imageData.isCommunity ? 'community' : 'example',
-      author: imageData.author,
-      createdAt: imageData.createdAt,
-      likes: imageData.likes,
-      downloads: imageData.downloads,
-      views: imageData.views,
-      userLiked: imageData.userLiked,
-      publishedImageId: imageData.publishedImageId,
-      exampleImageId: imageData.exampleImageId,
-      isCommunity: imageData.isCommunity,
-      isExample: imageData.isExample,
-      // Add comparison data
-      canCompare: hasComparison,
-      beforeImage: inputImageUrl,
-      afterImage: imageData.url,
-      beforeLabel: labels?.before,
-      afterLabel: labels?.after,
-      combineData: combineData
-    });
-    setPreviewOpen(true);
+    // Generate unique ID from publishedImageId, exampleImageId, or fallback to id
+    const imageId = imageData.publishedImageId || imageData.exampleImageId || imageData.id;
+    const slug = generateSlug(imageData.title || imageData.prompt, imageId);
+    
+    // Navigate to the full-page preview
+    router.push(`/gallery/${slug}`);
   };
 
-  // Handle preview modal close
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewImage(null);
-    setCurrentImageIndex(0);
-    setPreviewType('community');
-    setExampleImages([]);
-    setExampleImageInfo(null);
-  };
-
-  // Handle image navigation in preview with comparison support
-  const handleImageChange = (newIndex) => {
-    setCurrentImageIndex(newIndex);
-    if (communityImages[newIndex]) {
-      const currentImage = communityImages[newIndex];
-
-      // Check if comparison data is available for this image
-      const hasComparison = currentImage.hasComparison && currentImage.inputUrls && currentImage.inputUrls.length > 0;
-
-      // Get comparison labels based on model
-      const getComparisonLabels = (model) => {
-        switch (model) {
-          case 'headshot':
-            return { before: 'Original Photo', after: 'Professional Headshot' };
-          case 'text-removal':
-            return { before: 'With Text', after: 'Text Removed' };
-          case 'restore-image':
-            return { before: 'Original Photo', after: 'Restored Photo' };
-          case 'hair-style':
-            return { before: 'Original Hair', after: 'New Hair Style' };
-          case 're-imagine':
-          case 'reimagine':
-            return { before: 'Original Photo', after: 'Reimagined' };
-          case 'background-removal':
-            return { before: 'With Background', after: 'Background Removed' };
-          case 'remove-object':
-            return { before: 'With Object', after: 'Object Removed' };
-          case 'upscale-image':
-            return { before: 'Original', after: 'Upscaled' };
-          default:
-            return { before: 'Before', after: 'After' };
-        }
-      };
-
-      const labels = hasComparison ? getComparisonLabels(currentImage.model) : null;
-
-      // Get input image URL for comparison
-      const inputImageUrl = hasComparison && currentImage.inputUrls.length > 0 ? currentImage.inputUrls[0].url : null;
-
-      // Special handling for combine-image model
-      const combineData = currentImage.model === 'combine-image' && currentImage.inputImage1 && currentImage.inputImage2 ? {
-        inputImage1: currentImage.inputImage1,
-        inputImage2: currentImage.inputImage2,
-        outputImage: currentImage.outputImage || currentImage.url
-      } : null;
-
-      setPreviewImage(currentImage.url);
-      setExampleImageInfo({
-        title: currentImage.title || 'Community Creation',
-        prompt: currentImage.prompt || 'AI Generated Image',
-        model: currentImage.model,
-        resolution: 'High Quality',
-        format: 'JPEG',
-        type: currentImage.isCommunity ? 'community' : 'example',
-        author: currentImage.author,
-        createdAt: currentImage.createdAt,
-        likes: currentImage.likes,
-        downloads: currentImage.downloads,
-        views: currentImage.views,
-        userLiked: currentImage.userLiked,
-        publishedImageId: currentImage.publishedImageId,
-        exampleImageId: currentImage.exampleImageId,
-        isCommunity: currentImage.isCommunity,
-        isExample: currentImage.isExample,
-        // Add comparison data
-        canCompare: hasComparison,
-        beforeImage: inputImageUrl,
-        afterImage: currentImage.url,
-        beforeLabel: labels?.before,
-        afterLabel: labels?.after,
-        combineData: combineData
-      });
-    }
-  };
 
   // Handle prompt use (navigate to AI editor)
   const handlePromptUse = (prompt, model) => {
@@ -405,15 +263,6 @@ const CommunityGallery = () => {
     }));
   }, []);
 
-  // Handle comparison button click - open preview with comparison mode
-  const handleComparisonClick = (image, index) => {
-    handleCommunityImageClick({
-      ...image,
-      index,
-      images: communityImages,
-      openComparison: true // Flag to auto-open comparison
-    });
-  };
 
   // Handle like/unlike functionality for community images only
   const handleLikeToggle = async (image, currentlyLiked) => {
@@ -613,6 +462,7 @@ const CommunityGallery = () => {
                 index,
                 images: communityImages
               })}
+              onContextMenu={(e) => e.preventDefault()}
             >
               {/* Loading skeleton overlay */}
               {isLoading && (
@@ -690,6 +540,8 @@ const CommunityGallery = () => {
                 alt={image.title || 'Community creation'}
                 referrerPolicy="no-referrer"
                 loading="lazy"
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
                 style={{
                   width: '100%',
                   height: `${image.height || 280}px`,
@@ -698,6 +550,9 @@ const CommunityGallery = () => {
                   borderRadius: '8px',
                   // Prevent layout shift by maintaining aspect ratio
                   aspectRatio: 'auto',
+                  userSelect: 'none',
+                  WebkitUserDrag: 'none',
+                  pointerEvents: 'auto',
                 }}
                 onLoad={() => {
                   handleImageLoad(imageId);
@@ -832,7 +687,11 @@ const CommunityGallery = () => {
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleComparisonClick(image, index);
+                          handleCommunityImageClick({
+                            ...image,
+                            index,
+                            images: communityImages
+                          });
                         }}
                       >
                         <CompareIcon fontSize="small" />
@@ -965,22 +824,6 @@ const CommunityGallery = () => {
         </Box>
       )}
 
-      {/* Enhanced Preview Modal with Comparison Support */}
-      <ImagePreviewModal
-        open={previewOpen}
-        onClose={handlePreviewClose}
-        images={communityImages.map(img => img.url)}
-        currentIndex={currentImageIndex}
-        onImageChange={handleImageChange}
-        selectedModel={exampleImageInfo?.model || 'generate-image'}
-        imageInfo={exampleImageInfo}
-        canCompare={exampleImageInfo?.canCompare || false}
-        beforeImage={exampleImageInfo?.beforeImage || null}
-        afterImage={exampleImageInfo?.afterImage || null}
-        beforeLabel={exampleImageInfo?.beforeLabel || "Before"}
-        afterLabel={exampleImageInfo?.afterLabel || "After"}
-        autoOpenComparison={exampleImageInfo?.canCompare && exampleImageInfo?.beforeImage && exampleImageInfo?.afterImage}
-      />
     </Container>
   );
 };

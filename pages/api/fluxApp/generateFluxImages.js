@@ -75,6 +75,15 @@ export default async function handler(req, res) {
     if (modelName === "combine-image") {
       return modelConfigurations['combine-image']?.creditCost || 3;
     }
+    if (modelName.startsWith("upscale-image")) {
+      // Check for specific upscale model variant first
+      const config = modelConfigurations[modelName];
+      if (config?.creditCost !== undefined) {
+        return config.creditCost;
+      }
+      // Fallback to default upscale-image cost
+      return modelConfigurations['upscale-image']?.creditCost || 2;
+    }
     const config = modelConfigurations[modelName];
     return config?.creditCost || 1;
   };
@@ -1317,7 +1326,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1); // Crystal upscaler costs 1 credit
+          await incrementDailyUsage(session.user.email, 3); // Crystal upscaler costs 3 credits
         }
 
         res.status(200).json({
@@ -1373,7 +1382,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 2); // Topaz Labs costs 2 credits
+          await incrementDailyUsage(session.user.email, 1); // Topaz Labs costs 1 credit
         }
 
         res.status(200).json({
@@ -1425,7 +1434,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1); // Google upscaler costs 1 credit
+          await incrementDailyUsage(session.user.email, 2); // Google upscaler costs 2 credits
         }
 
         res.status(200).json({
@@ -1477,7 +1486,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1); // SeedVR2 costs 1 credit
+          await incrementDailyUsage(session.user.email, 3); // SeedVR2 costs 3 credits
         }
 
         res.status(200).json({

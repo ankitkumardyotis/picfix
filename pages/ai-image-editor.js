@@ -361,7 +361,7 @@ export default function AIImageEditor() {
       name: 'Crystal Upscaler',
       description: 'philz1337x/crystal-upscaler',
       model: 'crystal-upscaler',
-      creditCost: 1,
+      creditCost: 3,
       maxScale: 6,
       specialty: 'High quality crystal clear upscaling'
     },
@@ -369,7 +369,7 @@ export default function AIImageEditor() {
       name: 'Topaz Labs',
       description: 'topazlabs/image-upscale',
       model: 'topaz-labs',
-      creditCost: 2,
+      creditCost: 1,
       maxScale: '4x',
       specialty: 'Professional photo enhancement'
     },
@@ -377,7 +377,7 @@ export default function AIImageEditor() {
       name: 'Google Upscaler',
       description: 'google/upscaler',
       model: 'google-upscaler',
-      creditCost: 1,
+      creditCost: 2,
       maxScale: 'x4',
       specialty: 'Fast and reliable upscaling'
     },
@@ -385,7 +385,7 @@ export default function AIImageEditor() {
       name: 'SeedVR2',
       description: 'zsxkib/seedvr2',
       model: 'seedvr2',
-      creditCost: 1,
+      creditCost: 3,
       maxScale: 2,
       specialty: 'AI-powered image restoration'
     }

@@ -177,16 +177,21 @@ const GeneratedImages = ({
             images.map((image, index) => (
               image && (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-                  <ResponsiveImageContainer>
+                  <ResponsiveImageContainer onContextMenu={(e) => e.preventDefault()}>
                     <img
                       key={`img-${image}-${index}`}
                       src={image}
                       alt={`Generated ${index + 1}`}
                       referrerPolicy="no-referrer"
+                      onContextMenu={(e) => e.preventDefault()}
+                      onDragStart={(e) => e.preventDefault()}
                       style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
+                        userSelect: 'none',
+                        WebkitUserDrag: 'none',
+                        pointerEvents: 'auto',
                       }}
                     />
                     <ResponsiveImageOverlay className="image-overlay">

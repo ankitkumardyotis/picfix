@@ -445,6 +445,7 @@ const ImagePreviewModal = ({
                 overflow: 'hidden',
                 position: 'relative',
               }}
+              onContextMenu={(e) => e.preventDefault()}
             >
               <ImageComparisonSlider
                 beforeImage={beforeImage}
@@ -626,6 +627,8 @@ const ImagePreviewModal = ({
                   src={currentImage}
                   alt="Preview"
                   referrerPolicy="no-referrer"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
                   style={{
                     maxWidth: isMobile ? '95%' : '100%',
                     maxHeight: isMobile ? '95%' : '100%',
@@ -636,6 +639,9 @@ const ImagePreviewModal = ({
                     transform: `scale(${zoom})`,
                     transition: 'transform 0.2s ease',
                     cursor: zoom > 1 ? 'grab' : 'default',
+                    userSelect: 'none',
+                    WebkitUserDrag: 'none',
+                    pointerEvents: 'auto',
                   }}
                 />
               </Box>

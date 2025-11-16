@@ -62,16 +62,24 @@ export const useDownloadHandler = () => {
 
   // Main download handler - decides whether to show modal or download directly
   const handleDownload = useCallback(async (imageUrl, filename = 'image.jpg') => {
+    console.log('[useDownloadHandler] handleDownload called with:', { imageUrl, filename, hasSession: !!session });
+    
     if (!session) {
       // Redirect to login if not authenticated
+      console.log('[useDownloadHandler] No session, redirecting to login');
       router.push('/login');
       return;
     }
 
+    console.log('[useDownloadHandler] Session found, checking plan...');
     // Fetch user plan if not already loaded
     let plan = userPlan;
     if (!plan && !planLoading) {
+      console.log('[useDownloadHandler] Fetching user plan...');
       plan = await fetchUserPlan();
+      console.log('[useDownloadHandler] Plan fetched:', plan);
+    } else {
+      console.log('[useDownloadHandler] Using cached plan:', plan);
     }
 
     // Check if user has premium plan
@@ -79,16 +87,21 @@ export const useDownloadHandler = () => {
       const premiumPlans = ['standard', 'premium', 'popular'];
       const cleanPlanName = plan.planName?.replace(/['"]/g, '').toLowerCase();
       const isExpired = plan.expiredAt && new Date(plan.expiredAt) < new Date();
-      return premiumPlans.includes(cleanPlanName) && !isExpired;
+      const hasPremium = premiumPlans.includes(cleanPlanName) && !isExpired;
+      console.log('[useDownloadHandler] Premium check:', { cleanPlanName, isExpired, hasPremium });
+      return hasPremium;
     })() : false;
 
     if (isPremium) {
       // Premium user - download directly without watermark
+      console.log('[useDownloadHandler] Premium user - downloading directly');
       await downloadDirect(imageUrl, filename);
     } else {
       // Free user - show download modal with options
+      console.log('[useDownloadHandler] Free user - showing modal');
       setCurrentDownloadData({ imageUrl, filename });
       setDownloadModalOpen(true);
+      console.log('[useDownloadHandler] Modal state should be open now');
     }
   }, [session, userPlan, planLoading, router, fetchUserPlan, downloadDirect]);
 

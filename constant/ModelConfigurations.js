@@ -184,7 +184,27 @@ const modelConfigurations = {
   'upscale-image': {
     name: 'Upscale Image',
     type: 'upscale-image',
+    creditCost: 2
+  },
+  'upscale-image-topaz': {
+    name: 'Topaz Labs Upscale',
+    type: 'upscale-image',
     creditCost: 1
+  },
+  'upscale-image-google': {
+    name: 'Google Upscaler',
+    type: 'upscale-image',
+    creditCost: 2
+  },
+  'upscale-image-crystal': {
+    name: 'Crystal Upscaler',
+    type: 'upscale-image',
+    creditCost: 3
+  },
+  'upscale-image-seedvr2': {
+    name: 'SeedVR2 Upscaler',
+    type: 'upscale-image',
+    creditCost: 3
   },
 };
 
