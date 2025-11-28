@@ -1284,6 +1284,7 @@ export default function AIImageEditor() {
             ...modelConfig,
             prompt: inputPrompt,
             input_image: editImageUrl,
+            aspect_ratio: aspectRatio,
             switched_model: switchedModel // Pass the switched model for reference
           }
         }),

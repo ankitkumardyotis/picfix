@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Typography, Button, Paper, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Button, Paper, useTheme, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -48,8 +48,41 @@ const ThemedButton = styled(Button)(({ theme }) => ({
 export default function Custom404() {
     const router = useRouter();
     const theme = useTheme();
+    const [countdown, setCountdown] = useState(3);
+    const [openSnackbar, setOpenSnackbar] = useState(true);
+
+    useEffect(() => {
+        const countdownInterval = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(countdownInterval);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        const timeout = setTimeout(() => {
+            router.push("/ai-image-editor");
+        }, 3000);   
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(countdownInterval);
+        };
+    }, []);
+
     return (
         <GradientBackground>
+            <Snackbar 
+                open={openSnackbar} 
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                sx={{ mt: 2 }}
+            >
+                <Alert severity="info" sx={{ width: '100%', fontSize: '1rem' }}>
+                    Redirecting to AI Studio in {countdown} second{countdown !== 1 ? 's' : ''}...
+                </Alert>
+            </Snackbar>
             <CenterPaper elevation={6}>
                 <Image
                     src="/assets/PicFixAILogo.jpg"
