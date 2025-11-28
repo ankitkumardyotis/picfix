@@ -968,6 +968,7 @@ export default async function handler(req, res) {
 
       const input = {
         prompt: config.prompt,
+        aspect_ratio: config.aspect_ratio,
         output_quality: 100,
         output_format: "png"
       };
@@ -1029,6 +1030,7 @@ export default async function handler(req, res) {
 
       const input = {
         prompt: config.prompt,
+        aspect_ratio: config.aspect_ratio,
         output_format: "png",
       };
 
@@ -1153,6 +1155,7 @@ export default async function handler(req, res) {
     else if (config.see_dreams_4_generate) {
       const input = {
         prompt: config.prompt,
+        aspect_ratio: config.aspect_ratio,
       };
 
       const output = await replicate.run("bytedance/seedream-4", { input });
