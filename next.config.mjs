@@ -11,6 +11,7 @@ const nextConfig = {
       "text-to-video-generation-service.b0287d60c39debfb14d7e3f036436719.r2.cloudflarestorage.com",
       "picfix.ai",
       "picfixcdn.com",
+      "replicate.com"
     ],
 
     remotePatterns: [

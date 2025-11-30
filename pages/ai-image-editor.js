@@ -303,8 +303,8 @@ export default function AIImageEditor() {
       model: 'nano-banana',
     },
     {
-      name: 'Flux Kontext Pro',
-      description: 'black-forest-labs/flux-kontext-pro',
+      name: 'Flux 2 Pro',
+      description: 'black-forest-labs/flux-2-pro',
       model: 'flux-kontext-pro',
     },
     {
@@ -316,8 +316,8 @@ export default function AIImageEditor() {
 
   const combineImageModels = [
     {
-      name: 'Flux Kontext Pro',
-      description: 'flux-kontext-apps/multi-image-kontext-pro',
+      name: 'Flux 2 Pro',
+      description: 'black-forest-labs/flux-2-pro',
       model: 'flux-kontext-pro',
     },
     {
@@ -1328,20 +1328,14 @@ export default function AIImageEditor() {
   };
 
   const generateCombineImages = async () => {
-    // Validation based on selected model
-    if (switchedModel === 'nano-banana' || switchedModel === 'seedream-4') {
-      const validImages = combineImageUrls.filter(url => url !== null);
-      const modelName = switchedModel === 'nano-banana' ? 'Nano Banana' : 'See Dreams';
-      if (validImages.length < 2) {
-        enqueueSnackbar(`Please upload at least 2 images for ${modelName} model`, { variant: 'warning' });
-        return;
-      }
-    } else {
-      // flux-kontext-pro validation
-      if (!combineImage1Url || !combineImage2Url) {
-        enqueueSnackbar('Please upload both images first', { variant: 'warning' });
-        return;
-      }
+    // Validation - all models now support multiple images
+    const validImages = combineImageUrls.filter(url => url !== null);
+    const modelName = switchedModel === 'nano-banana' ? 'Nano Banana' : 
+                      switchedModel === 'seedream-4' ? 'SeeDream 4' : 'Flux 2 Pro';
+    
+    if (validImages.length < 2) {
+      enqueueSnackbar(`Please upload at least 2 images for ${modelName} model`, { variant: 'warning' });
+      return;
     }
 
     if (!inputPrompt.trim()) {
@@ -1384,12 +1378,12 @@ export default function AIImageEditor() {
           switched_model: switchedModel
         };
       } else {
-        // flux-kontext-pro config
+        // flux-2-pro config (now supports multiple images like nano-banana and seedream-4)
+        const validImageUrls = combineImageUrls.filter(url => url !== null);
         config = {
           combine_images: true,
           prompt: inputPrompt,
-          input_image_1: combineImage1Url,
-          input_image_2: combineImage2Url,
+          image_input: validImageUrls,
           aspect_ratio: aspectRatio,
           switched_model: switchedModel || 'flux-kontext-pro'
         };

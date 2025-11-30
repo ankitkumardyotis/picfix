@@ -328,8 +328,8 @@ const CombineImageModal = ({
     };
   }, [isDragging, dragStart, zoom]);
 
-  // Determine if we're in multi-image mode
-  const isMultiImageMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4';
+  // Determine if we're in multi-image mode (including flux-kontext-pro which is now flux-2-pro)
+  const isMultiImageMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4' || switchedModel === 'flux-kontext-pro';
   
   // Placeholder images from Unsplash
   const placeholderImages = [

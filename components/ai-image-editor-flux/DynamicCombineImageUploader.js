@@ -37,8 +37,8 @@ const DynamicCombineImageUploader = ({
 }) => {
   const theme = useTheme();
 
-  // Show dynamic uploader for nano-banana and seedream-4 models
-  const isDynamicMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4';
+  // Show dynamic uploader for nano-banana, seedream-4, and flux-kontext-pro (flux-2-pro) models
+  const isDynamicMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4' || switchedModel === 'flux-kontext-pro';
   const maxImages = 10;
   const minImages = 2;
 
@@ -64,7 +64,7 @@ const DynamicCombineImageUploader = ({
   };
 
   if (!isDynamicMode) {
-    // Return static 2-image uploader for flux-kontext-pro
+    // Return static 2-image uploader (no longer used, kept for legacy support)
     return (
       <Grid container spacing={2}>
         {/* First Image Upload */}

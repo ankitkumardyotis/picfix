@@ -274,14 +274,21 @@ export default async function handler(req, res) {
           image_input: config.image_input || [config.input_image_1, config.input_image_2]
         };
       } else {
-        // Default to flux-kontext-pro
-        modelEndpoint = "flux-kontext-apps/multi-image-kontext-pro";
+        // Default to flux-2-pro (supports multiple images via image_input array)
+        modelEndpoint = "black-forest-labs/flux-2-pro";
+        
+        // Support both legacy (input_image_1, input_image_2) and new (image_input array) formats
+        const inputImages = config.image_input || [config.input_image_1, config.input_image_2];
+        // Filter out null/undefined images
+        const validInputImages = inputImages.filter(img => img !== null && img !== undefined);
+        
         input = {
           prompt: config.prompt,
+          resolution: "1 MP",
           aspect_ratio: config.aspect_ratio,
-          input_image_1: config.input_image_1,
-          input_image_2: config.input_image_2,
-          output_format: "png",
+          input_images: validInputImages,
+          output_format: "webp",
+          output_quality: 80,
           safety_tolerance: 2
         };
       }
@@ -290,10 +297,13 @@ export default async function handler(req, res) {
 
       // Process the output - combine image model returns single image
       let processedOutput;
+      // Determine output format based on model
+      const outputFormat = config.switched_model === 'flux-kontext-pro' || !config.switched_model ? 'webp' : 'png';
+      
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
         const base64 = buffer.toString('base64');
-        processedOutput = `data:image/png;base64,${base64}`;
+        processedOutput = `data:image/${outputFormat};base64,${base64}`;
       } else if (typeof output === 'string') {
         processedOutput = output;
       } else if (Array.isArray(output) && output.length > 0) {
@@ -302,7 +312,7 @@ export default async function handler(req, res) {
         if (firstItem instanceof ReadableStream) {
           const buffer = await streamToBuffer(firstItem);
           const base64 = buffer.toString('base64');
-          processedOutput = `data:image/png;base64,${base64}`;
+          processedOutput = `data:image/${outputFormat};base64,${base64}`;
         } else {
           processedOutput = firstItem;
         }
@@ -784,7 +794,8 @@ export default async function handler(req, res) {
       console.log("Nano Banana");
       const input = {
         prompt: config.prompt,
-        image_input: [config.input_image]
+        image_input: [config.input_image],
+        aspect_ratio: config.aspect_ratio
       };
 
 
@@ -821,7 +832,7 @@ export default async function handler(req, res) {
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           locationData,
           modelParams: config,
-          aspectRatio: null, // Edit image preserves original aspect ratio
+          aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
         // Increment daily usage after successful generation (only for users without plans)
@@ -846,6 +857,7 @@ export default async function handler(req, res) {
       const input = {
         image: config.input_image,
         prompt: config.prompt,
+        aspect_ratio: config.aspect_ratio,
         output_quality: 100,
         output_format: "png"
       };
@@ -884,7 +896,7 @@ export default async function handler(req, res) {
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           locationData,
           modelParams: config,
-          aspectRatio: null, // Edit image preserves original aspect ratio
+          aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
 
@@ -904,22 +916,24 @@ export default async function handler(req, res) {
       }
 
     } else if (config.flux_context_pro) {
-      console.log("Flux Context Pro");
+      console.log("Flux 2 Pro");
       const input = {
         prompt: config.prompt,
-        input_image: config.input_image,
-        output_format: "png",
+        resolution: "1 MP",
+        aspect_ratio: config.aspect_ratio,
+        input_images: [config.input_image],
+        output_format: "webp",
+        output_quality: 80,
+        safety_tolerance: 2
       };
 
-      const output = await replicate.run("black-forest-labs/flux-kontext-pro", { input });
-
-
+      const output = await replicate.run("black-forest-labs/flux-2-pro", { input });
 
       let processedOutput;
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
         const base64 = buffer.toString('base64');
-        processedOutput = `data:image/png;base64,${base64}`;
+        processedOutput = `data:image/webp;base64,${base64}`;
       } else if (typeof output === 'string') {
         processedOutput = output;
       } else if (Array.isArray(output) && output.length > 0) {
@@ -928,7 +942,7 @@ export default async function handler(req, res) {
         if (firstItem instanceof ReadableStream) {
           const buffer = await streamToBuffer(firstItem);
           const base64 = buffer.toString('base64');
-          processedOutput = `data:image/png;base64,${base64}`;
+          processedOutput = `data:image/webp;base64,${base64}`;
         } else {
           processedOutput = firstItem;
         }
@@ -944,7 +958,7 @@ export default async function handler(req, res) {
           cost: process.env.DEFAULT_MODEL_RUNNING_COST,
           locationData,
           modelParams: config,
-          aspectRatio: null, // Edit image preserves original aspect ratio
+          aspectRatio: config.aspect_ratio,
           inputImages: getInputImagesFromConfig(config)
         });
 
@@ -1217,6 +1231,7 @@ export default async function handler(req, res) {
       const input = {
         prompt: config.prompt,
         image_input: [config.input_image],
+        aspect_ratio: config.aspect_ratio,
       };
 
       const output = await replicate.run("bytedance/seedream-4", { input });
