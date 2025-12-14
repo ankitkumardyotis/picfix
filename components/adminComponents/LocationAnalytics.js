@@ -6,7 +6,7 @@ const LocationAnalytics = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedMonths, setSelectedMonths] = useState(6); // Default to 6 months
-    const [dateRange, setDateRange] = useState('6months');
+    const [dateRange, setDateRange] = useState('1months');
 
     useEffect(() => {
         fetchLocationAnalytics();

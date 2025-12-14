@@ -472,7 +472,7 @@ const PaymentHistory = () => {
                                         color: '#000',
                                         fontFamily: 'Roboto, sans-serif'
                                     }}>
-                                        {new Date(payment.date).toLocaleDateString()}
+                                         {new Date(payment.date).getDate().toString().padStart(2, '0')}/{(new Date(payment.date).getMonth() + 1).toString().padStart(2, '0')}/{new Date(payment.date).getFullYear()}
                                     </div>
                                     <div style={{
                                         fontSize: '0.75rem',

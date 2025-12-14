@@ -15,7 +15,8 @@ import ImageUploader from './ImageUploader';
 
 /**
  * Dynamic Combine Image Uploader Component
- * Supports 2-10 images with add/remove functionality for Nano Banana model
+ * Supports 2-5 images for Pruna AI model, 2-10 images for other models
+ * Includes add/remove functionality for supported models
  */
 const DynamicCombineImageUploader = ({
   images,
@@ -37,9 +38,10 @@ const DynamicCombineImageUploader = ({
 }) => {
   const theme = useTheme();
 
-  // Show dynamic uploader for nano-banana, seedream-4, and flux-kontext-pro (flux-2-pro) models
-  const isDynamicMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4' || switchedModel === 'flux-kontext-pro';
-  const maxImages = 10;
+  // Show dynamic uploader for nano-banana, seedream-4, flux-kontext-pro (flux-2-pro), and pruna-ai models
+  const isDynamicMode = switchedModel === 'nano-banana' || switchedModel === 'seedream-4' || switchedModel === 'flux-kontext-pro' || switchedModel === 'pruna-ai';
+  // Pruna AI supports max 5 images, others support up to 10
+  const maxImages = switchedModel === 'pruna-ai' ? 5 : 10;
   const minImages = 2;
 
   const handleImageUploadForIndex = (index) => async (e) => {
@@ -195,6 +197,9 @@ const DynamicCombineImageUploader = ({
                 <Typography variant="body2" sx={{ textAlign: 'center', px: 1 }}>
                   Add Image
                   <br />
+                  <Typography variant="caption" color="text.secondary">
+                    {switchedModel === 'pruna-ai' ? `(Max ${maxImages})` : `(Max ${maxImages})`}
+                  </Typography>
                 </Typography>
               </Box>
             </Grid>
@@ -215,6 +220,11 @@ const DynamicCombineImageUploader = ({
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="success.main">
             ✅ Ready to combine {images.filter(img => img !== null).length} images
+            {switchedModel === 'pruna-ai' && (
+              <Typography variant="caption" display="block" color="info.main">
+                Using Pruna AI model (supports up to 5 images)
+              </Typography>
+            )}
           </Typography>
         </Box>
       )}

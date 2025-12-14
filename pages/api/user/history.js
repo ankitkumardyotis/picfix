@@ -29,12 +29,12 @@ export default async function handler(req, res) {
       } else if (model === 'generate-image') {
         // Handle all generate-image model variants
         whereClause.model = { 
-          in: ['generate-image', 'generate-image-qwen', 'generate-image-gemini', 'generate-image-flux', 'generate-image-seedream'] 
+          in: ['generate-image', 'generate-image-qwen', 'generate-image-gemini', 'generate-image-flux', 'generate-image-pruna', 'generate-image-seedream'] 
         };
       } else if (model === 'edit-image') {
         // Handle all edit-image model variants
         whereClause.model = { 
-          in: ['edit-image-qwen', 'edit-image-flux', 'edit-image-nano', 'edit-image-seedream'] 
+          in: ['edit-image-qwen', 'edit-image-flux', 'edit-image-pruna', 'edit-image-nano', 'edit-image-seedream'] 
         };
       } else if (model === 'upscale-image') {
         // Handle all upscale-image model variants

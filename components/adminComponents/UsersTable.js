@@ -149,15 +149,15 @@ const UsersTable = () => {
     // Client-side sorting can still be applied if needed
     const sortedUsers = [...users].sort((a, b) => {
         if (!sortField) return 0;
-        
+
         let aValue = a[sortField];
         let bValue = b[sortField];
-        
+
         if (typeof aValue === 'string') {
             aValue = aValue.toLowerCase();
             bValue = bValue.toLowerCase();
         }
-        
+
         if (sortDirection === 'asc') {
             return aValue > bValue ? 1 : -1;
         } else {
@@ -344,7 +344,7 @@ const UsersTable = () => {
                                 { key: 'credits', label: 'Credits' },
                                 { key: 'imagesProcessed', label: 'Images' },
                                 { key: 'joinDate', label: 'Join Date' },
-                               
+
                             ].map((header) => (
                                 <th
                                     key={header.key}
@@ -368,7 +368,7 @@ const UsersTable = () => {
                                         gap: '0.5rem'
                                     }}>
                                         {header.label}
-                                       
+
                                     </div>
                                 </th>
                             ))}
@@ -461,7 +461,7 @@ const UsersTable = () => {
                                         {user.plan.usedCredits} used
                                     </div>
                                 </td>
-                            
+
                                 <td style={{ padding: '1rem' }}>
                                     <div style={{
                                         fontSize: '0.875rem',
@@ -478,18 +478,34 @@ const UsersTable = () => {
                                         color: '#000',
                                         fontFamily: 'Roboto, sans-serif'
                                     }}>
-                                        {new Date(user.joinDate).toLocaleDateString()}
+                                        {/* {new Date(user.joinDate).toLocaleDateString()} */}
+                                        {new Date(user.joinDate).getDate().toString().padStart(2, '0')}
+                                        -
+                                        {(new Date(user.joinDate).getMonth() + 1).toString().padStart(2, '0')}
+                                        -
+                                        {new Date(user.joinDate).getFullYear()}
                                     </div>
                                     <div style={{
                                         fontSize: '0.75rem',
                                         color: '#6b7280',
                                         fontFamily: 'Roboto, sans-serif'
                                     }}>
-                                        Last Image: {user.lastImageGeneration ? new Date(user.lastImageGeneration).toLocaleDateString() : 'Never'}
+                                        Last Image: {
+                                            user.lastImageGeneration
+                                                ? (() => {
+                                                    const date = new Date(user.lastImageGeneration);
+                                                    const day = String(date.getDate()).padStart(2, '0');
+                                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                    const year = date.getFullYear();
+                                                    return `${day}-${month}-${year}`;
+                                                })()
+                                                : 'Never'
+                                        }
                                     </div>
+
                                 </td>
-                          
-                           
+
+
                             </tr>
                         ))}
                     </tbody>
@@ -513,7 +529,7 @@ const UsersTable = () => {
                     }}>
                         Showing {((currentPage - 1) * pagination.limit) + 1} to {Math.min(currentPage * pagination.limit, pagination.totalUsers)} of {pagination.totalUsers} users
                     </div>
-                    
+
                     <div style={{
                         display: 'flex',
                         gap: '0.5rem',
@@ -557,7 +573,7 @@ const UsersTable = () => {
                                 const pages = [];
                                 const startPage = Math.max(1, currentPage - 2);
                                 const endPage = Math.min(pagination.totalPages, currentPage + 2);
-                                
+
                                 for (let i = startPage; i <= endPage; i++) {
                                     pages.push(
                                         <button

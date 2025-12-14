@@ -6,7 +6,7 @@ const UserRegistrationChart = () => {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [dateRange, setDateRange] = useState('6months');
+    const [dateRange, setDateRange] = useState('1month');
     const [totalUsers, setTotalUsers] = useState(0);
 
     useEffect(() => {

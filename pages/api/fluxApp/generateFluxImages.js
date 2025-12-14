@@ -273,8 +273,41 @@ export default async function handler(req, res) {
           aspect_ratio: config.aspect_ratio || "4:3",
           image_input: config.image_input || [config.input_image_1, config.input_image_2]
         };
+      } else if (config.switched_model === 'flux-2-pro') {
+        // Flux-2-pro (supports multiple images via image_input array)
+        modelEndpoint = "black-forest-labs/flux-2-pro";
+        
+        // Support both legacy (input_image_1, input_image_2) and new (image_input array) formats
+        const inputImages = config.image_input || [config.input_image_1, config.input_image_2];
+        // Filter out null/undefined images
+        const validInputImages = inputImages.filter(img => img !== null && img !== undefined);
+        
+        input = {
+          prompt: config.prompt,
+          resolution: "1 MP",
+          aspect_ratio: config.aspect_ratio,
+          input_images: validInputImages,
+          output_format: "webp",
+          output_quality: 80,
+          safety_tolerance: 2
+        };
+      } else if (config.switched_model === 'pruna-ai' || !config.switched_model) {
+        // Default to Pruna AI p-image-edit (supports up to 5 images)
+        modelEndpoint = "prunaai/p-image-edit";
+        
+        // Support both legacy (input_image_1, input_image_2) and new (image_input array) formats
+        const inputImages = config.image_input || [config.input_image_1, config.input_image_2];
+        // Filter out null/undefined images and limit to 5 images max
+        const validInputImages = inputImages.filter(img => img !== null && img !== undefined).slice(0, 5);
+        
+        input = {
+          turbo: true,
+          images: validInputImages,
+          prompt: config.prompt,
+          aspect_ratio: config.aspect_ratio || "1:1"
+        };
       } else {
-        // Default to flux-2-pro (supports multiple images via image_input array)
+        // Fallback to Flux-2-pro for any other unrecognized models
         modelEndpoint = "black-forest-labs/flux-2-pro";
         
         // Support both legacy (input_image_1, input_image_2) and new (image_input array) formats
@@ -298,7 +331,17 @@ export default async function handler(req, res) {
       // Process the output - combine image model returns single image
       let processedOutput;
       // Determine output format based on model
-      const outputFormat = config.switched_model === 'flux-kontext-pro' || !config.switched_model ? 'webp' : 'png';
+      let outputFormat;
+      if (config.switched_model === 'nano-banana') {
+        outputFormat = 'png';
+      } else if (config.switched_model === 'seedream-4') {
+        outputFormat = 'png';
+      } else if (config.switched_model === 'flux-2-pro') {
+        outputFormat = 'webp';
+      } else {
+        // Default Pruna AI model
+        outputFormat = 'jpg';
+      }
       
       if (output instanceof ReadableStream) {
         const buffer = await streamToBuffer(output);
@@ -976,6 +1019,63 @@ export default async function handler(req, res) {
         res.status(200).json(processedOutput);
       }
 
+    } else if (config.pruna_ai_edit) {
+      console.log("Pruna AI Edit");
+      const input = {
+        prompt: config.prompt,
+        img_cond_path: config.input_image,
+        output_quality: 100,
+      };
+
+      const output = await replicate.run("prunaai/flux-kontext-fast", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // If it returns an array, take the first item
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      // Store edit image in history
+      try {
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, modelCost);
+        }
+        res.status(200).json({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+      } catch (error) {
+        console.error('Error storing Pruna AI edit image in history:', error);
+        // Fallback to original behavior if storage fails
+        res.status(200).json(processedOutput);
+      }
+
     } else if (config.qwen_image_generate) {
 
       console.log("Qwen Image Generate");
@@ -1163,6 +1263,67 @@ export default async function handler(req, res) {
       } catch (error) {
         console.error('Error storing generate images in history:', error);
         res.status(200).json(finalOutput);
+      }
+
+    }
+    else if (config.pruna_ai_generate) {
+      console.log("Pruna AI Generate");
+
+      const input = {
+        prompt: config.prompt,
+        aspect_ratio: config.aspect_ratio,
+        output_quality: 100,
+      };
+
+      const output = await replicate.run("prunaai/z-image-turbo", { input });
+
+      let processedOutput;
+      if (output instanceof ReadableStream) {
+        const buffer = await streamToBuffer(output);
+        const base64 = buffer.toString('base64');
+        processedOutput = `data:image/png;base64,${base64}`;
+      } else if (typeof output === 'string') {
+        processedOutput = output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const firstItem = output[0];
+        if (firstItem instanceof ReadableStream) {
+          const buffer = await streamToBuffer(firstItem);
+          const base64 = buffer.toString('base64');
+          processedOutput = `data:image/png;base64,${base64}`;
+        } else {
+          processedOutput = firstItem;
+        }
+      }
+
+      try {
+        const storedImages = []
+        const storedImage = await storeGeneratedImage({
+          imageData: processedOutput,
+          userId: session.user.id,
+          model: getModelType(config),
+          prompt: config.prompt,
+          cost: process.env.DEFAULT_MODEL_RUNNING_COST,
+          locationData,
+          modelParams: config,
+          aspectRatio: config.aspect_ratio,
+          numOutputs: config.num_outputs,
+          inputImages: getInputImagesFromConfig(config)
+        });
+
+        storedImages.push({
+          imageUrl: storedImage.publicUrl,
+          historyId: storedImage.historyId
+        });
+
+        // Increment daily usage after successful generation (only for users without plans)
+        if (!hasPlan) {
+          await incrementDailyUsage(session.user.email, modelCost);
+        }
+
+        res.status(200).json(storedImages);
+      } catch (error) {
+        console.error('Error storing Pruna AI generate image in history:', error);
+        res.status(200).json([processedOutput]);
       }
 
     }

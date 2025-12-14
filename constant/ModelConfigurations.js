@@ -206,6 +206,16 @@ const modelConfigurations = {
     type: 'upscale-image',
     creditCost: 3
   },
+  'generate-image-pruna': {
+    name: 'Pruna AI',
+    type: 'generate-image',
+    creditCost: 2
+  },
+  'edit-image-pruna': {
+    name: 'Pruna AI',
+    type: 'edit-image',
+    creditCost: 2
+  },
 };
 
 export default modelConfigurations; 

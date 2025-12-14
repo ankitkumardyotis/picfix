@@ -308,6 +308,11 @@ export default function AIImageEditor() {
       model: 'flux-kontext-pro',
     },
     {
+      name: 'Pruna AI',
+      description: 'prunaai/flux-kontext-fast',
+      model: 'pruna-ai-edit',
+    },
+    {
       name: 'Seedream 4.0',
       description: 'bytedance/seedream-4',
       model: 'seedream-4',
@@ -315,6 +320,11 @@ export default function AIImageEditor() {
   ];
 
   const combineImageModels = [
+    {
+      name: 'Pruna AI',
+      description: 'prunaai/p-image-edit (Default - Supports up to 5 images)',
+      model: 'pruna-ai',
+    },
     {
       name: 'Flux 2 Pro',
       description: 'black-forest-labs/flux-2-pro',
@@ -348,6 +358,11 @@ export default function AIImageEditor() {
       name: 'Flux Schnell',
       description: 'black-forest-labs/flux-schnell',
       model: 'flux-schnell',
+    },
+    {
+      name: 'Pruna AI',
+      description: 'prunaai/flux-fast',
+      model: 'pruna-ai',
     },
     {
       name: 'Seedream 4.0',
@@ -393,11 +408,13 @@ export default function AIImageEditor() {
 
 
 
-  const [switchedModel, setSwitchedModel] = useState('flux-schnell'); // Default to flux-schnell for generate-image
+  const [switchedModel, setSwitchedModel] = useState('pruna-ai'); // Default to pruna-ai for generate-image
 
   // Helper functions for dynamic combine image management
   const addCombineImageSlot = () => {
-    if (combineImages.length < 10) {
+    // Limit based on selected model - Pruna AI supports max 5 images, others support up to 10
+    const maxImages = switchedModel === 'pruna-ai' ? 5 : 10;
+    if (combineImages.length < maxImages) {
       setCombineImages(prev => [...prev, null]);
       setCombineImageUrls(prev => [...prev, null]);
       setUploadingCombineImages(prev => [...prev, false]);
@@ -753,11 +770,11 @@ export default function AIImageEditor() {
 
       // Set the appropriate switchedModel based on the model type
       if (model === 'combine-image') {
-        setSwitchedModel('seedream-4');
+        setSwitchedModel('pruna-ai');
       } else if (model === 'edit-image') {
         setSwitchedModel('seedream-4');
       } else if (model === 'generate-image') {
-        setSwitchedModel('flux-schnell');
+        setSwitchedModel('pruna-ai');
       }
 
       // Reset model-specific states
@@ -917,11 +934,11 @@ export default function AIImageEditor() {
 
     // Set appropriate default switched model based on the main model
     if (newModel === 'generate-image') {
-      setSwitchedModel('flux-schnell'); // Default for generate-image
+      setSwitchedModel('pruna-ai'); // Default for generate-image
     } else if (newModel === 'edit-image') {
       setSwitchedModel('nano-banana'); // Default for edit-image
     } else if (newModel === 'combine-image') {
-      setSwitchedModel('flux-kontext-pro'); // Default for combine-image
+      setSwitchedModel('pruna-ai'); // Default for combine-image
     }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
@@ -1095,6 +1112,8 @@ export default function AIImageEditor() {
         modelConfig.gemini_flash_image = true;
       } else if (switchedModel === 'flux-schnell') {
         modelConfig.flux_schnell_generate = true;
+      } else if (switchedModel === 'pruna-ai') {
+        modelConfig.pruna_ai_generate = true;
       } else if (switchedModel === 'seedream-4') {
         modelConfig.see_dreams_4_generate = true;
       } else {
@@ -1267,6 +1286,8 @@ export default function AIImageEditor() {
         modelConfig.edit_image = true;
       } else if (switchedModel === 'flux-kontext-pro') {
         modelConfig.flux_context_pro = true;
+      } else if (switchedModel === 'pruna-ai-edit') {
+        modelConfig.pruna_ai_edit = true;
       } else if (switchedModel === 'seedream-4') {
         modelConfig.see_dreams_4_edit = true;
       } else {
@@ -1330,8 +1351,9 @@ export default function AIImageEditor() {
   const generateCombineImages = async () => {
     // Validation - all models now support multiple images
     const validImages = combineImageUrls.filter(url => url !== null);
-    const modelName = switchedModel === 'nano-banana' ? 'Nano Banana' : 
-                      switchedModel === 'seedream-4' ? 'SeeDream 4' : 'Flux 2 Pro';
+    const modelName = switchedModel === 'nano-banana' ? 'Nano Banana' :
+                      switchedModel === 'seedream-4' ? 'SeeDream 4' : 
+                      switchedModel === 'pruna-ai' ? 'Pruna AI' : 'Flux 2 Pro';
     
     if (validImages.length < 2) {
       enqueueSnackbar(`Please upload at least 2 images for ${modelName} model`, { variant: 'warning' });
@@ -1370,6 +1392,16 @@ export default function AIImageEditor() {
         };
       } else if (switchedModel === 'seedream-4') {
         const validImageUrls = combineImageUrls.filter(url => url !== null);
+        config = {
+          combine_images: true,
+          prompt: inputPrompt,
+          image_input: validImageUrls,
+          aspect_ratio: aspectRatio,
+          switched_model: switchedModel
+        };
+      } else if (switchedModel === 'pruna-ai') {
+        // Pruna AI supports up to 5 images
+        const validImageUrls = combineImageUrls.filter(url => url !== null).slice(0, 5);
         config = {
           combine_images: true,
           prompt: inputPrompt,
@@ -3550,7 +3582,7 @@ export default function AIImageEditor() {
                                 selectedModel === 'background-removal' ? (!backgroundRemovalImage || backgroundRemovalStatus !== 'Ready') :
                                   selectedModel === 'remove-object' ? (!removeObjectImageUrl || !hasMaskDrawn) :
                                     selectedModel === 'combine-image' ? (
-                                      (switchedModel === 'nano-banana' || switchedModel === 'seedream-4') ? 
+                                      (switchedModel === 'nano-banana' || switchedModel === 'seedream-4' || switchedModel === 'pruna-ai') ?
                                         (combineImageUrls.filter(url => url !== null).length < 2 || !inputPrompt.trim()) :
                                         (!combineImage1Url || !combineImage2Url || !inputPrompt.trim())
                                     ) :
@@ -4327,6 +4359,7 @@ export default function AIImageEditor() {
                 images={combineImages}
                 imageUrls={combineImageUrls}
                 uploadingStates={uploadingCombineImages}
+                switchedModel={switchedModel}
                 onImageUpload={async (index, imageData, url) => {
                   if (imageData && !url) {
                     // Starting upload
