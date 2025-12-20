@@ -15,7 +15,7 @@ const instance = new Razorpay({
 export default async function handler(req, res) {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    const session = await getServerSession(req, res, authOptions)
+    const session = await getServerSession(req, res, authOptions)                 
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -26,11 +26,9 @@ export default async function handler(req, res) {
         const order = await instance.orders.fetchPayments(razorpay_order_id);
         const currentDate = new Date();
         // add payment to database 
-        const latestPayment = order.items[order.items.length - 1]; // ✅ get latest (last) payment
 
-        const [planDetails] = priceStructure.filter(
-            (item) => item.currency === latestPayment.currency && item.price == (latestPayment.amount / 100)
-        );
+
+        const [planDetails] = priceStructure.filter((item) => item.currency === order.items[0].currency && item.price == (order.items[0].amount / 100))
 
         await prisma.PaymentHistory.create({
             data: {
@@ -38,14 +36,14 @@ export default async function handler(req, res) {
                 orderId: razorpay_order_id,
                 userId: session.user.id,
                 userName: session.user.name,
-                emailId: latestPayment.email,
-                contact: latestPayment.contact,
+                emailId: order.items[0].email,
+                contact: order.items[0].contact,
                 planName: planDetails.name,
                 creditPoints: parseInt(planDetails.creditPoints),
                 createdAt: currentDate,
-                amount: latestPayment.amount / 100,
-                currency: latestPayment.currency,//to be added with actual plan         
-                paymentStatus: latestPayment.status,
+                amount: order.items[0].amount / 100,
+                currency: order.items[0].currency,//to be added with actual plan         
+                paymentStatus: order.items[0].status,
             }
         })
 
@@ -55,7 +53,7 @@ export default async function handler(req, res) {
         const expiryISOString = expiryDate.toISOString();
 
 
-        await prisma.Plan.upsert({
+       await prisma.Plan.upsert({
             where: {
                 userId: session.user.id // Assuming userId is unique and identifies the user uniquely
             },
