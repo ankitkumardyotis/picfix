@@ -87,7 +87,7 @@ export default async function handler(req, res) {
 
         // Add Payment Details to Database after succefull Payment 
         res.redirect(302,
-            `${process.env.NEXTAUTH_URL}/paymentSuccess?transactionId=${order.items[0].id}&amount=${order.items[0].amount}&paymentMethod=${order.items[0].method}&currency=${order.items[0].currency}&status=${'success'}&email=${order.items[0].email}`
+            `${process.env.NEXTAUTH_URL}/paymentSuccess?transactionId=${latestPayment.id}&amount=${latestPayment.amount}&paymentMethod=${latestPayment.method}&currency=${latestPayment.currency}&status=${'success'}&email=${latestPayment.email}`
         );
 
     } else {
