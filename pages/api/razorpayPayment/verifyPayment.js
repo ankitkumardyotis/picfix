@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     if (isAuthentic) {
         // const order = await instance.orders.fetch(razorpay_order_id);
-        const order = await instance.orders.fetch(razorpay_order_id);
+        const order = await instance.orders.fetchPayments(razorpay_order_id);
         const currentDate = new Date();
         // add payment to database 
         const latestPayment = order.items[order.items.length - 1]; // ✅ get latest (last) payment
