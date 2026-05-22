@@ -91,7 +91,8 @@ export default async function handler(req, res) {
 
   const planData = await getUserPlan(session.user.id)
   const hasPlan = planData && planData.length > 0 && planData[0];
-  const hasPlanCredits = hasPlan && planData[0].remainingPoints > 0;
+  const isPlanExpired = hasPlan && planData[0].expiredAt && new Date(planData[0].expiredAt) < new Date();
+  const hasPlanCredits = hasPlan && !isPlanExpired && planData[0].remainingPoints > 0;
   const isFreePlan = hasPlan && planData.some(item => item.name === "free");
 
   if (!isFreeModel) {
@@ -113,6 +114,12 @@ export default async function handler(req, res) {
         });
         return;
       }
+    } else if (isPlanExpired) {
+      res.status(402).json({
+        error: "Plan expired",
+        message: "Your plan has expired. Please purchase a new plan to continue using this feature."
+      });
+      return;
     } else if (!hasPlanCredits && !isFreePlan) {
       // User has a plan but no credits remaining - don't check daily limits
       res.status(402).json({
