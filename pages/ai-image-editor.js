@@ -1148,6 +1148,22 @@ export default function AIImageEditor() {
           } else if (errorData?.error) {
             errorMessage = errorData.error;
           }
+          // Redirect to pricing for expired or insufficient credit errors
+          if (response.status === 402) {
+            enqueueSnackbar(`${errorMessage} View pricing plans.`, {
+              variant: 'error',
+              action: () => (
+                <span
+                  onClick={() => window.location.href = '/pricing'}
+                  style={{ cursor: 'pointer', textDecoration: 'underline', color: 'white' }}
+                >
+                  View Plans
+                </span>
+              )
+            });
+            setIsLoading(false);
+            return;
+          }
         } catch (parseError) {
           // If JSON parsing fails, use status text or default message
           errorMessage = response.statusText || errorMessage;
