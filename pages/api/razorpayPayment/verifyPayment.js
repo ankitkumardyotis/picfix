@@ -50,7 +50,7 @@ export default async function handler(req, res) {
         })
 
         const expiryDate = new Date(currentDate);
-        expiryDate.setFullYear(currentDate.getFullYear() + 1);
+        expiryDate.setDate(currentDate.getDate() + 60);
         // Convert expiry date to ISO string format
         const expiryISOString = expiryDate.toISOString();
 
