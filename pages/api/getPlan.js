@@ -11,11 +11,19 @@ export default async function handler(req, res) {
     const { userId } = req.query;
 
     try {
-        const plan = await prisma.plan.findFirst({
+        let plan = await prisma.plan.findFirst({
             where: {
                 userId: userId,
             }
         });
+
+        // If plan is expired and still has remaining points, zero them out
+        if (plan && plan.expiredAt && new Date(plan.expiredAt) < new Date() && plan.remainingPoints > 0) {
+            plan = await prisma.plan.update({
+                where: { userId: userId },
+                data: { remainingPoints: 0 }
+            });
+        }
 
         res.status(200).json({ plan });
     } catch (error) {
