@@ -249,7 +249,7 @@ model DailyUsage {
   userId          String    @db.ObjectId
   email           String
   usageCount      Int       @default(0)
-  dailyLimit      Int       @default(5) // Default 5 credits per day
+  dailyLimit      Int       @default(0)
   resetAt         DateTime  // Next reset time (midnight UTC)
   lastUsed        DateTime? // Last usage timestamp
   createdAt       DateTime  @default(now())
