@@ -83,6 +83,16 @@ const StyledImage = styled(Image)({
     objectFit: 'cover',
 });
 
+// Used instead of the image when the featured post has a video
+const FeaturedVideo = styled('video')({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+});
+
 const MiniPostContainer = styled(motion.div)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
@@ -232,13 +242,26 @@ const MiniBlog = () => {
                             whileTap={{ scale: 0.98 }}
                         >
                             <FeaturedImageWrapper>
-                                <StyledImage
-                                    src={featuredPost.image}
-                                    alt={featuredPost.title}
-                                    fill
-                                    priority
-                                    sizes="(max-width: 768px) 100vw, 66vw"
-                                />
+                                {featuredPost.video ? (
+                                    <FeaturedVideo
+                                        src={featuredPost.video}
+                                        poster={featuredPost.videoPoster || featuredPost.image}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        preload="metadata"
+                                        aria-label={featuredPost.title}
+                                    />
+                                ) : (
+                                    <StyledImage
+                                        src={featuredPost.image}
+                                        alt={featuredPost.title}
+                                        fill
+                                        priority
+                                        sizes="(max-width: 768px) 100vw, 66vw"
+                                    />
+                                )}
                                 <CategoryTag label={featuredPost.category} sx={{ zIndex: 2 }} />
                                 <Box sx={{ p: 3, width: '100%', position: 'relative', zIndex: 2 }}>
                                     <Typography
