@@ -39,6 +39,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Head from 'next/head';
 import { useSnackbar } from 'notistack';
 import GeneratedImages from '../components/ai-image-editor-flux/GeneratedImages';
+import RunningVideos from '../components/ai-image-editor-flux/RunningVideos';
 import ImageUploader from '../components/ai-image-editor-flux/ImageUploader';
 import ExampleMasonry from '../components/ai-image-editor-flux/ExampleMasonry';
 import ImagePreviewModal from '../components/ai-image-editor-flux/ImagePreviewModal';
@@ -287,6 +288,8 @@ export default function AIImageEditor() {
   const [videoDuration, setVideoDuration] = useState(5);
   const [videoGenerateAudio, setVideoGenerateAudio] = useState(true);
   const [videoHistoryId, setVideoHistoryId] = useState(null); // History record of the video in the results area
+  const [runningVideos, setRunningVideos] = useState([]); // Videos still being made: { id, prompt, startedAt }
+  const [checkingVideos, setCheckingVideos] = useState(false);
 
 
 
@@ -510,6 +513,12 @@ export default function AIImageEditor() {
 
   // Download handler
   const downloadHandler = useDownloadHandler();
+
+  // The model the user is on right now, readable from async code
+  const selectedModelRef = useRef(selectedModel);
+  useEffect(() => {
+    selectedModelRef.current = selectedModel;
+  }, [selectedModel]);
 
   // True while the editor is on screen. A long video check stops when the user leaves the page.
   const editorActiveRef = useRef(true);
@@ -780,17 +789,6 @@ export default function AIImageEditor() {
   const imageGenerationRef = useRef(null);
   const inputSectionRef = useRef(null);
   const exampleMasonryRef = useRef(null);
-
-  // Ask before the page is refreshed or closed while a video is being made
-  useEffect(() => {
-    if (!(isLoading && selectedModel === 'ai-video')) return undefined;
-    const warnBeforeLeaving = (event) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-    window.addEventListener('beforeunload', warnBeforeLeaving);
-    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
-  }, [isLoading, selectedModel]);
 
   // Keep the video options valid for the chosen video model (each has its own limits)
   useEffect(() => {
@@ -1663,6 +1661,69 @@ export default function AIImageEditor() {
     }
   };
 
+  // Asks the server which videos are done. Finished videos are shown, failed ones are reported.
+  const checkVideoStatus = async ({ quiet = false } = {}) => {
+    setCheckingVideos(true);
+    try {
+      const response = await fetch('/api/video/list');
+      if (!response.ok) throw new Error('Could not check your videos');
+      const { videos } = await response.json();
+      const oneHour = 60 * 60 * 1000;
+      const stillRunning = videos.filter((video) => video.status === 'processing' && Date.now() - new Date(video.createdAt).getTime() < oneHour);
+      const known = new Map(runningVideos.map((video) => [video.id, video]));
+
+      // Videos we were waiting for that are no longer running
+      const done = videos.filter((video) => known.has(video.id) && video.status !== 'processing');
+      const ready = done.filter((video) => video.status === 'completed');
+      const failed = done.filter((video) => video.status === 'failed');
+
+      setRunningVideos(stillRunning.map((video) => ({
+        id: video.id,
+        prompt: known.get(video.id)?.prompt || video.prompt,
+        startedAt: new Date(video.createdAt).getTime(),
+      })));
+
+      if (failed.length) {
+        enqueueSnackbar(`${failed[0].error || 'Your video could not be made'}. Your credits were refunded.`, { variant: 'error' });
+        refreshUserCredits();
+      }
+      if (ready.length) {
+        refreshHistoryAfterGeneration();
+        if (selectedModelRef.current === 'ai-video') {
+          setGeneratedImages([ready[0].url]);
+          setVideoHistoryId(ready[0].id);
+          enqueueSnackbar('Your video is ready!', { variant: 'success' });
+        } else {
+          enqueueSnackbar('Your video is ready. You can find it in My History under AI Video.', { variant: 'success' });
+        }
+      } else if (!failed.length && !quiet) {
+        enqueueSnackbar(stillRunning.length ? 'Still being made. Please check again in a minute.' : 'No videos are being made right now.', { variant: 'info' });
+      }
+    } catch (error) {
+      if (!quiet) enqueueSnackbar(error.message || 'Could not check your videos', { variant: 'error' });
+    } finally {
+      setCheckingVideos(false);
+    }
+  };
+
+  // When the page opens, list any videos that are still being made (one request, no polling)
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    (async () => {
+      try {
+        const response = await fetch('/api/video/list');
+        if (!response.ok) return;
+        const { videos } = await response.json();
+        const oneHour = 60 * 60 * 1000;
+        setRunningVideos(videos
+          .filter((video) => video.status === 'processing' && Date.now() - new Date(video.createdAt).getTime() < oneHour)
+          .map((video) => ({ id: video.id, prompt: video.prompt, startedAt: new Date(video.createdAt).getTime() })));
+      } catch (error) {
+        console.error('Error listing running videos:', error);
+      }
+    })();
+  }, [session?.user?.id]);
+
   const generateAiVideo = async () => {
     if (!inputPrompt.trim()) {
       enqueueSnackbar('Please describe your video first', { variant: 'warning' });
@@ -1711,42 +1772,15 @@ export default function AIImageEditor() {
       }
 
       const { id: jobId } = await startResponse.json();
-      enqueueSnackbar(`Generating your video. Please wait a minimum of ${videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'} and do not refresh this page.`, { variant: 'info', autoHideDuration: 10000 });
+      enqueueSnackbar(`Your video is being made. It takes a minimum of ${videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'}. Press Check status to see if it is ready.`, { variant: 'info', autoHideDuration: 10000 });
 
       // The credits are taken when the job starts
       refreshUserCredits();
 
-      // Videos take minutes, so check on the job until it finishes. If the user leaves the
-      // page, the video still appears in My History when it is ready.
-      const maxChecks = 180; // 15 minutes at 5 seconds each
-      let finished = null;
-      for (let check = 0; check < maxChecks && !finished; check++) {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        if (!editorActiveRef.current) return;
-        const listResponse = await fetch('/api/video/list');
-        if (!listResponse.ok) continue;
-        const { videos } = await listResponse.json();
-        const job = videos.find((video) => video.id === jobId);
-        if (job && (job.status === 'completed' || job.status === 'failed')) {
-          finished = job;
-        }
-      }
-
-      if (!finished) {
-        enqueueSnackbar('Your video is taking longer than usual. It will appear in My History when it is ready.', { variant: 'info' });
-        setGeneratedImages([null]);
-        return;
-      }
-      if (finished.status === 'failed') {
-        throw new Error(`${finished.error || 'The video could not be made'}. Your credits were refunded.`);
-      }
-
-      setGeneratedImages([finished.url]);
-      setVideoHistoryId(jobId);
-      enqueueSnackbar('Video generated successfully!', { variant: 'success' });
-
-      // Refresh history to show the new video
-      refreshHistoryAfterGeneration();
+      // The video is made on our servers, so we do not wait here: it is listed as running and the
+      // user checks on it. It also appears in My History when it is ready.
+      setRunningVideos((current) => [{ id: jobId, prompt: inputPrompt, startedAt: Date.now() }, ...current.filter((video) => video.id !== jobId)]);
+      setGeneratedImages([null]);
     } catch (err) {
       enqueueSnackbar(err.message || 'Error generating video', { variant: 'error' });
       console.error('Error generating video:', err);
@@ -4880,7 +4914,7 @@ export default function AIImageEditor() {
                 </Box>
 
                 <Alert severity="info" sx={{ mt: 2 }}>
-                  Making a video takes a minimum of <strong>{videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'}</strong>. Please keep this page open and <strong>do not refresh it</strong> while your video is being made.
+                  Making a video takes a minimum of <strong>{videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'}</strong>. You can leave or refresh the page while it is made: use <strong>Check status</strong> to see if it is ready.
                 </Alert>
 
                 {/* Generate Button for AI Video */}
@@ -4915,6 +4949,14 @@ export default function AIImageEditor() {
 
             {/* Image Display Area */}
             <Box ref={imageGenerationRef}>
+              {selectedModel === 'ai-video' && (
+                <RunningVideos
+                  videos={runningVideos}
+                  checking={checkingVideos}
+                  onCheck={() => checkVideoStatus()}
+                  minimumWait={videoModels[switchedModel]?.minimumWait}
+                />
+              )}
               <GeneratedImages
                 images={generatedImages}
                 isLoading={isLoading}

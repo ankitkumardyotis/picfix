@@ -127,7 +127,7 @@ const VideoWaitCard = ({ minimumWait }) => {
         Please wait a minimum of <strong>{minimumWait || '4 to 5 minutes'}</strong>.
       </Typography>
       <Typography sx={{ fontWeight: 700, color: '#c2185b', fontSize: '0.95rem' }}>
-        Do not refresh or close this page.
+        Starting your video...
       </Typography>
       <Typography variant="caption" color="textSecondary">
         Time so far: {elapsed}
