@@ -33,6 +33,8 @@ model PaymentHistory {
   amount                Int
   currency              String
   paymentStatus         String
+  @@index([paymentStatus, createdAt])
+  @@index([userId])
 }
 
 model History {
@@ -77,6 +79,8 @@ model History {
   @@index([userId, createdAt])
   @@index([model, userId])
   @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model User {
@@ -95,6 +99,7 @@ model User {
   dailyUsage      DailyUsage[]
 
   @@map("users")
+  @@index([createdAt])
 }
 
 model WebhookEvent {
@@ -209,6 +214,7 @@ model PublishedImage {
   @@index([createdAt])
   @@index([likes])
   @@index([historyId])
+  @@index([userId])
 }
 
 model ImageLike {

@@ -63,25 +63,8 @@ async function handler(req, res) {
             prisma.publishedImage.count()
         ]);
 
-        // 2. User growth data (last 6 months) - MongoDB compatible
-        const allUsers = await prisma.user.findMany({
-            select: {
-                createdAt: true,
-                history: {
-                    select: {
-                        createdAt: true
-                    },
-                    where: {
-                        createdAt: { gte: sixMonthsAgo }
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'asc'
-            }
-        });
-
-        // Generate last 6 months
+        // 2. User growth data (last 6 months). A few small counts per month, run together, instead of
+        // loading every user with all of their history rows (that was the slowest part of this route).
         const months = [];
         const now = new Date();
         for (let i = 5; i >= 0; i--) {
@@ -89,48 +72,37 @@ async function handler(req, res) {
             months.push(date);
         }
 
-        // Calculate cumulative users and active users for each month
-        const userGrowthData = months.map(monthDate => {
-            const monthKey = monthDate.toISOString().substring(0, 7); // YYYY-MM format
-            const monthName = monthDate.toLocaleDateString('en-US', { month: 'short' });
-
-            // Count total users up to this month
-            const totalUsersCount = allUsers.filter(user =>
-                new Date(user.createdAt) <= new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
-            ).length;
-
-            // Count active users in this month (users with history in this month)
-            const activeUsersCount = allUsers.filter(user =>
-                user.history && user.history.some(h => {
-                    const historyMonth = new Date(h.createdAt).toISOString().substring(0, 7);
-                    return historyMonth === monthKey;
-                })
-            ).length;
-
-            return {
-                month: monthName,
-                users: totalUsersCount,
-                activeUsers: activeUsersCount
-            };
-        });
-
-
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const activeUsers = await prisma.user.findMany({
-            where: {
-                history: {
-                    some: {
-                        createdAt: { gte: thirtyDaysAgo }
-                    }
-                }
-            }
-        });
-        console.log("activeUsers", activeUsers);
+        const [totalUsersByMonth, activeUsersByMonth, activeUsersLast30Days] = await Promise.all([
+            // Total users up to the end of each month
+            Promise.all(months.map(monthDate => prisma.user.count({
+                where: { createdAt: { lte: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0) } }
+            }))),
+            // Users with any history in each month (one row per user, ids only)
+            Promise.all(months.map(monthDate => prisma.history.groupBy({
+                by: ['userId'],
+                where: { createdAt: { gte: monthDate, lt: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1) } }
+            }))),
+            // Users active in the last 30 days
+            prisma.history.groupBy({
+                by: ['userId'],
+                where: { createdAt: { gte: thirtyDaysAgo } }
+            })
+        ]);
+
+        const userGrowthData = months.map((monthDate, index) => ({
+            month: monthDate.toLocaleDateString('en-US', { month: 'short' }),
+            users: totalUsersByMonth[index],
+            activeUsers: activeUsersByMonth[index].length
+        }));
+
+        // The overview needs the number only (it used to send every active user's full record)
+        const activeUsers = activeUsersLast30Days.length;
 
         // 4. Feature usage statistics
-        const featureUsage = await prisma.history.groupBy({
+        const featureUsageQuery = prisma.history.groupBy({
             by: ['model'],
             where: {
                 status: 'completed',
@@ -147,7 +119,7 @@ async function handler(req, res) {
         });
 
         // 4.1. Location analytics - Top countries by image generation
-        const locationAnalytics = await prisma.history.groupBy({
+        const locationAnalyticsQuery = prisma.history.groupBy({
             by: ['country', 'countryCode'],
             _count: { country: true },
             where: {
@@ -164,7 +136,7 @@ async function handler(req, res) {
         });
 
         // 5. Plan distribution
-        const planDistribution = await prisma.plan.groupBy({
+        const planDistributionQuery = prisma.plan.groupBy({
             by: ['planName'],
             _count: {
                 planName: true
@@ -172,14 +144,14 @@ async function handler(req, res) {
         });
 
         // 6. Revenue by plan
-        const revenueByPlan = await prisma.paymentHistory.groupBy({
+        const revenueByPlanQuery = prisma.paymentHistory.groupBy({
             by: ['planName'],
             where: { paymentStatus: { in: ['captured', 'payment_success'] } },
             _sum: { amount: true },
             _count: { planName: true }
         });
 
-        const recentPayments = await prisma.paymentHistory.findMany({
+        const recentPaymentsQuery = prisma.paymentHistory.findMany({
             where: {
                 paymentStatus: { in: ['captured', 'payment_success'] },
                 createdAt: { gte: sixMonthsAgo }
@@ -189,6 +161,31 @@ async function handler(req, res) {
                 amount: true
             }
         });
+
+        // Run the independent queries above together (and two more that used to run later)
+        const [
+            featureUsage,
+            locationAnalytics,
+            planDistribution,
+            revenueByPlan,
+            recentPayments,
+            payingUsers,
+            avgCreditsResult
+        ] = await Promise.all([
+            featureUsageQuery,
+            locationAnalyticsQuery,
+            planDistributionQuery,
+            revenueByPlanQuery,
+            recentPaymentsQuery,
+            // One row per paying user (ids only)
+            prisma.paymentHistory.groupBy({
+                by: ['userId'],
+                where: { paymentStatus: { in: ['captured', 'payment_success'] } }
+            }),
+            prisma.plan.aggregate({
+                _avg: { creditPoints: true }
+            })
+        ]);
 
         // Group payments by month
         const monthlyRevenue = [];
@@ -238,19 +235,11 @@ async function handler(req, res) {
         const todayRevenueAmount = todayRevenue._sum.amount || 0;
 
         // Calculate conversion rate (users with at least one payment) - MongoDB compatible
-        const distinctPayingUsers = await prisma.paymentHistory.findMany({
-            where: { paymentStatus: { in: ['captured', 'payment_success'] } },
-            select: { userId: true },
-            distinct: ['userId']
-        });
-        const usersWithPayments = distinctPayingUsers.length;
+        const usersWithPayments = payingUsers.length;
 
         const conversionRate = totalUsers > 0 ? ((usersWithPayments / totalUsers) * 100) : 0;
 
         // Calculate average credits per user
-        const avgCreditsResult = await prisma.plan.aggregate({
-            _avg: { creditPoints: true }
-        });
         const avgCreditsPerUser = avgCreditsResult._avg.creditPoints || 0;
 
         // Format feature usage data
@@ -289,6 +278,7 @@ async function handler(req, res) {
             color: getColorForLocation(index)
         }));
 
+        res.setHeader('Cache-Control', 'private, max-age=60');
         res.status(200).json({
             success: true,
             overview: {

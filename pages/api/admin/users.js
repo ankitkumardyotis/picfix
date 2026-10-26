@@ -70,7 +70,8 @@ async function handler(req, res) {
             where: whereConditions
         });
 
-        // Fetch users with their plan data and statistics
+        // Fetch this page of users. Their activity is counted by the database below, instead of
+        // loading every history row of every user on the page.
         const users = await prisma.user.findMany({
             where: whereConditions,
             select: {
@@ -79,22 +80,7 @@ async function handler(req, res) {
                 email: true,
                 image: true,
                 createdAt: true,
-                emailVerified: true,
-                // Get plan information
-                history: {
-                    select: {
-                        id: true,
-                        model: true,
-                        status: true,
-                        createdAt: true
-                    }
-                },
-                // Get published images count
-                publishedImages: {
-                    select: {
-                        id: true
-                    }
-                }
+                emailVerified: true
             },
             orderBy: {
                 createdAt: 'desc'
@@ -103,50 +89,77 @@ async function handler(req, res) {
             take: limit
         });
 
-        // Get plan data for all users
         const userIds = users.map(user => user.id);
-        const plans = await prisma.plan.findMany({
-            where: {
-                userId: { in: userIds }
-            }
-        });
 
-        // Get payment history for total spent calculation
-        const payments = await prisma.paymentHistory.findMany({
-            where: {
-                userId: { in: userIds },
-                paymentStatus: 'captured'
-            },
-            select: {
-                userId: true,
-                amount: true,
-                createdAt: true
-            }
-        });
+        const [plans, payments, historyStats, completedStats, publishedStats] = await Promise.all([
+            // Plan data for these users
+            prisma.plan.findMany({
+                where: {
+                    userId: { in: userIds }
+                }
+            }),
+            // Payment history for the total spent calculation
+            prisma.paymentHistory.findMany({
+                where: {
+                    userId: { in: userIds },
+                    paymentStatus: 'captured'
+                },
+                select: {
+                    userId: true,
+                    amount: true,
+                    createdAt: true
+                }
+            }),
+            // All activity: how many history rows, and the latest one, per user
+            prisma.history.groupBy({
+                by: ['userId'],
+                where: { userId: { in: userIds } },
+                _count: { _all: true },
+                _max: { createdAt: true }
+            }),
+            // Completed images: how many, and the latest one, per user
+            prisma.history.groupBy({
+                by: ['userId'],
+                where: { userId: { in: userIds }, status: 'completed' },
+                _count: { _all: true },
+                _max: { createdAt: true }
+            }),
+            // Published images per user
+            prisma.publishedImage.groupBy({
+                by: ['userId'],
+                where: { userId: { in: userIds } },
+                _count: { _all: true }
+            })
+        ]);
+
+        const indexByUser = (rows) => new Map(rows.map(row => [row.userId, row]));
+        const historyByUser = indexByUser(historyStats);
+        const completedByUser = indexByUser(completedStats);
+        const publishedByUser = indexByUser(publishedStats);
 
         // Transform data to include plan info and statistics
         const transformedUsers = users.map(user => {
             const userPlan = plans.find(plan => plan.userId === user.id);
             const userPayments = payments.filter(payment => payment.userId === user.id);
             const totalSpent = userPayments.reduce((sum, payment) => sum + payment.amount, 0);
-            const completedImages = user.history.filter(h => h.status === 'completed').length;
-            
-            // Find the last completed image generation
-            const completedHistory = user.history.filter(h => h.status === 'completed');
-            const lastImageGeneration = completedHistory.length > 0 ? 
-                completedHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0].createdAt : null;
-            
+
+            const activity = historyByUser.get(user.id);
+            const completed = completedByUser.get(user.id);
+            const lastActivity = activity ? activity._max.createdAt : null;
+            const lastImageGeneration = completed ? completed._max.createdAt : null;
+
             // Determine user status based on recent activity
-            const recentActivity = user.history.length > 0 ? 
-                new Date() - new Date(user.history[0].createdAt) < 30 * 24 * 60 * 60 * 1000 : false;
-            
+            const recentActivity = lastActivity
+                ? new Date() - new Date(lastActivity) < 30 * 24 * 60 * 60 * 1000
+                : false;
+
             return {
                 id: user.id,
                 name: user.name || 'Anonymous User',
                 email: user.email,
                 image: user.image,
                 joinDate: user.createdAt,
-                lastActive: user.history.length > 0 ? user.history[0].createdAt : user.createdAt,
+                lastActive: lastActivity || user.createdAt,
                 lastImageGeneration: lastImageGeneration,
                 status: recentActivity ? 'Active' : 'Inactive',
                 // Plan information
@@ -165,9 +178,9 @@ async function handler(req, res) {
                 },
                 // Statistics
                 totalSpent: totalSpent,
-                imagesProcessed: completedImages,
-                publishedImages: user.publishedImages.length,
-                totalHistory: user.history.length
+                imagesProcessed: completed ? completed._count._all : 0,
+                publishedImages: publishedByUser.has(user.id) ? publishedByUser.get(user.id)._count._all : 0,
+                totalHistory: activity ? activity._count._all : 0
             };
         });
 

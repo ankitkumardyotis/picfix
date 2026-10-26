@@ -139,10 +139,9 @@ async function handler(req, res) {
         };
 
         // Calculate conversion rate
-        const usersWithPayments = await prisma.paymentHistory.findMany({
-            where: { paymentStatus: 'captured' },
-            select: { userId: true },
-            distinct: ['userId']
+        const usersWithPayments = await prisma.paymentHistory.groupBy({
+            by: ['userId'],
+            where: { paymentStatus: 'captured' }
         });
         const conversionRate = totalUsers > 0 ? (usersWithPayments.length / totalUsers * 100) : 0;
 
@@ -157,35 +156,12 @@ async function handler(req, res) {
         const monthlyRevenueAmount = monthlyRevenue._sum.amount || 0;
         const lastMonthRevenueAmount = lastMonthRevenue._sum.amount || 0;
 
-        // Debug logging - check all payment records
-        const allPayments = await prisma.paymentHistory.findMany({
-            select: {
-                paymentStatus: true,
-                amount: true,
-                createdAt: true
-            }
-        });
-        
-        const allPaymentStatuses = await prisma.paymentHistory.groupBy({
-            by: ['paymentStatus'],
-            _count: { paymentStatus: true }
-        });
-
-        console.log('Payment Stats Debug:');
-        console.log('Total Payment Records:', allPayments.length);
-        console.log('Payment Status Distribution:', allPaymentStatuses);
-        console.log('All Payments:', allPayments.slice(0, 5)); // Show first 5 records
-        console.log('Total Payments Count (captured):', totalPayments);
-        console.log('Total Revenue Object:', totalRevenue);
-        console.log('Total Revenue Amount:', totalRevenueAmount);
-        console.log('Failed Payments:', failedPayments);
-        console.log('Pending Payments:', pendingPayments);
-
         // Calculate growth rates
         const userGrowth = calculateGrowth(monthlyUsers, lastMonthUsers);
         const imageGrowth = calculateGrowth(monthlyImages, lastMonthImages);
         const revenueGrowth = calculateGrowth(monthlyRevenueAmount, lastMonthRevenueAmount);
 
+        res.setHeader('Cache-Control', 'private, max-age=60');
         res.status(200).json({
             success: true,
             stats: {
