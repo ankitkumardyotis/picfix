@@ -365,6 +365,58 @@ function NavBar({ open, setOpen }) {
                                     </Typography>
                                 </Box>
                             </Link>
+
+                            {/* AI Video Link, highlighted as new */}
+                            <Link href="/ai-image-editor?model=ai-video" style={{ textDecoration: 'none' }}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.75,
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        color: '#333',
+                                        fontWeight: 600,
+                                        fontSize: '18px',
+                                        '.css-fmcy3k-MuiTypography-root': {
+                                            fontSize: '14px',
+                                            fontWeight: 600
+                                        },
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                            color: '#000',
+                                        }
+                                    }}
+                                >
+                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        AI Video
+                                    </Typography>
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            padding: '1px 7px',
+                                            borderRadius: '10px',
+                                            fontSize: '10px',
+                                            fontWeight: 700,
+                                            letterSpacing: '0.6px',
+                                            lineHeight: 1.5,
+                                            color: '#fff',
+                                            background: 'linear-gradient(135deg, #ff2d75 0%, #ff8c00 100%)',
+                                            boxShadow: '0 2px 8px rgba(255, 45, 117, 0.35)',
+                                            animation: 'newBadgePulse 2.4s ease-in-out infinite',
+                                            '@keyframes newBadgePulse': {
+                                                '0%, 100%': { transform: 'scale(1)' },
+                                                '50%': { transform: 'scale(1.08)' },
+                                            },
+                                            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                                        }}
+                                    >
+                                        NEW
+                                    </Box>
+                                </Box>
+                            </Link>
                         </Box>
                     )}
 
