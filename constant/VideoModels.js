@@ -16,6 +16,8 @@ const videoModels = {
     minDuration: 2,
     maxDuration: 30,
     defaultDuration: 5,
+    // Shown to users while a video is being made. Update it if the real wait changes.
+    minimumWait: '4 to 5 minutes',
     resolutions: ['480p', '720p', '1080p'],
     defaultResolution: '480p',
     aspectRatios: ['adaptive', '16:9', '9:16', '1:1', '4:3', '3:4'],
@@ -32,6 +34,8 @@ const videoModels = {
     minDuration: 4,
     maxDuration: 30,
     defaultDuration: 5,
+    // Shown to users while a video is being made. Update it if the real wait changes.
+    minimumWait: '4 to 5 minutes',
     resolutions: ['480p', '720p'],
     defaultResolution: '480p',
     aspectRatios: ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9', 'adaptive'],

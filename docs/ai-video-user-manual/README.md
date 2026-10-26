@@ -55,7 +55,9 @@ The price updates as you change these. It shows as **Per run cost** at the botto
 
 ## Step 6: Generate
 
-Click **Generate Video**. Your credits are taken, and a placeholder appears under **Generated Video** while your video is made. This can take a few minutes. You can have up to 3 videos generating at the same time.
+Click **Generate Video**. Your credits are taken, and a card appears under **Generated Video** while your video is made. **Please wait a minimum of 4 to 5 minutes, and do not refresh or close the page** while it works. You can have up to 3 videos generating at the same time.
+
+If you do leave the page, your video keeps being made. Come back later and it will be in **My History**.
 
 ![Your video is generating](screenshots/07-generating.png)
 

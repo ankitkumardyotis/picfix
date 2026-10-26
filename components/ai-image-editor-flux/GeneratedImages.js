@@ -90,6 +90,55 @@ const ResponsiveActionButton = styled(IconButton)(({ theme, variant }) => ({
   },
 }));
 
+// Shown in place of the spinner while a video is being made: how long to wait, and not to refresh
+const VideoWaitCard = ({ minimumWait }) => {
+  const theme = useTheme();
+  const [seconds, setSeconds] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setSeconds((current) => current + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      sx={{
+        width: '100%',
+        minHeight: 280,
+        borderRadius: 2,
+        p: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: 1.25,
+        background: `linear-gradient(135deg, ${alpha('#667eea', 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+      }}
+    >
+      <CircularProgress size={52} thickness={3} sx={{ color: '#667eea' }} />
+      <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>Making your video</Typography>
+      <Typography sx={{ fontSize: '0.95rem' }}>
+        Please wait a minimum of <strong>{minimumWait || '4 to 5 minutes'}</strong>.
+      </Typography>
+      <Typography sx={{ fontWeight: 700, color: '#c2185b', fontSize: '0.95rem' }}>
+        Do not refresh or close this page.
+      </Typography>
+      <Typography variant="caption" color="textSecondary">
+        Time so far: {elapsed}
+      </Typography>
+      <Typography variant="caption" color="textSecondary" sx={{ maxWidth: 360 }}>
+        If you do leave, your video keeps being made. Come back later and it will be in My History.
+      </Typography>
+    </Box>
+  );
+};
+
 const GeneratedImages = ({
   images,
   isLoading,
@@ -103,7 +152,8 @@ const GeneratedImages = ({
   // New props for publishing
   onPublish,
   inputPrompt,
-  currentState
+  currentState,
+  videoWait
 }) => {
   const theme = useTheme();
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
@@ -168,12 +218,18 @@ const GeneratedImages = ({
           {isLoading ? (
             // Enhanced Loading placeholders
             Array(selectedModel === 'ai-video' || selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
-              <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
-                <EnhancedLoader 
-                  selectedModel={selectedModel}
-                  size="medium"
-                />
-              </Grid>
+              selectedModel === 'ai-video' ? (
+                <Grid item xs={12} sm={8} md={6} key={`loading-${index}`}>
+                  <VideoWaitCard minimumWait={videoWait} />
+                </Grid>
+              ) : (
+                <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
+                  <EnhancedLoader 
+                    selectedModel={selectedModel}
+                    size="medium"
+                  />
+                </Grid>
+              )
             ))
           ) : (
             images.map((image, index) => (

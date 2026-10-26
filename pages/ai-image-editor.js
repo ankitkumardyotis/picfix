@@ -781,6 +781,17 @@ export default function AIImageEditor() {
   const inputSectionRef = useRef(null);
   const exampleMasonryRef = useRef(null);
 
+  // Ask before the page is refreshed or closed while a video is being made
+  useEffect(() => {
+    if (!(isLoading && selectedModel === 'ai-video')) return undefined;
+    const warnBeforeLeaving = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [isLoading, selectedModel]);
+
   // Keep the video options valid for the chosen video model (each has its own limits)
   useEffect(() => {
     if (selectedModel !== 'ai-video') return;
@@ -1700,7 +1711,7 @@ export default function AIImageEditor() {
       }
 
       const { id: jobId } = await startResponse.json();
-      enqueueSnackbar('Generating your video. This can take a few minutes...', { variant: 'info' });
+      enqueueSnackbar(`Generating your video. Please wait a minimum of ${videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'} and do not refresh this page.`, { variant: 'info', autoHideDuration: 10000 });
 
       // The credits are taken when the job starts
       refreshUserCredits();
@@ -4868,6 +4879,10 @@ export default function AIImageEditor() {
                   </Typography>
                 </Box>
 
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  Making a video takes a minimum of <strong>{videoModels[switchedModel]?.minimumWait || '4 to 5 minutes'}</strong>. Please keep this page open and <strong>do not refresh it</strong> while your video is being made.
+                </Alert>
+
                 {/* Generate Button for AI Video */}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                   <Button
@@ -4912,6 +4927,7 @@ export default function AIImageEditor() {
                 handleComparePreview={handleComparePreview}
                 onPublish={handlePublishImage}
                 inputPrompt={inputPrompt}
+                videoWait={selectedModel === 'ai-video' ? videoModels[switchedModel]?.minimumWait : undefined}
               />
 
 
