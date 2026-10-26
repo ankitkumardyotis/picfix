@@ -1,5 +1,255 @@
 export const blogPosts = [
   {
+    "title": "AI Video Generator: Turn Text or a Photo into a Video with Wan 3 and Seedance 2.5",
+    "description": "Make short AI videos from a text prompt or a single photo. Compare Wan 3 and Seedance 2.5, learn how to write better video prompts, and see the credit price before you generate on PicFix.AI.",
+    "image": "/assets/blog/ai-video-generator-cover.jpg",
+    "slug": "ai-video-generator-text-to-video-image-to-video",
+    "date": "2026-10-26",
+    "category": "AI Video",
+    "content": `
+
+  <!-- ================================================== -->
+  <!-- INTRODUCTION -->
+  <!-- ================================================== -->
+
+  <div style="display:flex; gap:40px; align-items:center; margin-bottom:60px; flex-wrap:wrap;">
+    <div style="flex:1; min-width:280px;">
+      <h1>AI Video Generator: Turn Text or a Photo into a Video</h1>
+      <p>
+        PicFix.AI can now make short videos from a sentence or from a single photo.
+        You pick a model, describe the scene, choose how long the video should be,
+        and see the credit price before you press generate.
+      </p>
+      <p>
+        This guide explains what an AI video generator does, how the two video models
+        inside PicFix.AI differ, and how to get a better result from your very first clip.
+      </p>
+    </div>
+
+    <div style="flex:1; min-width:280px;">
+      <img src="/assets/blog/ai-video-generator-playground.jpg"
+           alt="AI Video Generator inside the PicFix.AI editor"
+           style="width:100%; border-radius:12px;" />
+    </div>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- WHAT IS AI VIDEO GENERATION -->
+  <!-- ================================================== -->
+
+  <h2>What is an AI video generator?</h2>
+  <p>
+    An AI video generator creates moving footage from a short description or from an image.
+    There are two common ways to use one:
+  </p>
+  <ul>
+    <li><strong>Text to video:</strong> you write what should happen, such as
+      "a turtle swimming through a library, 35mm film", and the model invents the whole scene.</li>
+    <li><strong>Photo to video (image to video):</strong> you give the model a photo as the first
+      frame, add a prompt, and it brings the picture to life.</li>
+  </ul>
+  <p>
+    Both are useful for social media clips, product teasers, story ideas, mood boards and
+    quick visual drafts before a bigger shoot.
+  </p>
+
+  <!-- ================================================== -->
+  <!-- THE TWO MODELS -->
+  <!-- ================================================== -->
+
+  <h2>Two video models, one editor: Wan 3 and Seedance 2.5</h2>
+  <p>
+    PicFix.AI puts both models in the same editor you already use for images, so you can switch
+    between them with one dropdown and compare results on the same prompt.
+  </p>
+
+  <table style="width:100%; border-collapse:collapse; margin:30px 0;">
+    <thead>
+      <tr style="background:#f5f7fa; text-align:left;">
+        <th style="padding:12px; border:1px solid #e3e6ee;"></th>
+        <th style="padding:12px; border:1px solid #e3e6ee;">Wan 3</th>
+        <th style="padding:12px; border:1px solid #e3e6ee;">Seedance 2.5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Made by</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Alibaba</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">ByteDance</td>
+      </tr>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Video length</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">2 to 30 seconds</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">4 to 30 seconds</td>
+      </tr>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Resolution</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">480p, 720p, 1080p</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">480p, 720p</td>
+      </tr>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Start from a photo</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Yes</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Yes</td>
+      </tr>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Sound</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">-</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Can generate speech, sound effects and music with the video</td>
+      </tr>
+      <tr>
+        <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Cost in PicFix.AI</strong></td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Lower credits per second</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Higher credits per second</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>Which one should you start with?</strong> Try Wan 3 at 480p for quick, inexpensive drafts
+    while you work out the prompt. Switch to Seedance 2.5 when you want sound or a more polished
+    result.
+  </p>
+
+  <!-- ================================================== -->
+  <!-- HOW TO -->
+  <!-- ================================================== -->
+
+  <div style="display:flex; gap:40px; align-items:center; margin:60px 0; flex-wrap:wrap;">
+    <div style="flex:1; min-width:280px;">
+      <img src="/assets/blog/ai-video-options-and-price.jpg"
+           alt="Choosing resolution, length and seeing the credit price for an AI video"
+           style="width:100%; border-radius:12px;" />
+    </div>
+
+    <div style="flex:1; min-width:280px;">
+      <h2>How to make an AI video on PicFix.AI</h2>
+      <ol>
+        <li>Open the editor and choose <strong>AI Video</strong> from the model list.</li>
+        <li>Pick a <strong>Video Model</strong>: Wan 3 or Seedance 2.5.</li>
+        <li>Write your prompt, or click one of the example prompts.</li>
+        <li>Optional: upload a photo to start the video from it.</li>
+        <li>Set the <strong>aspect ratio, resolution and length</strong> in the left panel.</li>
+        <li>Check the price on the Generate button, then press <strong>Generate Video</strong>.</li>
+      </ol>
+      <p>
+        Your video appears under Generated Video when it is ready. This usually takes a few minutes.
+        You can leave the page and find it later under My History.
+      </p>
+    </div>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- PROMPT TIPS -->
+  <!-- ================================================== -->
+
+  <h2>How to write a better video prompt</h2>
+  <p>A video prompt works best when it describes a single, clear moment. A few habits help:</p>
+  <ul>
+    <li><strong>Name the subject and the action.</strong> "A golden retriever running through a meadow"
+      gives the model more to work with than "a dog".</li>
+    <li><strong>Describe the camera.</strong> Words like "slow motion", "close-up", "drone shot" or
+      "handheld" change how the clip feels.</li>
+    <li><strong>Set the light and the look.</strong> "Warm afternoon light", "neon street at night"
+      or "35mm film" give the clip a style.</li>
+    <li><strong>Keep it to one scene.</strong> Short clips do not have room for a long story.</li>
+    <li><strong>For spoken words with Seedance 2.5,</strong> put the dialogue in double quotes.</li>
+  </ul>
+
+  <div style="display:flex; gap:40px; align-items:center; margin:60px 0; flex-wrap:wrap;">
+    <div style="flex:1; min-width:280px;">
+      <h2>Using your own photo as the first frame</h2>
+      <p>
+        If you already have an image you like, upload it before you generate. The video starts from
+        your photo, and its shape follows the photo. This is a good way to animate a product shot,
+        a portrait, or an illustration while keeping the look you chose.
+      </p>
+      <p>
+        Photos can be JPG, PNG or WebP, up to 10MB. Leave the upload empty to create the video from
+        your prompt alone.
+      </p>
+    </div>
+
+    <div style="flex:1; min-width:280px;">
+      <img src="/assets/blog/ai-video-seedance-options.jpg"
+           alt="Seedance 2.5 options with the audio switch in PicFix.AI"
+           style="width:100%; border-radius:12px;" />
+    </div>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- CREDITS -->
+  <!-- ================================================== -->
+
+  <h2>How credits work for video</h2>
+  <p>
+    Video is priced per second, so the cost depends on three things: the video model, the resolution
+    and the length. The exact credit price shows on the Generate button and in the left panel while
+    you change the options, so you always know what you will pay before you start.
+  </p>
+  <ul>
+    <li>Shorter videos and lower resolutions cost fewer credits.</li>
+    <li>Wan 3 costs fewer credits per second than Seedance 2.5.</li>
+    <li>If a video fails, the credits are refunded automatically.</li>
+  </ul>
+
+  <h2>Keeping and sharing your video</h2>
+  <p>
+    Finished videos are kept for 24 hours, so download any clip you want to keep. If you publish a
+    video to the community, it is saved permanently and appears in the community gallery for others
+    to see.
+  </p>
+
+  <!-- ================================================== -->
+  <!-- FAQ -->
+  <!-- ================================================== -->
+
+  <h2>Frequently asked questions</h2>
+
+  <h3>Can I make a video from just text?</h3>
+  <p>Yes. Write a prompt and leave the photo upload empty.</p>
+
+  <h3>Can I animate a photo?</h3>
+  <p>Yes. Upload the photo as the first frame and add a prompt that describes the movement.</p>
+
+  <h3>How long can the videos be?</h3>
+  <p>Wan 3 makes videos from 2 to 30 seconds. Seedance 2.5 makes videos from 4 to 30 seconds.</p>
+
+  <h3>Does my video have sound?</h3>
+  <p>Seedance 2.5 can generate sound with the video, and you can turn it off. Switch to Seedance 2.5 in the Video Model list to use it.</p>
+
+  <h3>How long do I have to download my video?</h3>
+  <p>24 hours. After that it is removed, unless you published it.</p>
+
+  <!-- ================================================== -->
+  <!-- CTA -->
+  <!-- ================================================== -->
+
+  <div style="text-align:center; padding:50px 20px; background:#f5f7fa; border-radius:16px; margin:80px 0;">
+    <h2>Make your first AI video</h2>
+    <p style="max-width:650px; margin:0 auto 30px;">
+      Describe a scene or start from a photo, choose Wan 3 or Seedance 2.5, and see the credit price
+      before you generate.
+    </p>
+
+    <a href="https://picfix.ai/ai-image-editor?model=ai-video"
+       style="
+         display:inline-block;
+         background:#4a6cff;
+         color:#fff;
+         padding:14px 30px;
+         border-radius:8px;
+         font-size:16px;
+         font-weight:600;
+         text-decoration:none;
+       ">
+       Open AI Video Generator
+    </a>
+  </div>
+
+  `
+  },
+  {
     "title": "One AI Image Editor for Generation, Editing, and Image Combine: How Modern Platforms Simplify Everything",
     "description": "Learn how a single AI image editor can handle image generation, AI photo editing, and image combine in one workflow. This guide explains how creators, designers, and businesses save time by using one unified AI image editor instead of multiple tools.",
     "image": "https://picfixcdn.com/picfix-usecase-image/blog/Why%20Modern%20AI%20Image%20Platforms%20Use%20Multiple%20Models%20Instead%20of%20One.png",

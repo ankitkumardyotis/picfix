@@ -24,6 +24,12 @@ import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 // AI Models configuration
 const aiModels = [
     {
+        key: 'ai-video',
+        name: 'AI Video Generator',
+        icon: <MovieCreationIcon sx={{ fontSize: 18 }} />,
+        description: 'Turn text or a photo into a video'
+    },
+    {
         key: 'generate-image',
         name: 'AI Image Generator',
         icon: <AutoAwesomeIcon sx={{ fontSize: 18 }} />,
@@ -88,12 +94,6 @@ const aiModels = [
         name: 'Image Upscaler',
         icon: <ZoomInIcon sx={{ fontSize: 18 }} />,
         description: 'Enhance image resolution with AI'
-    },
-    {
-        key: 'ai-video',
-        name: 'AI Video Generator',
-        icon: <MovieCreationIcon sx={{ fontSize: 18 }} />,
-        description: 'Turn text or a photo into a video'
     }
 
 ];

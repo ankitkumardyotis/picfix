@@ -152,7 +152,7 @@ function LandingPage() {
                 </div>
                 <div className={`${styles.modelTag} ${styles.hot} ${styles.animateUp} ${styles.delay3} ${styles.rotate4}`}>
                   <div className={styles.tagIcon}>🎬</div>
-                  <span>Text to Video</span>
+                  <span>AI Video</span>
                   <div className={styles.hotBadge}>🚀 Hot</div>
                   <div className={styles.shine}></div>
                 </div>

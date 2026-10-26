@@ -188,7 +188,7 @@ export default function Home({ open, setOpen }) {
                   "name": "Is PicFix.AI free to use?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Yes, PicFix.AI offers several free AI tools including photo restoration, background removal, home designer, and text-to-video. Premium features are available with credit-based pricing."
+                    "text": "Yes, PicFix.AI offers several free AI tools including photo restoration, background removal, and home designer. Premium features, including the AI video generator, are available with credit-based pricing."
                   }
                 },
                 {

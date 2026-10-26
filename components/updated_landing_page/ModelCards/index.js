@@ -8,6 +8,15 @@ import SendIcon from '@mui/icons-material/Send';
 // Sample data for AI models - replace with your actual data
 const aiModels = [
     {
+        id: 0,
+        title: "AI Video Generator",
+        description: "Turn text or a photo into a video",
+        icon: "🎬",
+        gradient: "linear-gradient(135deg, #3a1c71 0%, #d76d77 100%)",
+        image: "/assets/blog/ai-video-generator-cover.jpg",
+        modelKey: "ai-video"
+    },
+    {
         id: 1,
         title: "AI Image Generator",
         description: "Generate images with AI precision",

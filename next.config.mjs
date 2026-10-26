@@ -100,6 +100,17 @@ const nextConfig = {
       },
     ]
   },
+
+  // The QA site is public, so keep it out of search results. Set NOINDEX=true on the QA Vercel project only.
+  async headers() {
+    if (process.env.NOINDEX !== 'true') return [];
+    return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

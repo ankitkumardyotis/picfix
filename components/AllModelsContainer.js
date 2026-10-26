@@ -52,10 +52,11 @@ export default function AllModelsContainer() {
     height: "100%",
   };
 
+  // The old /textToVideo page no longer exists. This card opens AI Video in the editor.
   const handleTextToVideo = () => {
-    router.push("/textToVideo");
+    router.push("/ai-image-editor?model=ai-video");
     context.setFileUrl("");
-    localStorage.setItem("path", "/textToVideo");
+    localStorage.setItem("path", "/ai-image-editor");
   };
 
   return (
@@ -91,25 +92,21 @@ export default function AllModelsContainer() {
               style={{ position: "relative" }}
               onClick={handleTextToVideo}
             >
-              <div className="ribbon right">
-                <h6 style={{ fontSize: "28px" }}>Free</h6>
-              </div>
               <div className="card-img">
                 <Image
                   style={imageStyle}
-                  src="/assets/text-to-video-banner.png"
-                  alt="Picture of the author"
+                  src="/assets/blog/ai-video-generator-cover.jpg"
+                  alt="AI Video Generator"
                   width={400}
                   height={300}
                 />
               </div>
               <div className="card-info">
-                <h2>Text to Video</h2>
+                <h2>AI Video Generator</h2>
                 <br />
                 <p>
-                  Transform text into engaging videos instantly. Explore various
-                  styles for dynamic and creative storytelling. Enhance your
-                  content effortlessly with Text to Video!
+                  Turn a text prompt or a photo into a short video. Choose Wan 3
+                  or Seedance 2.5 and see the credit price before you generate.
                 </p>
               </div>
             </div>
