@@ -3,6 +3,7 @@ import { authOptions } from "../auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { getUseCaseImageUrl } from "@/constant/getUseCaseImageUrl";
 import { generatePublicUrl, getModelDisplayName as getModelName } from "@/lib/publicUrlUtils";
+import { isVideoModel } from "@/constant/VideoModels";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -184,7 +185,7 @@ export default async function handler(req, res) {
                         likes: dbImage.likes,
                         downloads: dbImage.downloads,
                         views: dbImage.views,
-                        hasComparison: inputUrls.length > 0,
+                        hasComparison: inputUrls.length > 0 && !isVideoModel(dbImage.model),
                         modelParams: dbImage.modelParams,
                         aspectRatio: dbImage.aspectRatio,
                         createdAt: dbImage.createdAt,

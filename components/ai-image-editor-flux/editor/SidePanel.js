@@ -1,13 +1,39 @@
 import React from 'react'
-import { Box, styled, alpha, FormControl, InputLabel, Select, MenuItem, Typography, Button, IconButton, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
+import { Box, styled, alpha, FormControl, InputLabel, Select, MenuItem, Typography, Button, IconButton, CircularProgress, Slider, Switch, FormControlLabel, useTheme, useMediaQuery } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
 import modelConfigurations from '@/constant/ModelConfigurations';
+import videoModels, { getVideoCredits } from '@/constant/VideoModels';
 import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SplitButton from '../SplitButton';
 
-function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, combineImageModels, upscaleImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateUpscaleImage, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn, upscaleImageUrl }) {
+// Defined outside SidePanel on purpose. SidePanel recreates its wrapper component on every render,
+// which remounts everything inside it, so a slider driven straight from the parent's state would
+// lose the drag after the first step. This one keeps the value locally and reports it on release.
+function VideoLengthSlider({ value, min, max, onCommit }) {
+    const [draft, setDraft] = React.useState(value);
+    React.useEffect(() => { setDraft(value); }, [value]);
+
+    return (
+        <>
+            <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '12px', mb: .5 }}>
+                Length: {draft} seconds
+            </Typography>
+            <Slider
+                size="small"
+                value={draft}
+                min={min}
+                max={max}
+                step={1}
+                onChange={(_event, next) => setDraft(next)}
+                onChangeCommitted={(_event, next) => onCommit(next)}
+            />
+        </>
+    );
+}
+
+function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedModel, handleSwitchModel, editImageModels, generateImageModels, combineImageModels, upscaleImageModels, switchedModel, setSwitchedModel, selectedHairColor, setSelectedHairColor, selectedGender, setSelectedGender, selectedHeadshotGender, setSelectedHeadshotGender, selectedHeadshotBackground, setSelectedHeadshotBackground, selectedReimagineGender, setSelectedReimagineGender, selectedScenario, setSelectedScenario, numOutputs, setNumOutputs, generatedImages, setGeneratedImages, isLoading, context, generateHairStyleImages, generateTextRemovalImage, generateHeadshotImage, generateRestoreImage, generateGfpRestoreImage, generateHomeDesignerImage, generateBackgroundRemovalImage, generateRemoveObjectImage, generateReimagineImage, generateCombineImages, generateUpscaleImage, generateFluxImages, uploadedImageUrl, textRemovalImageUrl, cartoonifyImageUrl, headshotImageUrl, restoreImageUrl, gfpRestoreImageUrl, homeDesignerImageUrl, backgroundRemovalImage, backgroundRemovalStatus, removeObjectImageUrl, reimagineImageUrl, combineImage1Url, combineImage2Url, inputPrompt, hasMaskDrawn, upscaleImageUrl, videoModelOptions, videoResolution, setVideoResolution, videoDuration, setVideoDuration, videoGenerateAudio, setVideoGenerateAudio }) {
 
     const theme = useTheme();
     
@@ -32,6 +58,12 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
     const currentConfig = getCurrentConfig();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+    // AI Video: the options and the price depend on the chosen video model
+    const currentVideoModel = selectedModel === 'ai-video' ? videoModels[switchedModel] : null;
+    const videoCredits = currentVideoModel
+        ? getVideoCredits(switchedModel, { resolution: videoResolution, duration: videoDuration })
+        : null;
+
     const SidePanel = styled(Box)(({ theme }) => ({
         width: isMobile ? '100%' : '250px',
         background: isMobile ? 'transparent' : alpha(theme.palette.background.default, 0.5),
@@ -52,6 +84,10 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
 
     const getAspectRatioOptions = () => {
+        if (selectedModel === 'ai-video') {
+            const ratios = currentVideoModel ? currentVideoModel.aspectRatios : ['16:9'];
+            return ratios.map((ratio) => ({ value: ratio, label: ratio === 'adaptive' ? 'Auto' : ratio }));
+        }
         if (selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'home-designer' || selectedModel === 're-imagine') {
             return currentConfig.aspectRatios.map(ratio => {
                 const labels = {
@@ -119,7 +155,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     }}
                 >
                     {Object.entries(modelConfigurations)
-                        .filter(([key, config]) => !isMobile || key !== 'background-removal')
+                        .filter(([key, config]) => !config.hidden && (!isMobile || key !== 'background-removal'))
                         .map(([key, config]) => (
                             // 
                             <MenuItem
@@ -178,23 +214,26 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
             </FormControl >
 
             {
-                (selectedModel === 'edit-image' || selectedModel === 'generate-image' || selectedModel === 'combine-image' || selectedModel === 'upscale-image') && (
+                (selectedModel === 'edit-image' || selectedModel === 'generate-image' || selectedModel === 'combine-image' || selectedModel === 'upscale-image' || selectedModel === 'ai-video') && (
                     < FormControl fullWidth variant="outlined" >
                         <InputLabel sx={{ fontSize: '14px', fontWeight: 400, }}>
                             {selectedModel === 'edit-image' ? 'Edit Image Model' : 
                              selectedModel === 'generate-image' ? 'Generate Image Model' : 
                              selectedModel === 'combine-image' ? 'Combine Image Model' :
+                             selectedModel === 'ai-video' ? 'Video Model' :
                              'Upscale Image Model'}
                         </InputLabel>
                         <Select
                             value={switchedModel || (selectedModel === 'edit-image' ? 'nano-banana' : 
                                                    selectedModel === 'generate-image' ? 'flux-schnell' : 
                                                    selectedModel === 'combine-image' ? 'flux-kontext-pro' :
+                                                   selectedModel === 'ai-video' ? 'wan-3' :
                                                    'crystal-upscaler')}
                             onChange={(e) => setSwitchedModel(e.target.value)}
                             label={selectedModel === 'edit-image' ? 'Edit Image Model' : 
                                    selectedModel === 'generate-image' ? 'Generate Image Model' : 
                                    selectedModel === 'combine-image' ? 'Combine Image Model' :
+                                   selectedModel === 'ai-video' ? 'Video Model' :
                                    'Upscale Image Model'}
                             sx={{
                                 borderRadius: 2,
@@ -211,6 +250,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                             {(selectedModel === 'edit-image' ? editImageModels : 
                               selectedModel === 'generate-image' ? generateImageModels : 
                               selectedModel === 'combine-image' ? combineImageModels :
+                              selectedModel === 'ai-video' ? (videoModelOptions || []) :
                               upscaleImageModels).map((config, index) => (
                                 <MenuItem
                                     key={config.model}
@@ -440,6 +480,56 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     </>
                 )
             }
+            {/* AI Video Specific Sidebar Controls */}
+            {
+                selectedModel === 'ai-video' && currentVideoModel && (
+                    <>
+                        {/* Resolution */}
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel>Resolution</InputLabel>
+                            <Select
+                                value={videoResolution}
+                                onChange={(e) => setVideoResolution(e.target.value)}
+                                label="Resolution"
+                                sx={{
+                                    borderRadius: 2,
+                                    '& .MuiSelect-select': {
+                                        padding: '.5rem',
+                                        paddingLeft: '1rem',
+                                        fontSize: '12px',
+                                        fontWeight: 400,
+                                    },
+                                }}
+                            >
+                                {currentVideoModel.resolutions.map((resolution) => (
+                                    <MenuItem key={resolution} value={resolution} sx={{ fontSize: '12px', fontWeight: 400, }}>
+                                        {resolution}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        {/* Length */}
+                        <Box sx={{ px: 0.5 }}>
+                            <VideoLengthSlider
+                                value={videoDuration}
+                                min={currentVideoModel.minDuration}
+                                max={currentVideoModel.maxDuration}
+                                onCommit={setVideoDuration}
+                            />
+                        </Box>
+
+                        {/* Audio (Seedance only) */}
+                        {currentVideoModel.supportsAudioToggle && (
+                            <FormControlLabel
+                                control={<Switch size="small" checked={videoGenerateAudio} onChange={(e) => setVideoGenerateAudio(e.target.checked)} />}
+                                label={<Typography variant="body2" sx={{ fontSize: '12px' }}>Generate audio</Typography>}
+                            />
+                        )}
+                    </>
+                )
+            }
+
             {/* Headshot Specific Sidebar Controls */}
             {
                 selectedModel === 'headshot' && (
@@ -574,7 +664,9 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
 
                 <Box sx={{}}>
                     <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center' }}>
-                        {currentConfig.creditCost !== 0 ? `Per run cost: ${currentConfig.creditCost * numOutputs}` : 'This model is free to use.'}
+                        {selectedModel === 'ai-video'
+                            ? (videoCredits ? `Per run cost: ${videoCredits}` : 'Choose a valid length')
+                            : currentConfig.creditCost !== 0 ? `Per run cost: ${currentConfig.creditCost * numOutputs}` : 'This model is free to use.'}
                     </Typography>
                 </Box>
 

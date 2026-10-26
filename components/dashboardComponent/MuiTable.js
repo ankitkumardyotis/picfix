@@ -49,7 +49,10 @@ export default function MuiTable({ userHistory }) {
     if (!historyData || !Array.isArray(historyData)) return [];
 
     // Sort userHistory by createdAt in descending order
-    const sortedUserHistory = [...historyData].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Videos that are still generating or failed (and were refunded) are not transactions
+    const sortedUserHistory = historyData
+      .filter((item) => !String(item.model).startsWith('video-') || item.status === 'completed')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return sortedUserHistory.map((item, idx) => {
       const diffrenceInTime = diffrenceTime(item.createdAt);
@@ -88,6 +91,10 @@ export default function MuiTable({ userHistory }) {
         model = "Google Upscaler";
       } else if (item.model === "upscale-image-seedvr2") {
         model = "SeedVR2 Upscaler";
+      } else if (item.model === "video-wan-3") {
+        model = "AI Video (Wan 3)";
+      } else if (item.model === "video-seedance-2.5") {
+        model = "AI Video (Seedance 2.5)";
       }
       else {
         model = item.model;

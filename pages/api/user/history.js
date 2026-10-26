@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import { generatePublicUrl } from "@/lib/unifiedImageStorage";
 import prisma from '@/lib/prisma';
+import { VIDEO_HISTORY_MODELS, isVideoModel } from "@/constant/VideoModels";
+import { finalizePendingVideoJobs, VIDEO_TTL_HOURS } from "@/lib/videoJobs";
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -19,12 +21,20 @@ export default async function handler(req, res) {
     const whereClause = {
       userId: session.user.id,
       status: 'completed',
-      outputImagePath: { not: null } // Only show records with images
+      outputImagePath: { not: null }, // Only show records with images
+      NOT: { model: { startsWith: 'video-' } } // Videos are listed by /api/video/list, not as images
     };
-    
+
     if (model && model !== 'all') {
+      if (model === 'ai-video') {
+        // Videos in temporary storage are deleted after VIDEO_TTL_HOURS; published ones are kept
+        const since = new Date(Date.now() - VIDEO_TTL_HOURS * 60 * 60 * 1000);
+        delete whereClause.NOT;
+        whereClause.model = { in: VIDEO_HISTORY_MODELS };
+        whereClause.OR = [{ createdAt: { gt: since } }, { isPublished: true }];
+        await finalizePendingVideoJobs(session.user.id);
       // Handle both old and new model names for re-imagine
-      if (model === 're-imagine') {
+      } else if (model === 're-imagine') {
         whereClause.model = { in: ['re-imagine', 'reimagine'] };
       } else if (model === 'generate-image') {
         // Handle all generate-image model variants
@@ -85,6 +95,11 @@ export default async function handler(req, res) {
         baseRecord.inputImage1 = generatePublicUrl(record.inputImagePaths[0].path);
         baseRecord.inputImage2 = generatePublicUrl(record.inputImagePaths[1].path);
         baseRecord.outputImage = baseRecord.url;
+      }
+
+      // A video has no before/after comparison
+      if (isVideoModel(record.model)) {
+        baseRecord.hasComparison = false;
       }
 
       return baseRecord;

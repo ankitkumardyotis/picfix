@@ -61,7 +61,11 @@ const getModelDisplayInfo = (modelName) => {
     'background-removal': { name: 'BG Remove', color: '#22c55e', bgColor: 'rgba(34, 197, 94, 0.9)' },
     'remove-object': { name: 'Object Remove', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.9)' },
     're-imagine': { name: 'Re-imagine', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' },
-    'reimagine': { name: 'Re-imagine', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' }
+    'reimagine': { name: 'Re-imagine', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.9)' },
+
+    // Video Models
+    'video-wan-3': { name: 'Wan 3', color: '#0ea5e9', bgColor: 'rgba(14, 165, 233, 0.9)' },
+    'video-seedance-2.5': { name: 'Seedance 2.5', color: '#d946ef', bgColor: 'rgba(217, 70, 239, 0.9)' }
   };
 
   return modelMap[modelName] || { name: modelName, color: '#6b7280', bgColor: 'rgba(107, 114, 128, 0.9)' };
@@ -81,7 +85,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
   // History state
   const [historyImages, setHistoryImages] = useState([]);
   const [loadingHistoryImages, setLoadingHistoryImages] = useState(false);
-  const [activeTab, setActiveTab] = useState('examples'); // 'examples', 'community', 'history'
+  // 'examples', 'community', 'history'. AI Video has no example videos, so it starts on the user's history.
+  const [activeTab, setActiveTab] = useState(selectedModel === 'ai-video' ? 'history' : 'examples');
 
   // Comparison modal states
   const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
@@ -569,7 +574,8 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
 
   const handlePublishFromHistory = async (historyId, title) => {
     try {
-      const response = await fetch('/api/images/publishFromHistory', {
+      // A video is copied to permanent storage when it is published, so it has its own route
+      const response = await fetch(selectedModel === 'ai-video' ? '/api/video/publish' : '/api/images/publishFromHistory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -863,7 +869,7 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
             }
           }}
         >
-          <ToggleButton value="examples">Examples</ToggleButton>
+          {selectedModel !== 'ai-video' && <ToggleButton value="examples">Examples</ToggleButton>}
           {selectedModel !== "background-removal" && <ToggleButton value="history">My History</ToggleButton>}
           <ToggleButton value="community">Community</ToggleButton>
         </ToggleButtonGroup>
@@ -1114,12 +1120,12 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                           )}
 
                           <CardMedia
-                            component="img"
-                            image={selectedModel === 'combine-image' ? image.outputImage : image.url}
+                            component={selectedModel === 'ai-video' ? 'video' : 'img'}
+                            {...(selectedModel === 'ai-video'
+                              ? { src: image.url, muted: true, loop: true, playsInline: true, preload: 'metadata', onLoadedMetadata: () => handleImageLoad(image.id), onLoadedData: () => handleImageLoad(image.id) }
+                              : { image: selectedModel === 'combine-image' ? image.outputImage : image.url, onLoad: () => handleImageLoad(image.id), referrerPolicy: 'no-referrer' })}
                             alt={image.title || `Example Image ${index + 1}`}
-                            onLoad={() => handleImageLoad(image.id)}
                             onLoadStart={() => handleImageLoadStart(image.id)}
-                            referrerPolicy="no-referrer"
                             sx={{
                               width: '100%',
                               height: image.height || 250,
@@ -1424,12 +1430,12 @@ const ExampleMasonry = forwardRef(({ selectedModel, selectedGender, onImageClick
                     )}
 
                     <CardMedia
-                      component="img"
-                      image={selectedModel === 'combine-image' ? image.outputImage : image.url}
+                      component={selectedModel === 'ai-video' ? 'video' : 'img'}
+                      {...(selectedModel === 'ai-video'
+                        ? { src: image.url, muted: true, loop: true, playsInline: true, preload: 'metadata', onLoadedMetadata: () => handleImageLoad(image.id), onLoadedData: () => handleImageLoad(image.id) }
+                        : { image: selectedModel === 'combine-image' ? image.outputImage : image.url, onLoad: () => handleImageLoad(image.id), referrerPolicy: 'no-referrer' })}
                       alt={image.title || `Example Image ${index + 1}`}
-                      onLoad={() => handleImageLoad(image.id)}
                       onLoadStart={() => handleImageLoadStart(image.id)}
-                      referrerPolicy="no-referrer"
                       sx={{
                         width: '100%',
                         height: image.height || 250, // Default height if not specified

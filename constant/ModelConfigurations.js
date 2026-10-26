@@ -186,6 +186,19 @@ const modelConfigurations = {
     type: 'upscale-image',
     creditCost: 2
   },
+  'ai-video': {
+    name: 'AI Video',
+    type: 'prompts',
+    // Lowest possible price. The real price depends on the video model, resolution and length: see constant/VideoModels.js
+    creditCost: 2,
+    options: [
+      'A turtle swimming through a library, 35mm film',
+      'A golden retriever running through a meadow',
+      'Rain falling on a neon city street at night',
+      'Waves rolling onto a beach at sunrise',
+      'A hot air balloon drifting over mountains'
+    ]
+  },
   'upscale-image-topaz': {
     name: 'Topaz Labs Upscale',
     type: 'upscale-image',
@@ -205,6 +218,13 @@ const modelConfigurations = {
     name: 'SeedVR2 Upscaler',
     type: 'upscale-image',
     creditCost: 3
+  },
+  // Price-only entry for Flux Schnell inside Generate Image. Not a model of its own, so it is hidden from the model dropdown.
+  'generate-image-flux': {
+    name: 'Flux Schnell',
+    type: 'generate-image',
+    creditCost: 1,
+    hidden: true
   },
   'generate-image-pruna': {
     name: 'Pruna AI',

@@ -14,7 +14,8 @@ import {
   Portrait as PortraitIcon,
   Merge as MergeIcon,
   Edit as EditIcon,
-  Psychology as PsychologyIcon
+  Psychology as PsychologyIcon,
+  MovieCreation as MovieCreationIcon
 } from '@mui/icons-material';
 
 const getModelInfo = (selectedModel) => {
@@ -102,6 +103,13 @@ const getModelInfo = (selectedModel) => {
       description: 'Editing your image...',
       color: '#667eea',
       estimatedTime: '15-30 seconds'
+    },
+    'ai-video': {
+      icon: <MovieCreationIcon />,
+      title: 'Generating Video',
+      description: 'Creating your video. This can take a few minutes...',
+      color: '#667eea',
+      estimatedTime: '1-5 minutes'
     }
   };
 

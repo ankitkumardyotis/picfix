@@ -114,6 +114,11 @@ function Footer() {
                         Home Designer (Free)
                     </Typography>
                 </Box>
+                <Box sx={buttonSX} onClick={() => { router.push('/ai-image-editor?model=ai-video'), context.setFileUrl("") }} >
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '1em', color: 'rgb(87 83 78)', cursor: 'pointer' }}>
+                        AI Video Generator
+                    </Typography>
+                </Box>
 
             </Grid>
             <Grid item xs={6} md={6} lg={2} >

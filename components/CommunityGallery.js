@@ -22,6 +22,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from 'notistack';
 import modelConfigurations from '../constant/ModelConfigurations';
+import { isVideoModel } from '../constant/VideoModels';
 
 const CommunityGallery = () => {
   const theme = useTheme();
@@ -238,6 +239,8 @@ const CommunityGallery = () => {
       'generate-image': '/ai-image-editor',
       'hair-style': '/ai-image-editor',
       'headshot': '/ai-image-editor',
+      'video-wan-3': '/ai-image-editor?model=ai-video',
+      'video-seedance-2.5': '/ai-image-editor?model=ai-video',
       'restore-image': '/restorePhoto',
       'text-removal': '/ai-image-editor',
       'reimagine': '/ai-image-editor',
@@ -320,7 +323,8 @@ const CommunityGallery = () => {
 
   // Get model display name
   const getModelDisplayName = (model) => {
-    return modelConfigurations[model]?.name || model;
+    const videoNames = { 'video-wan-3': 'Video (Wan 3)', 'video-seedance-2.5': 'Video (Seedance 2.5)' };
+    return videoNames[model] || modelConfigurations[model]?.name || model;
   };
 
   // Get model color
@@ -332,7 +336,9 @@ const CommunityGallery = () => {
       'restore-image': '#fa709a',
       'text-removal': '#fee140',
       'reimagine': '#a8edea',
-      'combine-image': '#d299c2'
+      'combine-image': '#d299c2',
+      'video-wan-3': '#0ea5e9',
+      'video-seedance-2.5': '#d946ef'
     };
     return colors[model] || '#667eea';
   };
@@ -535,32 +541,59 @@ const CommunityGallery = () => {
                 )} */}
               </Box>
 
-              <img
-                src={image.url}
-                alt={image.title || 'Community creation'}
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                onContextMenu={(e) => e.preventDefault()}
-                onDragStart={(e) => e.preventDefault()}
-                style={{
-                  width: '100%',
-                  height: `${image.height || 280}px`,
-                  objectFit: 'cover',
-                  display: 'block',
-                  borderRadius: '8px',
-                  // Prevent layout shift by maintaining aspect ratio
-                  aspectRatio: 'auto',
-                  userSelect: 'none',
-                  WebkitUserDrag: 'none',
-                  pointerEvents: 'auto',
-                }}
-                onLoad={() => {
-                  handleImageLoad(imageId);
-                }}
-                onError={() => {
-                  handleImageError(imageId);
-                }}
-              />
+              {isVideoModel(image.model) ? (
+                <video
+                  src={image.url}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                  onMouseLeave={(e) => e.currentTarget.pause()}
+                  style={{
+                    width: '100%',
+                    height: `${image.height || 280}px`,
+                    objectFit: 'cover',
+                    display: 'block',
+                    borderRadius: '8px',
+                    backgroundColor: '#000',
+                  }}
+                  onLoadedMetadata={() => {
+                    handleImageLoad(imageId);
+                  }}
+                  onError={() => {
+                    handleImageError(imageId);
+                  }}
+                />
+              ) : (
+                <img
+                  src={image.url}
+                  alt={image.title || 'Community creation'}
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                  style={{
+                    width: '100%',
+                    height: `${image.height || 280}px`,
+                    objectFit: 'cover',
+                    display: 'block',
+                    borderRadius: '8px',
+                    // Prevent layout shift by maintaining aspect ratio
+                    aspectRatio: 'auto',
+                    userSelect: 'none',
+                    WebkitUserDrag: 'none',
+                    pointerEvents: 'auto',
+                  }}
+                  onLoad={() => {
+                    handleImageLoad(imageId);
+                  }}
+                  onError={() => {
+                    handleImageError(imageId);
+                  }}
+                />
+              )}
 
               {/* Like button overlay (top-right) - Only for community images */}
               {image.isCommunity && (

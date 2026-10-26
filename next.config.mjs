@@ -39,6 +39,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/ai-video',
+        destination: '/ai-image-editor?model=ai-video',
+        permanent: false,
+      },
+      {
         source: '/restorePhoto/runModel',
         destination: '/ai-image-editor?model=gfp-restore',
         permanent: true,

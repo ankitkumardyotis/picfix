@@ -66,6 +66,10 @@ export default async function handler(req, res) {
   // Get the correct model cost for daily usage check
   const modelType = getModelType(config);
   const getModelCost = (modelName) => {
+    // A model with its own entry uses that price, otherwise the family price
+    if (modelConfigurations[modelName]?.creditCost !== undefined) {
+      return modelConfigurations[modelName].creditCost;
+    }
     if (modelName.startsWith("generate-image")) {
       return modelConfigurations['generate-image']?.creditCost || 2;
     }
@@ -1512,7 +1516,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 3); // Crystal upscaler costs 3 credits
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -1568,7 +1572,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 1); // Topaz Labs costs 1 credit
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -1620,7 +1624,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 2); // Google upscaler costs 2 credits
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({
@@ -1672,7 +1676,7 @@ export default async function handler(req, res) {
         });
 
         if (!hasPlan) {
-          await incrementDailyUsage(session.user.email, 3); // SeedVR2 costs 3 credits
+          await incrementDailyUsage(session.user.email, modelCost);
         }
 
         res.status(200).json({

@@ -20,6 +20,7 @@ import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural
 import HomeIcon from '@mui/icons-material/Home';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 // AI Models configuration
 const aiModels = [
     {
@@ -87,6 +88,12 @@ const aiModels = [
         name: 'Image Upscaler',
         icon: <ZoomInIcon sx={{ fontSize: 18 }} />,
         description: 'Enhance image resolution with AI'
+    },
+    {
+        key: 'ai-video',
+        name: 'AI Video Generator',
+        icon: <MovieCreationIcon sx={{ fontSize: 18 }} />,
+        description: 'Turn text or a photo into a video'
     }
 
 ];

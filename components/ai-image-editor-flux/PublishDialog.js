@@ -52,7 +52,8 @@ const PublishDialog = ({
       'restore-image': 'Restored Photo',
       'reimagine': 'Reimagined',
       'combine-image': 'Combined Image Creation',
-      'generate-image': 'AI Generated Image'
+      'generate-image': 'AI Generated Image',
+      'ai-video': 'AI Generated Video'
     };
 
     const baseTitle = modelTitles[model] || `${"Enhanced by picfixai - " + Date.now()}`;
@@ -108,6 +109,7 @@ const PublishDialog = ({
       'reimagine': 'ReImagine Scenarios',
       'combine-image': 'Image Combiner',
       'edit-image': 'AI Image Editor',
+      'ai-video': 'AI Video',
     };
     return modelNames[selectedModel] || selectedModel;
   };
@@ -162,15 +164,26 @@ const PublishDialog = ({
               backgroundColor: alpha(theme.palette.grey[300], 0.3)
             }}
           >
-            <img
-              src={imageUrl}
-              alt="Preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '200px',
-                objectFit: 'contain'
-              }}
-            />
+            {selectedModel === 'ai-video' ? (
+              <video
+                src={imageUrl}
+                controls
+                muted
+                playsInline
+                preload="metadata"
+                style={{ maxWidth: '100%', maxHeight: '200px' }}
+              />
+            ) : (
+              <img
+                src={imageUrl}
+                alt="Preview"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '200px',
+                  objectFit: 'contain'
+                }}
+              />
+            )}
           </Box>
         )}
 

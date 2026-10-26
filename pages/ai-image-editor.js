@@ -50,6 +50,7 @@ import DynamicCombineImageUploader from '../components/ai-image-editor-flux/Dyna
 import DownloadModal from '../components/ai-image-editor-flux/DownloadModal';
 import { useDownloadHandler } from '../components/ai-image-editor-flux/useDownloadHandler';
 import modelConfigurations from '../constant/ModelConfigurations';
+import videoModels, { getVideoCredits } from '../constant/VideoModels';
 import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -277,6 +278,16 @@ export default function AIImageEditor() {
   const [upscaleImageUrl, setUpscaleImageUrl] = useState(null);
   const [uploadingUpscaleImage, setUploadingUpscaleImage] = useState(false);
 
+  // AI video specific states
+  const [videoImage, setVideoImage] = useState(null);
+  const [videoImageUrl, setVideoImageUrl] = useState(null);
+  const [videoImageKey, setVideoImageKey] = useState(null);
+  const [uploadingVideoImage, setUploadingVideoImage] = useState(false);
+  const [videoResolution, setVideoResolution] = useState('480p');
+  const [videoDuration, setVideoDuration] = useState(5);
+  const [videoGenerateAudio, setVideoGenerateAudio] = useState(true);
+  const [videoHistoryId, setVideoHistoryId] = useState(null); // History record of the video in the results area
+
 
 
   // Preview modal states
@@ -376,7 +387,7 @@ export default function AIImageEditor() {
       name: 'Crystal Upscaler',
       description: 'philz1337x/crystal-upscaler',
       model: 'crystal-upscaler',
-      creditCost: 3,
+      creditCost: modelConfigurations['upscale-image-crystal'].creditCost,
       maxScale: 6,
       specialty: 'High quality crystal clear upscaling'
     },
@@ -384,7 +395,7 @@ export default function AIImageEditor() {
       name: 'Topaz Labs',
       description: 'topazlabs/image-upscale',
       model: 'topaz-labs',
-      creditCost: 1,
+      creditCost: modelConfigurations['upscale-image-topaz'].creditCost,
       maxScale: '4x',
       specialty: 'Professional photo enhancement'
     },
@@ -392,7 +403,7 @@ export default function AIImageEditor() {
       name: 'Google Upscaler',
       description: 'google/upscaler',
       model: 'google-upscaler',
-      creditCost: 2,
+      creditCost: modelConfigurations['upscale-image-google'].creditCost,
       maxScale: 'x4',
       specialty: 'Fast and reliable upscaling'
     },
@@ -400,11 +411,18 @@ export default function AIImageEditor() {
       name: 'SeedVR2',
       description: 'zsxkib/seedvr2',
       model: 'seedvr2',
-      creditCost: 3,
+      creditCost: modelConfigurations['upscale-image-seedvr2'].creditCost,
       maxScale: 2,
       specialty: 'AI-powered image restoration'
     }
   ]
+
+  // Models offered inside AI Video (limits, resolutions and prices live in constant/VideoModels.js)
+  const videoModelOptions = Object.entries(videoModels).map(([key, videoModel]) => ({
+    name: videoModel.name,
+    description: videoModel.replicateModel,
+    model: key,
+  }))
 
 
 
@@ -493,8 +511,21 @@ export default function AIImageEditor() {
   // Download handler
   const downloadHandler = useDownloadHandler();
 
+  // True while the editor is on screen. A long video check stops when the user leaves the page.
+  const editorActiveRef = useRef(true);
+  useEffect(() => {
+    editorActiveRef.current = true;
+    return () => {
+      editorActiveRef.current = false;
+    };
+  }, []);
+
   // Fetch user's credit points and daily usage when component mounts
   useEffect(() => {
+    // This effect runs again when the session loads. Its cleanup marks the ref as unmounted,
+    // so it must be marked mounted again here or the balance never loads or refreshes.
+    isMountedRef.current = true;
+
     const fetchUserCredits = async () => {
       if (session?.user?.id) {
         try {
@@ -637,6 +668,15 @@ export default function AIImageEditor() {
           if (state.selectedReimagineGender) setSelectedReimagineGender(state.selectedReimagineGender);
           if (state.selectedScenario) setSelectedScenario(state.selectedScenario);
 
+          // Restore AI video settings
+          if (state.videoSwitchedModel) setSwitchedModel(state.videoSwitchedModel);
+          if (state.videoImageUrl) setVideoImageUrl(state.videoImageUrl);
+          if (state.videoImageKey) setVideoImageKey(state.videoImageKey);
+          if (state.videoImage) setVideoImage(state.videoImage);
+          if (state.videoResolution) setVideoResolution(state.videoResolution);
+          if (state.videoDuration) setVideoDuration(state.videoDuration);
+          if (typeof state.videoGenerateAudio === 'boolean') setVideoGenerateAudio(state.videoGenerateAudio);
+
           // Clear the saved state after restoration
           localStorage.removeItem('aiEditorState');
           enqueueSnackbar('Welcome back! Your previous work has been restored.', { variant: 'success' });
@@ -700,6 +740,14 @@ export default function AIImageEditor() {
       selectedHeadshotBackground,
       selectedReimagineGender,
       selectedScenario,
+      // AI video settings (the start photo is already uploaded, so only its URL is kept)
+      videoImageUrl,
+      videoImageKey,
+      videoImage,
+      videoResolution,
+      videoDuration,
+      videoGenerateAudio,
+      videoSwitchedModel: selectedModel === 'ai-video' ? switchedModel : null,
       // Timestamp for state freshness
       timestamp: Date.now()
     };
@@ -733,6 +781,16 @@ export default function AIImageEditor() {
   const inputSectionRef = useRef(null);
   const exampleMasonryRef = useRef(null);
 
+  // Keep the video options valid for the chosen video model (each has its own limits)
+  useEffect(() => {
+    if (selectedModel !== 'ai-video') return;
+    const videoModel = videoModels[switchedModel];
+    if (!videoModel) return;
+    setVideoResolution((current) => (videoModel.resolutions.includes(current) ? current : videoModel.defaultResolution));
+    setVideoDuration((current) => Math.min(Math.max(current, videoModel.minDuration), videoModel.maxDuration));
+    setAspectRatio((current) => (videoModel.aspectRatios.includes(current) ? current : videoModel.defaultAspectRatio));
+  }, [selectedModel, switchedModel]);
+
   // Handle URL parameter for model selection
   useEffect(() => {
     const { model } = router.query;
@@ -758,6 +816,10 @@ export default function AIImageEditor() {
         setAspectRatio('');
         setNumOutputs(1);
         setGeneratedImages([null]);
+      } else if (model === 'ai-video') {
+        setAspectRatio('adaptive');
+        setNumOutputs(1);
+        setGeneratedImages([null]);
       } else if (['text-removal', 'headshot', 'reimagine'].includes(model)) {
         setAspectRatio('1:1');
         setNumOutputs(1);
@@ -775,9 +837,19 @@ export default function AIImageEditor() {
         setSwitchedModel('seedream-4');
       } else if (model === 'generate-image') {
         setSwitchedModel('pruna-ai');
+      } else if (model === 'ai-video') {
+        setSwitchedModel('wan-3');
       }
 
       // Reset model-specific states
+      if (model !== 'ai-video') {
+        setVideoImage(null);
+        setVideoImageUrl(null);
+        setVideoImageKey(null);
+        setUploadingVideoImage(false);
+        setVideoHistoryId(null);
+      }
+
       if (model !== 'hair-style') {
         setSelectedHairStyle('No change');
         setSelectedHairColor('No change');
@@ -939,6 +1011,8 @@ export default function AIImageEditor() {
       setSwitchedModel('nano-banana'); // Default for edit-image
     } else if (newModel === 'combine-image') {
       setSwitchedModel('pruna-ai'); // Default for combine-image
+    } else if (newModel === 'ai-video') {
+      setSwitchedModel('wan-3'); // Default for ai-video
     }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
@@ -948,6 +1022,19 @@ export default function AIImageEditor() {
     }
 
 
+
+    // Reset ai video specific states when switching models
+    if (newModel !== 'ai-video') {
+      setVideoImage(null);
+      setVideoImageUrl(null);
+      setVideoImageKey(null);
+      setUploadingVideoImage(false);
+      setVideoHistoryId(null);
+    } else {
+      setVideoResolution('480p');
+      setVideoDuration(5);
+      setVideoGenerateAudio(true);
+    }
 
     // Reset headshot specific states when switching models
     if (newModel !== 'headshot') {
@@ -1021,6 +1108,8 @@ export default function AIImageEditor() {
       setAspectRatio('match_input_image');
     } else if (newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 'background-removal' || newModel === 'remove-object') {
       setAspectRatio('');
+    } else if (newModel === 'ai-video') {
+      setAspectRatio('adaptive');
     } else if (newModel === 'text-removal' || newModel === 'headshot' || newModel === 're-imagine') {
       setAspectRatio('1:1');
     } else {
@@ -1028,7 +1117,7 @@ export default function AIImageEditor() {
     }
 
     // Set number of outputs based on model
-    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine') {
+    if (newModel === 'hair-style' || newModel === 'combine-image' || newModel === 'home-designer' || newModel === 'background-removal' || newModel === 'remove-object' || newModel === 'text-removal' || newModel === 'headshot' || newModel === 'restore-image' || newModel === 'gfp-restore' || newModel === 're-imagine' || newModel === 'ai-video') {
       setNumOutputs(1);
       setGeneratedImages([null]);
     } else {
@@ -1556,6 +1645,103 @@ export default function AIImageEditor() {
       console.error('Error upscaling image:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const generateAiVideo = async () => {
+    if (!inputPrompt.trim()) {
+      enqueueSnackbar('Please describe your video first', { variant: 'warning' });
+      return;
+    }
+    if (uploadingVideoImage) {
+      enqueueSnackbar('Please wait for your photo to finish uploading', { variant: 'warning' });
+      return;
+    }
+
+    // Check authentication before proceeding
+    if (!checkAuthBeforeAction()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setNumOutputs(1); // A video request makes one video
+    setGeneratedImages([null]);
+    setVideoHistoryId(null);
+
+    // Smooth scroll to image generation section
+    scrollToImageGeneration();
+
+    try {
+      const startResponse = await fetch('/api/video/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: switchedModel,
+          prompt: inputPrompt,
+          duration: videoDuration,
+          resolution: videoResolution,
+          aspectRatio,
+          generateAudio: videoGenerateAudio,
+          imageUrl: videoImageUrl,
+          imageKey: videoImageKey
+        }),
+      });
+
+      if (!startResponse.ok) {
+        const errorMessage = await extractErrorMessage(startResponse, 'Failed to start the video');
+        throw new Error(errorMessage);
+      }
+
+      const { id: jobId } = await startResponse.json();
+      enqueueSnackbar('Generating your video. This can take a few minutes...', { variant: 'info' });
+
+      // The credits are taken when the job starts
+      refreshUserCredits();
+
+      // Videos take minutes, so check on the job until it finishes. If the user leaves the
+      // page, the video still appears in My History when it is ready.
+      const maxChecks = 180; // 15 minutes at 5 seconds each
+      let finished = null;
+      for (let check = 0; check < maxChecks && !finished; check++) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        if (!editorActiveRef.current) return;
+        const listResponse = await fetch('/api/video/list');
+        if (!listResponse.ok) continue;
+        const { videos } = await listResponse.json();
+        const job = videos.find((video) => video.id === jobId);
+        if (job && (job.status === 'completed' || job.status === 'failed')) {
+          finished = job;
+        }
+      }
+
+      if (!finished) {
+        enqueueSnackbar('Your video is taking longer than usual. It will appear in My History when it is ready.', { variant: 'info' });
+        setGeneratedImages([null]);
+        return;
+      }
+      if (finished.status === 'failed') {
+        throw new Error(`${finished.error || 'The video could not be made'}. Your credits were refunded.`);
+      }
+
+      setGeneratedImages([finished.url]);
+      setVideoHistoryId(jobId);
+      enqueueSnackbar('Video generated successfully!', { variant: 'success' });
+
+      // Refresh history to show the new video
+      refreshHistoryAfterGeneration();
+    } catch (err) {
+      enqueueSnackbar(err.message || 'Error generating video', { variant: 'error' });
+      console.error('Error generating video:', err);
+      setGeneratedImages([null]);
+    } finally {
+      if (editorActiveRef.current) {
+        setIsLoading(false);
+        // Show the updated balance (credits are refunded if the job failed)
+        refreshUserCredits();
+      }
     }
   };
 
@@ -2184,7 +2370,9 @@ export default function AIImageEditor() {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       if (inputPrompt.trim()) {
-        if (selectedModel === 'combine-image') {
+        if (selectedModel === 'ai-video') {
+          generateAiVideo();
+        } else if (selectedModel === 'combine-image') {
           generateCombineImages();
         } else {
           generateFluxImages();
@@ -2279,6 +2467,11 @@ export default function AIImageEditor() {
 
   const currentConfig = modelConfigurations[selectedModel];
 
+  // Price of the video with the current options (null for the other models)
+  const videoCredits = selectedModel === 'ai-video'
+    ? getVideoCredits(switchedModel, { resolution: videoResolution, duration: videoDuration })
+    : null;
+
   // Get display name for model
   const getModelDisplayName = (model) => {
     const names = {
@@ -2288,7 +2481,8 @@ export default function AIImageEditor() {
       'restore-image': 'Image Restoration',
       'text-removal': 'Text/Watermark Removal',
       'reimagine': 'ReImagine Scenarios',
-      'combine-image': 'Image Combiner'
+      'combine-image': 'Image Combiner',
+      'ai-video': 'AI Video'
     };
     return names[model] || model;
   };
@@ -2343,6 +2537,16 @@ export default function AIImageEditor() {
   const handleDownload = (imageUrl, index) => {
     // Generate intelligent filename
     const filename = generateFileName(selectedModel, inputPrompt, index);
+
+    // Videos are saved through our own route: browsers ignore the download attribute on cross-origin files
+    if (selectedModel === 'ai-video') {
+      const link = document.createElement('a');
+      link.href = `/api/video/download?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename.replace(/\.jpg$/, '.mp4'))}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
 
     // For base64 images, download directly (no watermark needed for base64)
     if (imageUrl.startsWith('data:')) {
@@ -2450,8 +2654,8 @@ export default function AIImageEditor() {
 
   // Function to generate proper configuration display for modal
   const generateModelConfigurationDisplay = () => {
-    // For generate-image model, show prompt if available, otherwise show configuration
-    if (selectedModel === 'generate-image') {
+    // For generate-image and ai-video models, show prompt if available, otherwise show configuration
+    if (selectedModel === 'generate-image' || selectedModel === 'ai-video') {
       if (inputPrompt && inputPrompt.trim()) {
         return {
           type: 'prompt',
@@ -2811,6 +3015,28 @@ export default function AIImageEditor() {
   // Handle image publishing
   const handlePublishImage = async ({ imageUrl, imageIndex, title, description }) => {
     try {
+      // A video is published from its history record: the file is copied to permanent storage first
+      if (selectedModel === 'ai-video') {
+        if (!videoHistoryId) {
+          throw new Error('This video is not ready to publish yet');
+        }
+        const videoResponse = await fetch('/api/video/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ historyId: videoHistoryId, title })
+        });
+        if (!videoResponse.ok) {
+          const errorData = await videoResponse.json();
+          throw new Error(errorData.error || 'Failed to publish video');
+        }
+        enqueueSnackbar('🎉 Video published to community successfully!', { variant: 'success' });
+        if (exampleMasonryRef.current) {
+          exampleMasonryRef.current.refreshCommunity();
+          exampleMasonryRef.current.refreshHistory();
+        }
+        return;
+      }
+
       // Get current state for input images and model parameters
       const currentState = {
         uploadedImage,
@@ -2926,6 +3152,20 @@ export default function AIImageEditor() {
           "name": "AI Hair Style",
           "applicationCategory": "MultimediaApplication",
           "description": "AI-powered tool for changing hair styles and colors in photos"
+        }
+      },
+      'ai-video': {
+        title: 'AI Video Generator - Turn Text or Photos into Video | PicFix.AI',
+        description: 'Create short AI videos from a text prompt or a photo. Choose Wan 3 for fast, affordable clips or Seedance 2.5 for higher quality motion with sound, and see the credit price before you generate.',
+        keywords: 'AI video generator, text to video, image to video, AI video maker, photo to video, Wan 3, Seedance 2.5, create video with AI',
+        ogTitle: 'AI Video Generator - Turn Text or Photos into Video',
+        ogDescription: 'Create short AI videos from a text prompt or a photo with Wan 3 and Seedance 2.5.',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AI Video Generator",
+          "applicationCategory": "MultimediaApplication",
+          "description": "AI-powered tool for creating short videos from text prompts or photos"
         }
       },
       'headshot': {
@@ -3265,6 +3505,13 @@ export default function AIImageEditor() {
             inputPrompt={inputPrompt}
             hasMaskDrawn={hasMaskDrawn}
             upscaleImageUrl={upscaleImageUrl}
+            videoModelOptions={videoModelOptions}
+            videoResolution={videoResolution}
+            setVideoResolution={setVideoResolution}
+            videoDuration={videoDuration}
+            setVideoDuration={setVideoDuration}
+            videoGenerateAudio={videoGenerateAudio}
+            setVideoGenerateAudio={setVideoGenerateAudio}
           />
           }
 
@@ -3374,6 +3621,13 @@ export default function AIImageEditor() {
                 inputPrompt={inputPrompt}
                 hasMaskDrawn={hasMaskDrawn}
                 upscaleImageUrl={upscaleImageUrl}
+                videoModelOptions={videoModelOptions}
+                videoResolution={videoResolution}
+                setVideoResolution={setVideoResolution}
+                videoDuration={videoDuration}
+                setVideoDuration={setVideoDuration}
+                videoGenerateAudio={videoGenerateAudio}
+                setVideoGenerateAudio={setVideoGenerateAudio}
               />
             </Box>
             }
@@ -3591,6 +3845,7 @@ export default function AIImageEditor() {
                                     selectedModel === 'combine-image' ? generateCombineImages :
                                       selectedModel === 'edit-image' ? generateEditImage :
                                         selectedModel === 'upscale-image' ? generateUpscaleImage :
+                                          selectedModel === 'ai-video' ? generateAiVideo :
                                           generateFluxImages}
                           disabled={isLoading ||
                             (selectedModel === 'text-removal' ? !textRemovalImageUrl :
@@ -3604,6 +3859,7 @@ export default function AIImageEditor() {
                                     ) :
                                       selectedModel === 'edit-image' ? (!editImageUrl || !inputPrompt.trim()) :
                                         selectedModel === 'upscale-image' ? !upscaleImageUrl :
+                                          selectedModel === 'ai-video' ? (!inputPrompt.trim() || uploadingVideoImage) :
                                           !inputPrompt.trim())}
                           sx={{
                             padding: 0.7,
@@ -3620,7 +3876,9 @@ export default function AIImageEditor() {
                             transition: 'all 0.3s ease',
                           }}
                           title={
-                            selectedModel === 'generate-image'
+                            selectedModel === 'ai-video'
+                              ? `Generate video (${videoCredits ?? '-'} credits)`
+                              : selectedModel === 'generate-image'
                               ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(currentConfig.creditCost || 0) * numOutputs} credits)`
                               : `Generate ${currentConfig.name || 'Image'} (${currentConfig.creditCost || 0} credits)`
                           }
@@ -4538,6 +4796,96 @@ export default function AIImageEditor() {
                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
                   >
                     {isLoading ? 'Upscaling Image...' : 'Upscale Image'}
+                  </Button>
+                </Box>
+              </>
+            )}
+
+            {/* AI Video Specific Controls */}
+            {selectedModel === 'ai-video' && (
+              <>
+                {/* Optional start photo */}
+                <ImageUploader
+                  title="Start from a photo (optional)"
+                  uploadedImage={videoImage}
+                  uploadingImage={uploadingVideoImage}
+                  height="120px"
+                  placeholderText="Click to upload a photo to animate"
+                  onImageUpload={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                      enqueueSnackbar('Please choose a JPG, PNG or WebP image', { variant: 'warning' });
+                      return;
+                    }
+                    if (file.size > 10 * 1024 * 1024) {
+                      enqueueSnackbar('Image must be 10MB or smaller', { variant: 'warning' });
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                      const base64Data = event.target.result;
+                      setVideoImage(base64Data);
+
+                      // Immediately upload to R2
+                      setUploadingVideoImage(true);
+                      const url = await uploadImageToR2(base64Data, 'ai-video-input.jpg');
+                      if (url) {
+                        setVideoImageUrl(url);
+                        // Storage key of the photo, kept in the video's history record
+                        const keyMatch = url.match(/\/(images\/[^?]+)/);
+                        setVideoImageKey(keyMatch ? decodeURIComponent(keyMatch[1]) : null);
+                      } else {
+                        setVideoImage(null); // Reset if upload failed
+                      }
+                      setUploadingVideoImage(false);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  onImageRemove={() => {
+                    setVideoImage(null);
+                    setVideoImageUrl(null);
+                    setVideoImageKey(null);
+                  }}
+                  isDragging={isDragging}
+                  isLoading={isLoading}
+                  error={error}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" color="textSecondary">
+                    Add a photo and the video starts from it, or leave it empty to create a video from your prompt alone. Videos are kept for 24 hours, so download or publish the ones you want to keep.
+                  </Typography>
+                </Box>
+
+                {/* Generate Button for AI Video */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={generateAiVideo}
+                    disabled={!inputPrompt.trim() || isLoading || uploadingVideoImage}
+                    sx={{
+                      py: .8,
+                      px: 2,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '14px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      },
+                      '&:disabled': {
+                        background: '#e0e0e0',
+                        color: '#9e9e9e'
+                      }
+                    }}
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  >
+                    {isLoading ? 'Generating Video...' : `Generate Video (${videoCredits ?? '-'} credits)`}
                   </Button>
                 </Box>
               </>

@@ -328,7 +328,9 @@ function getColorForFeature(feature) {
         'room-design': '#8b5cf6',
         'combine-image': '#06b6d4',
         'trendy-look': '#f59e0b',
-        're-imagine': '#ef4444'
+        're-imagine': '#ef4444',
+        'video-wan-3': '#0ea5e9',
+        'video-seedance-2.5': '#d946ef'
     };
     return colors[feature] || '#6b7280';
 }

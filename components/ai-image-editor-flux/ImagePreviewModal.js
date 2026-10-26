@@ -28,6 +28,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CompareIcon from '@mui/icons-material/Compare';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import modelConfigurations from '@/constant/ModelConfigurations';
+import { isVideoModel } from '@/constant/VideoModels';
 import ImageComparisonSlider from './ImageComparisonSlider';
 import DownloadModal from './DownloadModal';
 import { useDownloadHandler } from './useDownloadHandler';
@@ -56,6 +57,9 @@ const ImagePreviewModal = ({
 
   // Download handler
   const downloadHandler = useDownloadHandler();
+
+  // AI Video results are shown in a video player instead of an image
+  const isVideo = isVideoModel(selectedModel) || isVideoModel(imageInfo?.actualModel);
 
   // Reset zoom and comparison mode when image changes or modal opens
   useEffect(() => {
@@ -154,6 +158,16 @@ const ImagePreviewModal = ({
     if (currentImage) {
       // Generate intelligent filename
       const filename = generatePreviewFileName(selectedModel, imageInfo, currentImageData.originalIndex);
+
+      // Videos are saved through our own route: browsers ignore the download attribute on cross-origin files
+      if (isVideo) {
+        const link = document.createElement('a');
+        link.href = `/api/video/download?url=${encodeURIComponent(currentImage)}&filename=${encodeURIComponent(filename.replace(/\.(jpg|jpeg|png)$/i, '.mp4'))}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
 
       // For base64 images, download directly (no watermark needed for base64)
       if (currentImage.startsWith('data:')) {
@@ -623,27 +637,45 @@ const ImagePreviewModal = ({
                   padding: isMobile ? 1 : 2,
                 }}
               >
-                <img
-                  src={currentImage}
-                  alt="Preview"
-                  referrerPolicy="no-referrer"
-                  onContextMenu={(e) => e.preventDefault()}
-                  onDragStart={(e) => e.preventDefault()}
-                  style={{
-                    maxWidth: isMobile ? '95%' : '100%',
-                    maxHeight: isMobile ? '95%' : '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    objectFit: 'contain',
-                    borderRadius: '8px',
-                    transform: `scale(${zoom})`,
-                    transition: 'transform 0.2s ease',
-                    cursor: zoom > 1 ? 'grab' : 'default',
-                    userSelect: 'none',
-                    WebkitUserDrag: 'none',
-                    pointerEvents: 'auto',
-                  }}
-                />
+                {isVideo ? (
+                  <video
+                    key={currentImage}
+                    src={currentImage}
+                    controls
+                    autoPlay
+                    loop
+                    playsInline
+                    onContextMenu={(e) => e.preventDefault()}
+                    style={{
+                      maxWidth: isMobile ? '95%' : '100%',
+                      maxHeight: isMobile ? '95%' : '100%',
+                      borderRadius: '8px',
+                      backgroundColor: '#000',
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={currentImage}
+                    alt="Preview"
+                    referrerPolicy="no-referrer"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                    style={{
+                      maxWidth: isMobile ? '95%' : '100%',
+                      maxHeight: isMobile ? '95%' : '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      transform: `scale(${zoom})`,
+                      transition: 'transform 0.2s ease',
+                      cursor: zoom > 1 ? 'grab' : 'default',
+                      userSelect: 'none',
+                      WebkitUserDrag: 'none',
+                      pointerEvents: 'auto',
+                    }}
+                  />
+                )}
               </Box>
             </>
           )}

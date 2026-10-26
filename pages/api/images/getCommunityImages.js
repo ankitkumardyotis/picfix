@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { generatePublicUrl } from "@/lib/publicUrlUtils";
+import { VIDEO_HISTORY_MODELS, isVideoModel } from "@/constant/VideoModels";
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -17,7 +18,8 @@ export default async function handler(req, res) {
         // Fetch community images from database (paths only)
         const communityImages = await prisma.publishedImage.findMany({
             where: {
-                model: model,
+                // The AI Video playground model covers every published video model
+                model: model === 'ai-video' ? { in: VIDEO_HISTORY_MODELS } : model,
                 isPublic: true,
                 isApproved: true
             },
@@ -69,7 +71,7 @@ export default async function handler(req, res) {
                     likes: dbImage.likes,
                     downloads: dbImage.downloads,
                     views: dbImage.views,
-                    hasComparison: inputUrls.length > 0,
+                    hasComparison: inputUrls.length > 0 && !isVideoModel(dbImage.model),
                     modelParams: dbImage.modelParams,
                     aspectRatio: dbImage.aspectRatio,
                     createdAt: dbImage.createdAt,

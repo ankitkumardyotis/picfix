@@ -112,6 +112,8 @@ const GeneratedImages = ({
 
   // Test image loading outside of the complex component structure
   React.useEffect(() => {
+    // Videos are not preloaded as images
+    if (selectedModel === 'ai-video') return;
     const validImages = images.filter(img => img !== null);
     if (validImages.length > 0) {
       validImages.forEach((imageUrl, index) => {
@@ -160,12 +162,12 @@ const GeneratedImages = ({
             color: theme.palette.text.primary
           }}
         >
-          Generated Images
+          {selectedModel === 'ai-video' ? 'Generated Video' : 'Generated Images'}
         </Typography>
         <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
           {isLoading ? (
             // Enhanced Loading placeholders
-            Array(selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
+            Array(selectedModel === 'ai-video' || selectedModel === 'hair-style' || selectedModel === 'combine-image' || selectedModel === 'text-removal' || selectedModel === 'headshot' || selectedModel === 'restore-image' || selectedModel === 'reimagine' || selectedModel === 'gfp-restore' || selectedModel === 'background-removal' || selectedModel === 'remove-object' ? 1 : numOutputs).fill(null).map((_, index) => (
               <Grid item xs={12} sm={6} md={4} key={`loading-${index}`}>
                 <EnhancedLoader 
                   selectedModel={selectedModel}
@@ -175,7 +177,44 @@ const GeneratedImages = ({
             ))
           ) : (
             images.map((image, index) => (
-              image && (
+              image && (selectedModel === 'ai-video' ? (
+                <Grid item xs={12} sm={8} md={6} key={index}>
+                  <Box sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: theme.shadows[4], backgroundColor: '#000' }}>
+                    <video
+                      key={`video-${image}-${index}`}
+                      src={image}
+                      controls
+                      loop
+                      playsInline
+                      preload="metadata"
+                      onContextMenu={(e) => e.preventDefault()}
+                      style={{ display: 'block', width: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mt: 1 }}>
+                    <Typography variant="caption" color="textSecondary">
+                      Available for 24 hours. Download or publish it to keep it.
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                      <Tooltip title="Publish to Community">
+                        <IconButton size="small" onClick={() => handlePublishClick(image, index)}>
+                          <FaGlobe />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Download Video">
+                        <IconButton size="small" onClick={() => handleDownload(image, index)}>
+                          <DownloadIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Remove from this view">
+                        <IconButton size="small" onClick={() => removeImage(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                </Grid>
+              ) : (
                 <Grid item xs={12} sm={6} md={4} key={index}>
                   <ResponsiveImageContainer onContextMenu={(e) => e.preventDefault()}>
                     <img
@@ -240,7 +279,7 @@ const GeneratedImages = ({
                     </ResponsiveImageOverlay>
                   </ResponsiveImageContainer>
                 </Grid>
-              )
+              ))
             ))
           )}
         </Grid>

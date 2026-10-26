@@ -25,6 +25,7 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useRouter } from 'next/router';
+import { isVideoModel } from '../../constant/VideoModels';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from 'notistack';
 import Head from 'next/head';
@@ -283,7 +284,8 @@ const GalleryImagePage = () => {
 
   // Get model display name
   const getModelDisplayName = (model) => {
-    return modelConfigurations[model]?.name || model;
+    const videoNames = { 'video-wan-3': 'Video (Wan 3)', 'video-seedance-2.5': 'Video (Seedance 2.5)' };
+    return videoNames[model] || modelConfigurations[model]?.name || model;
   };
 
   // Get model color
@@ -295,7 +297,9 @@ const GalleryImagePage = () => {
       'restore-image': '#fa709a',
       'text-removal': '#fee140',
       'reimagine': '#a8edea',
-      'combine-image': '#d299c2'
+      'combine-image': '#d299c2',
+      'video-wan-3': '#0ea5e9',
+      'video-seedance-2.5': '#d946ef'
     };
     return colors[model] || '#667eea';
   };
@@ -723,26 +727,44 @@ const GalleryImagePage = () => {
                   padding: 2,
                 }}
               >
-                <img
-                  src={imageData.url}
-                  alt={imageData.title || imageData.prompt || 'Gallery image'}
-                  referrerPolicy="no-referrer"
-                  onContextMenu={(e) => e.preventDefault()}
-                  onDragStart={(e) => e.preventDefault()}
-                  style={{
-                    maxWidth: '95%',
-                    maxHeight: '95%',
-                    width: 'auto',
-                    height: 'auto',
-                    objectFit: 'contain',
-                    borderRadius: '8px',
-                    transform: `scale(${zoom})`,
-                    transition: 'transform 0.2s ease',
-                    cursor: zoom > 1 ? 'grab' : 'default',
-                    userSelect: 'none',
-                    pointerEvents: 'auto',
-                  }}
-                />
+                {isVideoModel(imageData.model) ? (
+                  <video
+                    key={imageData.url}
+                    src={imageData.url}
+                    controls
+                    autoPlay
+                    loop
+                    playsInline
+                    onContextMenu={(e) => e.preventDefault()}
+                    style={{
+                      maxWidth: '95%',
+                      maxHeight: '95%',
+                      borderRadius: '8px',
+                      backgroundColor: '#000',
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={imageData.url}
+                    alt={imageData.title || imageData.prompt || 'Gallery image'}
+                    referrerPolicy="no-referrer"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                    style={{
+                      maxWidth: '95%',
+                      maxHeight: '95%',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      transform: `scale(${zoom})`,
+                      transition: 'transform 0.2s ease',
+                      cursor: zoom > 1 ? 'grab' : 'default',
+                      userSelect: 'none',
+                      pointerEvents: 'auto',
+                    }}
+                  />
+                )}
               </Box>
             </>
           )}

@@ -32,6 +32,9 @@
     <loc>https://www.picfix.ai/ai-image-editor?model=headshot</loc>
   </url>
   <url>
+    <loc>https://www.picfix.ai/ai-image-editor?model=ai-video</loc>
+  </url>
+  <url>
     <loc>https://www.picfix.ai/ai-image-editor?model=restore-image</loc>
   </url>
   <url>

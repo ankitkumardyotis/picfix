@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { generatePublicUrl } from "@/lib/publicUrlUtils";
+import { isVideoModel } from "@/constant/VideoModels";
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -71,7 +72,7 @@ export default async function handler(req, res) {
                     likes: dbImage.likes,
                     downloads: dbImage.downloads,
                     views: dbImage.views,
-                    hasComparison: inputUrls.length > 0,
+                    hasComparison: inputUrls.length > 0 && !isVideoModel(dbImage.model),
                     modelParams: dbImage.modelParams,
                     aspectRatio: dbImage.aspectRatio,
                     createdAt: dbImage.createdAt,
