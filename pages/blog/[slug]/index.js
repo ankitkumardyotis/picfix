@@ -82,14 +82,38 @@ export default function BlogPostPage({ post }) {
               Back to Blog
             </Button>
           </Link>
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-            <Image
-              src={post.image}
-              alt={post.title}
-              width={1200}
-              height={600}
-              style={{ maxWidth: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
-            />
+          <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {post.video ? (
+              // A post with a video shows it at the top instead of the cover image.
+              // The cover image is still used for the blog cards, and the poster shows until the video loads.
+              <>
+                <video
+                  src={post.video}
+                  poster={post.videoPoster || post.image}
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label={post.title}
+                  style={{ width: '100%', maxHeight: '75vh', objectFit: 'contain', display: 'block', borderRadius: '8px', backgroundColor: '#000' }}
+                />
+                {post.videoCaption && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                    {post.videoCaption}
+                  </Typography>
+                )}
+              </>
+            ) : (
+              <Image
+                src={post.image}
+                alt={post.title}
+                width={1200}
+                height={600}
+                style={{ maxWidth: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
+            )}
           </Box>
           <Typography variant="h3"  gutterBottom>
             {post.title}

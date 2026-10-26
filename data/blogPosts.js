@@ -3,6 +3,9 @@ export const blogPosts = [
     "title": "AI Video Generator: Turn Text or a Photo into a Video with Wan 3 and Seedance 2.5",
     "description": "Make short AI videos from a text prompt or a single photo. Compare Wan 3 and Seedance 2.5, learn how to write better video prompts, and see the credit price before you generate on PicFix.AI.",
     "image": "/assets/blog/ai-video-generator-cover.jpg",
+    "video": "/assets/blog/ai-video-wan3-sunrise.mp4",
+    "videoPoster": "/assets/blog/ai-video-tile.jpg",
+    "videoCaption": "Made with Wan 3 in PicFix.AI from the prompt \"Waves rolling onto a beach at sunrise\" (480p, 5 seconds).",
     "slug": "ai-video-generator-text-to-video-image-to-video",
     "date": "2026-10-26",
     "category": "AI Video",
@@ -31,21 +34,6 @@ export const blogPosts = [
            alt="AI Video Generator inside the PicFix.AI editor"
            style="width:100%; border-radius:12px;" />
     </div>
-  </div>
-
-  <!-- ================================================== -->
-  <!-- EXAMPLE VIDEO -->
-  <!-- ================================================== -->
-
-  <div style="margin:0 auto 60px; max-width:860px;">
-    <video controls playsinline preload="metadata" poster="/assets/blog/ai-video-tile.jpg"
-           style="width:100%; border-radius:12px; background:#000;">
-      <source src="/assets/blog/ai-video-wan3-sunrise.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-    <p style="text-align:center; font-size:14px; color:#666; margin-top:10px;">
-      Made with Wan 3 in PicFix.AI from the prompt "Waves rolling onto a beach at sunrise" (480p, 5 seconds).
-    </p>
   </div>
 
   <!-- ================================================== -->
