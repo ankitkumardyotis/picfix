@@ -37,4 +37,4 @@ User-agent: cohere-ai
 Allow: /
 
 # Sitemap location
-Sitemap: https://www.picfix.ai/sitemap.xml
+Sitemap: https://picfix.ai/sitemap.xml
