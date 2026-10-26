@@ -202,22 +202,26 @@ const modelConfigurations = {
   'upscale-image-topaz': {
     name: 'Topaz Labs Upscale',
     type: 'upscale-image',
-    creditCost: 1
+    creditCost: 1,
+    hidden: true
   },
   'upscale-image-google': {
     name: 'Google Upscaler',
     type: 'upscale-image',
-    creditCost: 2
+    creditCost: 2,
+    hidden: true
   },
   'upscale-image-crystal': {
     name: 'Crystal Upscaler',
     type: 'upscale-image',
-    creditCost: 3
+    creditCost: 3,
+    hidden: true
   },
   'upscale-image-seedvr2': {
     name: 'SeedVR2 Upscaler',
     type: 'upscale-image',
-    creditCost: 3
+    creditCost: 3,
+    hidden: true
   },
   // Price-only entry for Flux Schnell inside Generate Image. Not a model of its own, so it is hidden from the model dropdown.
   'generate-image-flux': {
@@ -229,13 +233,34 @@ const modelConfigurations = {
   'generate-image-pruna': {
     name: 'Pruna AI',
     type: 'generate-image',
-    creditCost: 2
+    creditCost: 2,
+    hidden: true
   },
   'edit-image-pruna': {
     name: 'Pruna AI',
     type: 'edit-image',
-    creditCost: 2
+    creditCost: 2,
+    hidden: true
   },
 };
+
+// Models picked inside Generate Image, Edit Image and Upscale Image that have their own price entry above.
+// Any other pick uses the price of the family entry, which is also what the server charges.
+const variantPriceKeys = {
+  'generate-image': { 'flux-schnell': 'generate-image-flux', 'pruna-ai': 'generate-image-pruna' },
+  'edit-image': { 'pruna-ai-edit': 'edit-image-pruna' },
+  'upscale-image': {
+    'crystal-upscaler': 'upscale-image-crystal',
+    'topaz-labs': 'upscale-image-topaz',
+    'google-upscaler': 'upscale-image-google',
+    'seedvr2': 'upscale-image-seedvr2'
+  },
+};
+
+// The config entry that holds the price for what the user has picked, so the screen shows the real charge.
+export function getPricedConfig(selectedModel, switchedModel) {
+  const key = variantPriceKeys[selectedModel]?.[switchedModel];
+  return (key && modelConfigurations[key]) || modelConfigurations[selectedModel] || {};
+}
 
 export default modelConfigurations; 

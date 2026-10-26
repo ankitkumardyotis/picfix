@@ -49,7 +49,7 @@ import CombineImageModal from '../components/ai-image-editor-flux/CombineImageMo
 import DynamicCombineImageUploader from '../components/ai-image-editor-flux/DynamicCombineImageUploader';
 import DownloadModal from '../components/ai-image-editor-flux/DownloadModal';
 import { useDownloadHandler } from '../components/ai-image-editor-flux/useDownloadHandler';
-import modelConfigurations from '../constant/ModelConfigurations';
+import modelConfigurations, { getPricedConfig } from '../constant/ModelConfigurations';
 import videoModels, { getVideoCredits } from '../constant/VideoModels';
 import { getModelInputImages, getModelParameters } from '../lib/publishImageHandler';
 import Image from 'next/image';
@@ -839,6 +839,8 @@ export default function AIImageEditor() {
         setSwitchedModel('pruna-ai');
       } else if (model === 'ai-video') {
         setSwitchedModel('wan-3');
+      } else if (model === 'upscale-image') {
+        setSwitchedModel('crystal-upscaler');
       }
 
       // Reset model-specific states
@@ -1013,6 +1015,8 @@ export default function AIImageEditor() {
       setSwitchedModel('pruna-ai'); // Default for combine-image
     } else if (newModel === 'ai-video') {
       setSwitchedModel('wan-3'); // Default for ai-video
+    } else if (newModel === 'upscale-image') {
+      setSwitchedModel('crystal-upscaler'); // Default for upscale-image, so the price shown matches the model that runs
     }
     // Reset text removal specific states when switching models
     if (newModel !== 'text-removal') {
@@ -2467,6 +2471,9 @@ export default function AIImageEditor() {
 
   const currentConfig = modelConfigurations[selectedModel];
 
+  // The price of what is picked, which can differ from the model family's price (for example Flux Schnell)
+  const pricedConfig = getPricedConfig(selectedModel, switchedModel);
+
   // Price of the video with the current options (null for the other models)
   const videoCredits = selectedModel === 'ai-video'
     ? getVideoCredits(switchedModel, { resolution: videoResolution, duration: videoDuration })
@@ -3879,8 +3886,8 @@ export default function AIImageEditor() {
                             selectedModel === 'ai-video'
                               ? `Generate video (${videoCredits ?? '-'} credits)`
                               : selectedModel === 'generate-image'
-                              ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(currentConfig.creditCost || 0) * numOutputs} credits)`
-                              : `Generate ${currentConfig.name || 'Image'} (${currentConfig.creditCost || 0} credits)`
+                              ? `Generate ${numOutputs} image${numOutputs > 1 ? 's' : ''} (${(pricedConfig.creditCost || 0) * numOutputs} credits)`
+                              : `Generate ${currentConfig.name || 'Image'} (${pricedConfig.creditCost || 0} credits)`
                           }
                         >
                           <SendIcon sx={{ fontSize: '18px' }} />

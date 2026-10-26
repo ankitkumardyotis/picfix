@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, styled, alpha, FormControl, InputLabel, Select, MenuItem, Typography, Button, IconButton, CircularProgress, Slider, Switch, FormControlLabel, useTheme, useMediaQuery } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
-import modelConfigurations from '@/constant/ModelConfigurations';
+import modelConfigurations, { getPricedConfig } from '@/constant/ModelConfigurations';
 import videoModels, { getVideoCredits } from '@/constant/VideoModels';
 import { Remove, Add, Dashboard, AccountBalanceRounded } from '@mui/icons-material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -57,6 +57,9 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
     
     const currentConfig = getCurrentConfig();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    // The price of what is picked, which can differ from the model family's price (for example Flux Schnell)
+    const pricedConfig = getPricedConfig(selectedModel, switchedModel);
 
     // AI Video: the options and the price depend on the chosen video model
     const currentVideoModel = selectedModel === 'ai-video' ? videoModels[switchedModel] : null;
@@ -666,7 +669,7 @@ function SidePanel({ aspectRatio, setAspectRatio, handleModelChange, selectedMod
                     <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center' }}>
                         {selectedModel === 'ai-video'
                             ? (videoCredits ? `Per run cost: ${videoCredits}` : 'Choose a valid length')
-                            : currentConfig.creditCost !== 0 ? `Per run cost: ${currentConfig.creditCost * numOutputs}` : 'This model is free to use.'}
+                            : pricedConfig.creditCost !== 0 ? `Per run cost: ${pricedConfig.creditCost * numOutputs}` : 'This model is free to use.'}
                     </Typography>
                 </Box>
 
