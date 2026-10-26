@@ -95,7 +95,7 @@ export default function AllModelsContainer() {
               <div className="card-img">
                 <Image
                   style={imageStyle}
-                  src="/assets/blog/ai-video-generator-cover.jpg"
+                  src="/assets/blog/ai-video-tile.jpg"
                   alt="AI Video Generator"
                   width={400}
                   height={300}

@@ -81,7 +81,7 @@ Your videos are listed under **My History** at the bottom of the page. The **Com
 
 ## Trying Seedance 2.5
 
-Switch **Video Model** to **Seedance 2.5** to get sound with your video. The **Generate audio** switch adds music, sound effects and speech at no extra credits. Seedance costs more credits per second than Wan 3, and the price updates as soon as you switch.
+Switch **Video Model** to **Seedance 2.5** for more control over sound. The **Generate audio** switch turns music, sound effects and speech on or off, at no extra credits. Wan 3 clips can include sound too, but there is no switch for it. Seedance costs more credits per second than Wan 3, and the price updates as soon as you switch.
 
 ![Seedance 2.5 options](screenshots/10-seedance.png)
 
@@ -117,7 +117,7 @@ On a small screen the left panel moves to the top of the page, with the same opt
 
 **How long do my videos stay?** 24 hours, unless you publish them. After that they are deleted, so download the ones you want.
 
-**Which model should I pick?** Start with Wan 3 at 480p to try ideas cheaply. Use Seedance 2.5 when you want sound or smoother motion.
+**Which model should I pick?** Start with Wan 3 at 480p to try ideas cheaply. Use Seedance 2.5 when you want control over the sound, or smoother motion.
 
 **Why does the price change?** Longer videos, higher resolutions and Seedance 2.5 all cost more credits. The price on the page always shows what this video will cost.
 

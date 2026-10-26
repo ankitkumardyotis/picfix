@@ -34,6 +34,21 @@ export const blogPosts = [
   </div>
 
   <!-- ================================================== -->
+  <!-- EXAMPLE VIDEO -->
+  <!-- ================================================== -->
+
+  <div style="margin:0 auto 60px; max-width:860px;">
+    <video controls playsinline preload="metadata" poster="/assets/blog/ai-video-tile.jpg"
+           style="width:100%; border-radius:12px; background:#000;">
+      <source src="/assets/blog/ai-video-wan3-sunrise.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <p style="text-align:center; font-size:14px; color:#666; margin-top:10px;">
+      Made with Wan 3 in PicFix.AI from the prompt "Waves rolling onto a beach at sunrise" (480p, 5 seconds).
+    </p>
+  </div>
+
+  <!-- ================================================== -->
   <!-- WHAT IS AI VIDEO GENERATION -->
   <!-- ================================================== -->
 
@@ -94,8 +109,8 @@ export const blogPosts = [
       </tr>
       <tr>
         <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Sound</strong></td>
-        <td style="padding:12px; border:1px solid #e3e6ee;">-</td>
-        <td style="padding:12px; border:1px solid #e3e6ee;">Can generate speech, sound effects and music with the video</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Clips can include sound</td>
+        <td style="padding:12px; border:1px solid #e3e6ee;">Speech, sound effects and music, with an on/off switch</td>
       </tr>
       <tr>
         <td style="padding:12px; border:1px solid #e3e6ee;"><strong>Cost in PicFix.AI</strong></td>
@@ -107,8 +122,8 @@ export const blogPosts = [
 
   <p>
     <strong>Which one should you start with?</strong> Try Wan 3 at 480p for quick, inexpensive drafts
-    while you work out the prompt. Switch to Seedance 2.5 when you want sound or a more polished
-    result.
+    while you work out the prompt. Switch to Seedance 2.5 when you want control over speech, sound effects and
+    music, or a more polished result.
   </p>
 
   <!-- ================================================== -->
@@ -216,7 +231,7 @@ export const blogPosts = [
   <p>Wan 3 makes videos from 2 to 30 seconds. Seedance 2.5 makes videos from 4 to 30 seconds.</p>
 
   <h3>Does my video have sound?</h3>
-  <p>Seedance 2.5 can generate sound with the video, and you can turn it off. Switch to Seedance 2.5 in the Video Model list to use it.</p>
+  <p>Often, yes. Seedance 2.5 generates speech, sound effects and music together with the video, and you can turn that off with the Generate audio switch. Wan 3 clips can include sound too, but there is no switch for it.</p>
 
   <h3>How long do I have to download my video?</h3>
   <p>24 hours. After that it is removed, unless you published it.</p>
@@ -232,7 +247,7 @@ export const blogPosts = [
       before you generate.
     </p>
 
-    <a href="https://picfix.ai/ai-image-editor?model=ai-video"
+    <a href="/ai-image-editor?model=ai-video"
        style="
          display:inline-block;
          background:#4a6cff;

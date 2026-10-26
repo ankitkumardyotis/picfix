@@ -13,7 +13,8 @@ const aiModels = [
         description: "Turn text or a photo into a video",
         icon: "🎬",
         gradient: "linear-gradient(135deg, #3a1c71 0%, #d76d77 100%)",
-        image: "/assets/blog/ai-video-generator-cover.jpg",
+        image: "/assets/blog/ai-video-tile.jpg",
+        isVideo: true,
         modelKey: "ai-video"
     },
     {
@@ -196,6 +197,26 @@ const ModelCard = styled(motion(Card))(({ theme, gradient }) => ({
         zIndex: 1,
     },
 
+    // Small play button in the corner of video tiles
+    '&[data-video="true"]::after': {
+        content: '"\u25B6"',
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 38,
+        height: 38,
+        borderRadius: '50%',
+        background: 'rgba(0,0,0,0.55)',
+        border: '1px solid rgba(255,255,255,0.6)',
+        color: '#fff',
+        fontSize: 14,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingLeft: 3,
+        zIndex: 2,
+    },
+
     '&:hover': {
         transform: 'translateY(-5px)',
         boxShadow: '0 15px 30px rgba(0,0,0,0.2)',
@@ -342,6 +363,7 @@ const ModelCards = () => {
                             <ModelCard
                                 key={model.id}
                                 gradient={model.gradient}
+                                data-video={model.isVideo ? 'true' : undefined}
                                 component={motion.div}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -383,6 +405,7 @@ const ModelCards = () => {
                             <ModelCard
                                 key={`duplicate-${model.id}`}
                                 gradient={model.gradient}
+                                data-video={model.isVideo ? 'true' : undefined}
                                 component={motion.div}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
